@@ -15,7 +15,17 @@ namespace MapAMilepost.ViewModels
         private ViewModelBase _selectedViewModel;
         private MapPointViewModel _mapPointVM;
         private MapLineViewModel _mapLineVM;
-        private ResultsViewModel _resultsVM;
+        private string _testString = "TEST";
+
+        public string TestString
+        {
+            get { return _testString; }
+            set
+            {
+                _testString = value;
+                OnPropertyChanged(nameof(TestString));
+            }
+        }
 
         /// <summary>
         /// -   The currently selected viewmodel, used when a tab is selected in the controlsGrid in MilepostDockpane.xaml
@@ -50,15 +60,6 @@ namespace MapAMilepost.ViewModels
             }
         }
 
-        public ResultsViewModel ResultsVM
-        {
-            get { return _resultsVM; }
-            set
-            {
-                _resultsVM = value;
-                OnPropertyChanged(nameof(ResultsVM));
-            }
-        }
         /// <summary>
         /// Command used to change the selected viewmodel.
         /// </summary>
@@ -67,10 +68,11 @@ namespace MapAMilepost.ViewModels
 
         public MainViewModel()
         {
-            ResultsVM = new ResultsViewModel();
             MapPointVM = new MapPointViewModel();
             MapLineVM = new MapLineViewModel();
             SelectPageCommand = new SelectPage(viewModel:this);
+            SelectedViewModel = MapPointVM;
+            TestString = "TEST";
         }
     }
 }

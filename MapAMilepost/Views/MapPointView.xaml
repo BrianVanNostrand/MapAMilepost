@@ -4,33 +4,36 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="375" d:DesignWidth="300"
+             d:DesignHeight="600" d:DesignWidth="364"
              xmlns:viewmodels="clr-namespace:MapAMilepost.ViewModels"
+             xmlns:b ="http://schemas.microsoft.com/xaml/behaviors"
              Width="300"
-             Height="375">
+             >
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Themes/ButtonTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <viewmodels:MapPointViewModel x:Key="MapPointVM"/>
-            <viewmodels:MainViewModel x:Key="MainVM"/>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid DataContext="{StaticResource MapPointVM}" Background="White">
+    <Grid DataContext="{StaticResource MapPointVM}" x:Name="MainGrid" Background="White">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="60px"/>
+            <RowDefinition Height="80px"/>
             <RowDefinition/>
             <RowDefinition Height="30px"/>
+            <RowDefinition/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
-        <Grid Grid.Column="0" Grid.Row="0">
+        <Grid Grid.Row="0" x:Name="SOEArgsGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
+                <ColumnDefinition Width="125px"/>
+                <ColumnDefinition Width="100px"/>
+                <ColumnDefinition Width="100px"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition/>
@@ -43,7 +46,7 @@
             <Label Grid.Row="2" Grid.Column="1" Content="{Binding SOEArgs.X}" ToolTip="The X coordinate of the click event"/>
             <Label Grid.Row="2" Grid.Column="2" Content="{Binding SOEArgs.Y}" ToolTip="The Y coordinate of the click event"/>
         </Grid>
-        <Grid Grid.Row="1" Grid.Column="0" VerticalAlignment="Stretch" >
+        <Grid Grid.Row="1" x:Name="SOEResultsGrid" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
@@ -88,7 +91,7 @@
             <Border Grid.ColumnSpan="3" Grid.Row="8" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="9" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
         </Grid>
-        <Grid Grid.Column="0" Grid.Row="2">
+        <Grid Grid.Row="2" x:Name="MapToolControlsGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100px"/>
                 <ColumnDefinition Width="100px"/>
@@ -110,21 +113,107 @@
                     </Style>
                 </Button.Style>
             </Button>
-            <!--<Border BorderBrush="{x:Null}" Grid.Row="1" Grid.Column="2">
-                <TextBlock x:Name="resultLabel" VerticalAlignment="Top" Foreground="Green" FontWeight="Bold" HorizontalAlignment="Center">
-                    <TextBlock.Style>
-                        <Style TargetType="{x:Type TextBlock}">
-                            <Setter Property="Visibility" Value="Visible"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsSaved}" Value="False">
-                                    <Setter Property="Visibility" Value="Hidden"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                    saved
-                </TextBlock>
-            </Border>-->
+        </Grid>
+        <Grid Height="200px" Grid.Row="3" x:Name="ResultsTableGrid">
+            <Grid.Resources>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ShowResultsTable}" Value="true">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ShowResultsTable}" Value="false">
+                            <Setter Property="Visibility" Value="Hidden" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Resources>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30px"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Row="0" Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0" Grid.Column="0">Saved Points:</Label>
+                <Label Grid.Row="0" Grid.Column="1" Content="{Binding SoePointResponses.Count}"/>
+            </Grid>
+            <DataGrid IsReadOnly="True" CanUserAddRows="False" Grid.ColumnSpan="3" Grid.Row="1" x:Name="PointsGrid" HorizontalAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding SoePointResponses}">
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="LightBlue" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Delete">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource whiteButton}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTextColumn Header="Route" Binding="{Binding Route}"/>
+                    <DataGridTextColumn Header="ARM" Binding="{Binding Arm}"/>
+                    <DataGridTextColumn Header="SRMP" Binding="{Binding Srmp}"/>
+                    <DataGridTextColumn Header="Decrease" Binding="{Binding Decrease}"/>
+                    <DataGridTextColumn Header="Back" Binding="{Binding Back}"/>
+                    <DataGridTextColumn Header="X" Binding="{Binding RouteGeometry.x}"/>
+                    <DataGridTextColumn Header="Y" Binding="{Binding RouteGeometry.y}"/>
+                </DataGrid.Columns>
+                <DataGrid.Resources>
+                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
+                   Color="#FF0000"/>
+                </DataGrid.Resources>
+                <b:Interaction.Triggers>
+                    <b:EventTrigger EventName="SelectionChanged">
+                        <b:InvokeCommandAction CommandParameter="{Binding ElementName=PointsGrid, Path=SelectedIndex}" Command="{Binding SelectGraphicsCommand}"/>
+                    </b:EventTrigger>
+                    <b:EventTrigger EventName="MouseLeftButtonUp">
+                        <b:InvokeCommandAction CommandParameter="{Binding ElementName=PointsGrid}" Command="{Binding UpdateSelection}"/>
+                    </b:EventTrigger>
+                </b:Interaction.Triggers>
+            </DataGrid>
+        </Grid>
+        <Grid Height="30px" Grid.Row="4" x:Name="ResultsTableControls">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.Resources>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ShowResultsTable}" Value="true">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ShowResultsTable}" Value="false">
+                            <Setter Property="Visibility" Value="Hidden" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Resources>
+            <Button Grid.Row="2" Grid.Column="0" Style="{StaticResource whiteButton}">
+                Export Data
+            </Button>
+            <Button x:Name="DeleteItemsButton" Grid.Row="2" Grid.Column="1" Command="{Binding DeleteItemsCommand}">
+                Delete Record
+            </Button>
+            <Button x:Name="ClearItemsButton" Grid.Row="2" Grid.Column="2"  Command="{Binding ClearItemsCommand}">
+                Clear
+            </Button>
         </Grid>
     </Grid>
 </UserControl>

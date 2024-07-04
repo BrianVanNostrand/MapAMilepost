@@ -5,11 +5,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:viewmodels="clr-namespace:MapAMilepost.ViewModels" 
              mc:Ignorable="d" 
-             d:DesignHeight="375" d:DesignWidth="364">
+             xmlns:theme ="../Themes/ButtonTheme.xaml"
+             d:DesignHeight="600" d:DesignWidth="364">
     <UserControl.Resources>
-        <viewmodels:MapLineViewModel x:Key="MapLineVM"/>
+        <ResourceDictionary>
+            <viewmodels:MapLineViewModel x:Key="MapLineVM"/>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Themes/ButtonTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </UserControl.Resources>
-    <Grid DataContext="{StaticResource MapLineVM}"  Background="White">
+    <Grid DataContext="{StaticResource MapLineVM}" x:Name="MainGrid" Background="White">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -17,8 +23,10 @@
             <RowDefinition Height="80px"/>
             <RowDefinition/>
             <RowDefinition Height="30px"/>
+            <RowDefinition Height="200px"/>
+            <RowDefinition Height="30px"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Column="0" Grid.Row="0">
+        <Grid Grid.Row="0" x:Name="SOEArgsGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="125px"/>
                 <ColumnDefinition Width="*"/>
@@ -34,9 +42,8 @@
             <Label Grid.Row="0" Grid.Column="2">End Point</Label>
             <Label x:Name="MapPointSearchDistanceLabel" Grid.Row="1" Grid.Column="0">Search Distance</Label>
             <Label  Grid.Row="1" Grid.Column="3">Feet</Label>
-            <TextBox x:Name="MapStartPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="1" Text="{Binding SOEStartArgs.SearchRadius, Mode=TwoWay}">
-            </TextBox>
-            <TextBox x:Name="MapEndPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="2" Text="{Binding SOEEndArgs.SearchRadius, Mode=TwoWay}"></TextBox>
+            <TextBox x:Name="MapStartPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="1" Text="{Binding SOEStartArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped start point."/>
+            <TextBox x:Name="MapEndPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="2" Text="{Binding SOEEndArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped end point."/>
             <Label Grid.Row="2" Grid.Column="0">Coordinates of Click</Label>
             <Label Grid.Row="2" Grid.Column="1">
                 <MultiBinding StringFormat="{}{0} , {1}">
@@ -51,15 +58,14 @@
                 </MultiBinding>
             </Label>
         </Grid>
-        <Grid Grid.Row="1" Grid.Column="0">
+        <Grid Grid.Row="1" x:Name="SOEResultsGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition>
-                </RowDefinition>
+                <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
@@ -113,7 +119,7 @@
             <Border Grid.ColumnSpan="3" Grid.Row="8" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="9" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
         </Grid>
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="2" x:Name="MapToolControlsGrid">
             <Grid.Resources>
                 <ResourceDictionary Source="../Themes/ButtonTheme.xaml" />
             </Grid.Resources>
@@ -127,6 +133,80 @@
             <Button x:Name="MapEndPointExecuteButton" Grid.Row="3" Grid.Column="1" Command="{Binding UpdateSOEStartEndResponseCommand}" CommandParameter="end" ToolTip="Start a session to map the end point." Style="{StaticResource whiteButton}">Map End</Button>
             <Button x:Name="ClearReultsButton" Grid.Row="3" Grid.Column="2" Command="{Binding UpdateSOEStartEndResponse}" CommandParameter="end" ToolTip="Clear the selection in this tab." Style="{StaticResource whiteButton}">Clear</Button>
             <Button x:Name="SaveResultsButton" Grid.Row="3" Grid.Column="3" Command="{Binding SaveLineResultCommand}" CommandParameter="end" Style="{StaticResource whiteButton}">Save Results</Button>
+        </Grid>
+        <Grid Grid.Row="3" x:Name="ResultsTableGrid" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30px"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Row="0" Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0" Grid.Column="0">Lines:</Label>
+                <Label Grid.Row="0" Grid.Column="1" Content="{Binding SoeLineResponses.Count}"/>
+            </Grid>
+            <ScrollViewer  Grid.ColumnSpan="3" Grid.Row="3">
+                <DataGrid CanUserAddRows="False" x:Name="LinesGrid" HorizontalAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding SoeLineResponses}">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="LightBlue" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <!--Start Info-->
+                        <DataGridTemplateColumn Header="Delete">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <!-- <Button Content="Delete" Command="Delete"/> -->
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Route" Binding="{Binding [0].Route}"/>
+                        <DataGridTextColumn Header="ARM" Binding="{Binding [0].Arm}"/>
+                        <DataGridTextColumn Header="EndARM" Binding="{Binding [1].Arm}"/>
+                        <DataGridTextColumn Header="SRMP" Binding="{Binding [0].Srmp}"/>
+                        <DataGridTextColumn Header="EndSRMP" Binding="{Binding [1].Srmp}"/>
+                        <DataGridTextColumn Header="Decrease" Binding="{Binding [0].Decrease}"/>
+                        <DataGridTextColumn Header="Back" Binding="{Binding [0].Back}"/>
+                        <DataGridTextColumn Header="EndBack" Binding="{Binding [1].Back}"/>
+                        <DataGridTextColumn Header="X" Binding="{Binding [0].RouteGeometry.x}"/>
+                        <DataGridTextColumn Header="Y" Binding="{Binding [0].RouteGeometry.y}"/>
+                        <DataGridTextColumn Header="EndX" Binding="{Binding [1].RouteGeometry.x}"/>
+                        <DataGridTextColumn Header="EndY" Binding="{Binding [1].RouteGeometry.y}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </ScrollViewer>
+            
+        </Grid>
+        <Grid Grid.Row="4" x:Name="ResultsTableControls">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Row="2" Grid.Column="0" Style="{StaticResource whiteButton}">
+                Export Data
+            </Button>
+            <Button x:Name="DeleteItemsButton" Grid.Row="2" Grid.Column="1" Command="{Binding DataContext.MapPointVM.DeleteItemsCommand,RelativeSource={RelativeSource AncestorType={x:Type viewmodels:MainViewModel}}}" Style="{StaticResource whiteButton}">
+                Delete Record
+            </Button>
+            <Button x:Name="ClearItemsButton" Grid.Row="2" Grid.Column="2"  Command="{Binding DataContext.MapPointVM.ClearItemsCommand,RelativeSource={RelativeSource AncestorType={x:Type viewmodels:MainViewModel}}}" Style="{StaticResource whiteButton}">
+                Clear Table
+            </Button>
         </Grid>
     </Grid>
 </UserControl>

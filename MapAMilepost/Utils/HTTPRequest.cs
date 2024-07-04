@@ -36,27 +36,34 @@ namespace MapAMilepost.Utils
                 {"f", "json"},
             };
             url.SetQueryParams(queryParams);
-            var response = await url.GetAsync();
             var responseObject = new Dictionary<string, object>();
-            var soeResponse = new SOEResponseModel();
-            if (response.StatusCode == 200)
-            {
-                string responseString = await response.ResponseMessage.Content.ReadAsStringAsync();
-                var soeResponses = JsonSerializer.Deserialize<List<SOEResponseModel?>>(responseString);
-                if (soeResponses.Count > 0)
+            try { 
+                var response = await url.GetAsync();
+                var soeResponse = new SOEResponseModel();
+                if (response.StatusCode == 200)
                 {
-                    responseObject.Add("soeResponse", soeResponses.First());
-                    responseObject.Add("message", "success");
+                    string responseString = await response.ResponseMessage.Content.ReadAsStringAsync();
+                    var soeResponses = JsonSerializer.Deserialize<List<SOEResponseModel?>>(responseString);
+                    if (soeResponses.Count > 0)
+                    {
+                        responseObject.Add("soeResponse", soeResponses.First());
+                        responseObject.Add("message", "success");
+                    }
+                    else
+                    {
+                        MessageBox.Show($"No results found within {args.SearchRadius} feet of clicked point.");
+                        responseObject.Add("message", "failure");
+                    }
                 }
                 else
                 {
-                    MessageBox.Show($"No results found within {args.SearchRadius} feet of clicked point.");
+                    MessageBox.Show(response.ResponseMessage.ToString());
                     responseObject.Add("message", "failure");
                 }
             }
-            else
+            catch
             {
-                MessageBox.Show(response.ResponseMessage.ToString());
+                MessageBox.Show("HTTP Request timed out. Please check internet connection and try again.");
                 responseObject.Add("message", "failure");
             }
             return responseObject;

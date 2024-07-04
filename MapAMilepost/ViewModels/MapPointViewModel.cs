@@ -13,6 +13,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using ArcGIS.Desktop.Internal.Reports;
 
 namespace MapAMilepost.ViewModels
 {
@@ -30,12 +33,14 @@ namespace MapAMilepost.ViewModels
         private bool _sessionActive = false;
         private MapAMilepostMaptool _pointMapTool;
         private string _mapButtonLabel = "Start Mapping";
+        private bool _showResultsTable = false;
+        private List<GraphicElement> _selectedGraphics;
         public MapPointViewModel()//constructor
         {
             _soeResponse = new SOEResponseModel();
             _soeArgs = new SOEArgsModel();
             _soePointResponses = new ObservableCollection<SOEResponseModel>();
-            PointMapTool = new MapAMilepostMaptool();
+            PointMapTool = new MapAMilepost.MapAMilepostMaptool();
         }
 
         /// <summary>
@@ -60,7 +65,17 @@ namespace MapAMilepost.ViewModels
             set
             {
                 _isSaved = value;
-                OnPropertyChanged("IsSaved");
+                OnPropertyChanged(nameof(IsSaved));
+            }
+        }
+
+        public bool ShowResultsTable
+        {
+            get { return _showResultsTable; }
+            set
+            {
+                _showResultsTable = value;
+                OnPropertyChanged(nameof(ShowResultsTable));
             }
         }
 
@@ -96,7 +111,7 @@ namespace MapAMilepost.ViewModels
         ///     via data binding.
         /// </summary>
         public List<SOEResponseModel> SelectedItems { get; set; } = new List<SOEResponseModel>();
-
+        
         /// <summary>
         /// -   Instance of MapTool used to interact with map.
         /// </summary>
@@ -107,16 +122,75 @@ namespace MapAMilepost.ViewModels
         }
 
         /// <summary>
-        /// -   Update the selected items array based on the rows selected in the DataGrid in ResultsView.xaml via data binding.
+        /// -   Select map graphics using indices of selected records.
         /// </summary>
-        public ICommand SelectedItemsCommand
+        public ICommand SelectGraphicsCommand
         {
             get
             {
                 return new Commands.RelayCommand(list =>
                 {
-                    SelectedItems.Clear();
-                    SelectedItems = Commands.DataGridCommands.UpdateSelection(SelectedItems, list);
+                    
+                    GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+                    if (_sessionActive)
+                    {
+                        InitializeSession(null);
+                    }
+                    QueuedTask.Run(() =>
+                    {
+                        var pointSessionGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == "point");
+                        foreach (GraphicElement item in pointSessionGraphics)
+                        {
+                            //remove unsaved graphics
+                            if (item.GetCustomProperty("saved") == "false" && item.GetCustomProperty("sessionType") == "point")
+                            {
+                                graphicsLayer.RemoveElement(item);
+                            }
+                        }
+                        for (int i = 0; i < SoePointResponses.Count-1; i++)
+                        {
+                            if (SelectedItems.Contains(SoePointResponses[i]))
+                            {
+                                //update graphic at index
+                            }
+                        }
+                    });
+                });
+            }
+        }
+
+        /// <summary>
+        /// -   Update the selected items array based on the rows selected in the DataGrid in ResultsView.xaml via data binding.
+        /// </summary>
+        public ICommand UpdateSelection
+        {
+            get
+            {
+                return new Commands.RelayCommand(grid =>
+                {
+                    List<DataGridRow> selectedRows = new();
+                    DataGrid myGrid = grid as DataGrid;
+                    var selItems = myGrid.SelectedItems;
+                    bool dataGridRowSelected = false;
+                    foreach (var item in selItems)
+                    {
+                        DataGridRow dgr = myGrid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
+                        if (dgr.IsMouseOver)
+                        {
+                            dataGridRowSelected = true;
+                        }
+                    }
+                    //if no row is clicked, clear the selection
+                    if (dataGridRowSelected == false)
+                    {
+                        SelectedItems.Clear();
+                        myGrid.SelectedItems.Clear();
+                    }
+                    else
+                    {
+                        SelectedItems.Clear();
+                        SelectedItems = Commands.DataGridCommands.UpdateSelection(SelectedItems, myGrid.SelectedItems);
+                    }
                 });
             }
         }
@@ -128,7 +202,7 @@ namespace MapAMilepost.ViewModels
         {
             get
             {
-                return new Commands.RelayCommand(list =>
+                return new Commands.RelayCommand((list) =>
                 {
                     if (SoePointResponses.Count > 0 && SelectedItems.Count > 0)
                     {
@@ -139,13 +213,20 @@ namespace MapAMilepost.ViewModels
                             MessageBoxImage.Question) == MessageBoxResult.Yes
                         )
                         {
+                            List<int> deleteIndices = new List<int>();
                             for (int i = SoePointResponses.Count - 1; i >= 0; i--)
                             {
                                 if (SelectedItems.Contains(SoePointResponses[i]))
                                 {
                                     SoePointResponses.Remove(SoePointResponses[i]);
+                                    deleteIndices.Add(i);
                                 }
                             }
+                            Commands.GraphicsCommands.DeleteGraphics(deleteIndices, "point");
+                            if (SoePointResponses.Count == 0)
+                            {
+                                ShowResultsTable = false;
+                            };
                         }
                     }
 
@@ -174,6 +255,10 @@ namespace MapAMilepost.ViewModels
                             SoePointResponses.Clear();
                         }
                     }
+                    if(SoePointResponses.Count == 0)
+                    {
+                        ShowResultsTable = false;
+                    };
                 });
             }
         }
@@ -214,16 +299,10 @@ namespace MapAMilepost.ViewModels
         }
 
         /// <summary>
-        /// -   Create a reference to the graphics in the graphics layer and update the SOEArgs that will be passed
+        /// -   Update the SOEArgs that will be passed
         ///     to the HTTP query based on the clicked point on the map.
         /// -   Query the SOE and if the query executes successfully, update the IsSaved public property to determine whether
         ///     or not a dialog box will be displayed, confirming that the user wants to save a duplicate point.
-        /// -   Delete any previous unsaved graphics from the graphics layer that were created in a point editing session
-        ///     (any existing click points or unsaved route points)
-        /// -   Generate new click point and route points to reflect the new clicked map point, using custom properties to set the 
-        ///     session type, saved status, and event type. These values are used to determine behavior in the UpdateSaveGraphicInfos method.
-        /// -   Add the new route and click point to the map, then clear the selection on the graphics layer, since points are added
-        ///     to the graphics layer in a "selected" state, displaying editing guide marks.
         ///     
         /// ##TODO## 
         /// look at using overlays to display these graphics rather than a graphics layer.
@@ -231,9 +310,7 @@ namespace MapAMilepost.ViewModels
         /// <param name="mapPoint"></param>
         public async void Submit(object mapPoint)
         {
-            GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
-            var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic);
-            if ((MapPoint)mapPoint != null)
+           if ((MapPoint)mapPoint != null)
             {
                 SOEArgs.X = ((MapPoint)mapPoint).X;
                 SOEArgs.Y = ((MapPoint)mapPoint).Y;
@@ -252,61 +329,10 @@ namespace MapAMilepost.ViewModels
                 {
                     IsSaved = false;
                 }
-                await QueuedTask.Run(async () =>
+                await QueuedTask.Run(() =>
                 {
-
-                    # region remove previous element if it isn't saved
-                    if (graphics != null)
-                    {
-                        foreach (GraphicElement item in graphicsLayer.GetElementsAsFlattenedList())
-                        {
-                            //if this graphic item was generated in a point mapping session and is unsaved (if it is a click point or unsaved route point)
-                            if (item.GetCustomProperty("sessionType") == "point" && item.GetCustomProperty("saved") == "false")
-                            {
-                                graphicsLayer.RemoveElement(item);
-                            }
-                        }
-                    }
-                    #endregion
-
-                    #region create and add point graphics
-                    var clickedPtGraphic = new CIMPointGraphic();
-                    clickedPtGraphic.Attributes = new Dictionary<string, object>();
-                    var clickedPtSymbol = await MapAMilepostMaptool.CreatePointSymbolAsync("yellow");
-                    clickedPtGraphic.Symbol = clickedPtSymbol.MakeSymbolReference();
-                    clickedPtGraphic.Location = MapPointBuilderEx.CreateMapPoint(SOEArgs.X, SOEArgs.Y, SOEArgs.SR);
-                    //create custom click point props
-                    var clickPtElemInfo = new ArcGIS.Desktop.Layouts.ElementInfo()
-                    {
-                        CustomProperties = new List<CIMStringMap>()
-                        {
-                            new CIMStringMap(){ Key="saved", Value="false"},
-                            new CIMStringMap(){ Key="sessionType", Value="point"},
-                            new CIMStringMap(){ Key="eventType", Value="click"}
-                        }
-                    };
-                    graphicsLayer.AddElement(cimGraphic: clickedPtGraphic, elementInfo: clickPtElemInfo);
-
-                    var soePtGraphic = new CIMPointGraphic();
-                    soePtGraphic.Attributes = new Dictionary<string, object>();
-                    var soePtSymbol = await MapAMilepostMaptool.CreatePointSymbolAsync("purple");
-                    soePtGraphic.Symbol = soePtSymbol.MakeSymbolReference();
-                    soePtGraphic.Location = MapPointBuilderEx.CreateMapPoint(SOEResponse.RouteGeometry.x, SOEResponse.RouteGeometry.y, SOEArgs.SR);
-                    //create custom route point props
-                    var routePtElemInfo = new ElementInfo()
-                    {
-                        CustomProperties = new List<CIMStringMap>()
-                        {
-                            new CIMStringMap(){ Key="saved", Value="false"},
-                            new CIMStringMap(){ Key="sessionType", Value="point"},
-                            new CIMStringMap(){ Key="eventType", Value="route"}
-                        }
-                    };
-                    graphicsLayer.AddElement(cimGraphic: soePtGraphic, elementInfo: routePtElemInfo);
-                    graphicsLayer.ClearSelection();
-                    #endregion
+                    Commands.GraphicsCommands.CreateClickRoutePointGraphics(SOEArgs, SOEResponse);
                 });
-
             }
         }
         /// <summary>
@@ -324,16 +350,7 @@ namespace MapAMilepost.ViewModels
             {
                 if (SoePointResponses.Contains(SOEResponse))
                 {
-                    if (MessageBox.Show(
-                        $"The selected point already exists in the results tab. Save a duplicate?",
-                        "Clear Results",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question) == MessageBoxResult.Yes
-                    )
-                    {
-                        SoePointResponses.Add(SOEResponse);
-                        UpdateSaveGraphicInfos();
-                    }
+                    MessageBox.Show("This route location has already been saved.");
                 }
                 else
                 //create a duplicate responsemodel object and add it to the array of response models that will persist
@@ -349,9 +366,13 @@ namespace MapAMilepost.ViewModels
                         RouteGeometry = SOEResponse.RouteGeometry,
                         Srmp = SOEResponse.Srmp,
                     });
-                    UpdateSaveGraphicInfos();
-                    CreateLabel(SOEResponse);
+                    Commands.GraphicsCommands.UpdateSaveGraphicInfos();
+                    //Commands.GraphicsCommands.CreateLabel(SOEResponse,SOEArgs);
                     IsSaved = true;
+                    if (SoePointResponses.Count > 0)
+                    {
+                        ShowResultsTable = true;
+                    };
                 }
             }
             else
@@ -360,64 +381,6 @@ namespace MapAMilepost.ViewModels
             }
         }
 
-        /// <summary>
-        /// -   Update the graphics on the map, converting a newly mapped route graphic instance to a persisting
-        ///     saved graphic (a green point).
-        /// -   Delete the click point.
-        /// </summary>
-        private static async void UpdateSaveGraphicInfos()
-        {
-            GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
-            CIMPointSymbol greenPointSymbol = await MapAMilepostMaptool.CreatePointSymbolAsync("green");
-            //var graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
-            IEnumerable<GraphicElement> graphicItems = graphicsLayer.GetElementsAsFlattenedList();
-            await QueuedTask.Run(() =>
-            {
-                foreach (GraphicElement item in graphicItems)
-                {
-                    var cimPointGraphic = item.GetGraphic() as CIMPointGraphic;
-                    //set graphic saved property to true
-                    item.SetCustomProperty("saved", "true");
-                    //if point was generated in a point mapping session and it is a click point, remove it.
-                    if (item.GetCustomProperty("sessionType") == "point" && item.GetCustomProperty("eventType") == "click")
-                    {
-                        graphicsLayer.RemoveElement(item);
-                    }
-                    //if point was generated in a point mapping session and it is a route point, turn it green because it is now saved.
-                    if (item.GetCustomProperty("eventType") == "route" && item.GetCustomProperty("sessionType") == "point")
-                    {
-                        cimPointGraphic.Symbol = greenPointSymbol.MakeSymbolReference();
-                        item.SetGraphic(cimPointGraphic);
-                    }
-                }
-            });
-        }
-
-        /// <summary>
-        /// -   Use the geometry of the route point from the SOE response to generate a label that is displayed
-        ///     in an overlay on the map.
-        /// </summary>
-        /// <param name="soeResponse"></param>
-        private async void CreateLabel(SOEResponseModel soeResponse)
-        {
-            var textSymbol = new CIMTextSymbol();
-            //define the text graphic
-            var textGraphic = new CIMTextGraphic();
-            await QueuedTask.Run(() =>
-            {
-                var labelGeometry = (MapPointBuilderEx.CreateMapPoint(SOEResponse.RouteGeometry.x, SOEResponse.RouteGeometry.y, SOEArgs.SR));
-                //Create a simple text symbol
-                textSymbol = SymbolFactory.Instance.ConstructTextSymbol(ColorFactory.Instance.BlackRGB, 10, "Arial", "Bold");
-                //Sets the geometry of the text graphic
-                textGraphic.Shape = labelGeometry;
-                //Sets the text string to use in the text graphic
-                textGraphic.Text = $"    {soeResponse.Srmp}";
-                //Sets symbol to use to draw the text graphic
-                textGraphic.Symbol = textSymbol.MakeSymbolReference();
-                //Draw the overlay text graphic
-                MapView.Active.AddOverlay(textGraphic);
-            });
-        }
 
         /// <summary>
         /// -   Initialize a mapping session (using the setsession method in MapAMilepostMaptool viewmodel)

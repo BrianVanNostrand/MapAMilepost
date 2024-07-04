@@ -74,42 +74,6 @@ namespace MapAMilepost
             //e.Handled = true; //Handle the event args to get the call to the corresponding async method
         }
 
-        /// <summary>
-        /// -   Create a point symbol, used when a click or route point is created or a route point is updated to its saved state.
-        /// </summary>
-        /// <param name="fillColor"></param>
-        /// <returns></returns>
-        public static Task<CIMPointSymbol> CreatePointSymbolAsync(string fillColor)
-        {
-            return QueuedTask.Run(() =>
-            {
-                CIMPointSymbol circlePtSymbol = SymbolFactory.Instance.ConstructPointSymbol(ColorFactory.Instance.GreenRGB, 8, SimpleMarkerStyle.Circle);
-                var marker = circlePtSymbol.SymbolLayers[0] as CIMVectorMarker;
-                var polySymbol = marker.MarkerGraphics[0].Symbol as CIMPolygonSymbol;
-                switch (fillColor)
-                {
-                    case "blue":
-                        polySymbol.SymbolLayers[1] = SymbolFactory.Instance.ConstructSolidFill(ColorFactory.Instance.CreateRGBColor(62, 108, 214)); //This is the fill
-                        break;
-                    case "yellow":
-                        polySymbol.SymbolLayers[1] = SymbolFactory.Instance.ConstructSolidFill(ColorFactory.Instance.CreateRGBColor(224, 227, 66)); //This is the fill
-                        break;
-                    case "green":
-                        polySymbol.SymbolLayers[1] = SymbolFactory.Instance.ConstructSolidFill(ColorFactory.Instance.CreateRGBColor(2, 222, 28));
-                        break;
-                    case "red":
-                        polySymbol.SymbolLayers[1] = SymbolFactory.Instance.ConstructSolidFill(ColorFactory.Instance.CreateRGBColor(227, 13, 9));
-                        break;
-                    case "purple":
-                        polySymbol.SymbolLayers[1] = SymbolFactory.Instance.ConstructSolidFill(ColorFactory.Instance.CreateRGBColor(185, 12, 247));
-                        break;
-                }
-
-                polySymbol.SymbolLayers[0] = SymbolFactory.Instance.ConstructStroke(ColorFactory.Instance.WhiteRGB, 1, SimpleLineStyle.Solid); //This is the outline
-                return circlePtSymbol;
-            });
-
-        }
 
         #region Methods for selecting and delesecting the point creation map tool
 
@@ -138,7 +102,6 @@ namespace MapAMilepost
                 QueuedTask.Run(() =>
                 {
                     GraphicsLayer graphicsLayer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(gl_param, map);
-
                 });
             };
             selectMapTool();
