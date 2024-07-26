@@ -23,14 +23,13 @@ namespace MapAMilepost
 {
     public class MapAMilepostMaptool : ArcGIS.Desktop.Mapping.MapTool
     {   
-        public Utils.ViewModelBase ViewModel {get;set;}
         private string _previousTool = null;//ID of the active tool in use before the creation session initializes
-        public MapAMilepostMaptool(Utils.ViewModelBase VM)
+        public Utils.ViewModelBase TargetVM { get; set; }
+        public MapAMilepostMaptool()
         {
             IsSketchTool = true;
             SketchType = SketchGeometryType.Point;
             SketchOutputMode = SketchOutputMode.Map;
-            ViewModel = VM;
         }
         /// <summary>
         /// -   Unmodified ESRI methods
@@ -65,11 +64,9 @@ namespace MapAMilepost
                 {
                     return MapView.Active.ClientToMap(e.ClientPoint);
                 });
-
-
-                if (this.ViewModel != null)
+                if (TargetVM != null)
                 {
-                    ViewModel.MapPoint2RoutePoint(mapPoint);
+                    TargetVM.MapPoint2RoutePoint(mapPoint);
                 }
             }
             //e.Handled = true; //Handle the event args to get the call to the corresponding async method
@@ -85,8 +82,9 @@ namespace MapAMilepost
         /// -   If the graphics layer doesn't exist yet, create it.
         /// -   Set the active tool in ArcGIS Pro to this map tool.
         /// </summary>
-        public async void StartSession()
+        public void StartSession(Utils.ViewModelBase VM)
         {
+            TargetVM = VM;
             Map map = MapView.Active.Map;
             var graphicsLayer = map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
             if (graphicsLayer != null)//if layer exists
@@ -95,14 +93,14 @@ namespace MapAMilepost
             }
             else // else create layer
             {
-                GraphicsLayerCreationParams gl_param = new GraphicsLayerCreationParams { Name = "MilepostMappingLayer" };
-                await QueuedTask.Run(() =>
+                GraphicsLayerCreationParams gl_param = new() { Name = "MilepostMappingLayer" };
+                QueuedTask.Run(() =>
                 {
                     GraphicsLayer graphicsLayer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(gl_param, map);
                 });
             };
             _previousTool = FrameworkApplication.ActiveTool.ID;
-            await FrameworkApplication.SetCurrentToolAsync("MapAMilepost_MapTool");
+            FrameworkApplication.SetCurrentToolAsync("MapAMilepost_MapTool");
         }   
 
         /// <summary>

@@ -24,7 +24,7 @@ namespace MapAMilepost.Utils
                 VM.MapToolInfos.SessionActive = true;
                 VM.MapToolInfos.MapButtonLabel = "Stop Mapping";
                 VM.MapToolInfos.MapButtonToolTip = "End mapping session.";
-                VM.MapToolInfos.MappingTool.StartSession();
+                VM.MappingTool.StartSession(VM);
             }
         }
 
@@ -43,14 +43,13 @@ namespace MapAMilepost.Utils
                 VM.MapToolInfos.MapButtonToolTip = "Start mapping session.";
                 //  Calls the EndSession method from the MapAMilepostMapTool viewmodel, setting the active tool
                 //  to whatever was selected before the mapping session was initialized.
-                VM.MapToolInfos.MappingTool.EndSession();
+                VM.MappingTool.EndSession();
                 Commands.GraphicsCommands.DeleteUnsavedGraphics();
             }
         }
     }
     public class MapToolInfo : ObservableObject
     {
-        public virtual Utils.ViewModelBase VM { get; set; }
         private bool _sessionActive { get; set; }
         public bool SessionActive {
             get { return _sessionActive; }
@@ -60,7 +59,6 @@ namespace MapAMilepost.Utils
                 OnPropertyChanged(nameof(SessionActive));
             }
         }
-        public MapAMilepostMaptool MappingTool { get; set; }
 
         private string _mapButtonToolTip {  get; set; }
         public string MapButtonToolTip

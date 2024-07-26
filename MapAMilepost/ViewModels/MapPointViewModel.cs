@@ -32,6 +32,7 @@ namespace MapAMilepost.ViewModels
         private string _mapButtonLabel = "Start Mapping";
         private bool _showResultsTable = false;
         private MapToolInfo _mapToolInfos;
+        private MapAMilepostMaptool _mappingTool;
         public MapPointViewModel()//constructor
         {
             _soeResponse = new SOEResponseModel();
@@ -40,11 +41,19 @@ namespace MapAMilepost.ViewModels
             _mapToolInfos = new MapToolInfo {
                 SessionActive = false,
                 MapButtonLabel = "Start Mapping",
-                MapButtonToolTip = "Start mapping session.",
-                VM = this,
-                MappingTool = new MapAMilepost.MapAMilepostMaptool(this),
+                MapButtonToolTip = "Start mapping session."
             };
         }
+
+        public override MapAMilepostMaptool MappingTool {
+            get { return _mappingTool;}
+            set
+            {
+                _mappingTool = value;
+                OnPropertyChanged(nameof(MappingTool));
+            }
+        }
+
 
         public override MapToolInfo MapToolInfos
         {
@@ -119,6 +128,10 @@ namespace MapAMilepost.ViewModels
 
         public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new Commands.RelayCommand<object>((parms) => { 
             if (!this.MapToolInfos.SessionActive) {
+                if (MappingTool == null)
+                {
+                    MappingTool = new MapAMilepostMaptool();
+                }
                 Utils.MapToolUtils.InitializeSession(this);
             }
             else{
