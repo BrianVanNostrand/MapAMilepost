@@ -7,32 +7,48 @@ using System.Windows.Input;
 
 namespace MapAMilepost.Commands
 {
-    class RelayCommand : ICommand
+    public class RelayCommand<T> : ICommand
     {
-        public RelayCommand(Action<object> execute) : this(execute, null)
+        Action<T> _TargetExecuteMethod;
+        Func<T, bool> _TargetCanExecuteMethod;
+
+        public RelayCommand(Action<T> executeMethod, Func<T, bool> canExecuteMethod = null)
         {
+            _TargetExecuteMethod = executeMethod;
+            _TargetCanExecuteMethod = canExecuteMethod;
         }
-        public RelayCommand(Action<object> execute, Predicate<object> canExecute)
+
+        public void RaiseCanExecuteChanged()
         {
-            if (execute == null)
-                throw new ArgumentNullException("execute");
-            _execute = execute;
-            _canExecute = canExecute;
+            CanExecuteChanged(this, EventArgs.Empty);
         }
-        public bool CanExecute(object parameter)
+        #region ICommand Members
+
+        bool ICommand.CanExecute(object parameter)
         {
-            return _canExecute == null ? true : _canExecute(parameter);
+            if (_TargetCanExecuteMethod != null)
+            {
+                T tparm = (T)parameter;
+                return _TargetCanExecuteMethod(tparm);
+            }
+            if (_TargetExecuteMethod != null)
+            {
+                return true;
+            }
+            return false;
         }
-        public event EventHandler CanExecuteChanged
+
+        // Beware - should use weak references if command instance lifetime is longer than lifetime of UI objects that get hooked up to command
+        // Prism commands solve this in their implementation
+        public event EventHandler CanExecuteChanged = delegate { };
+
+        void ICommand.Execute(object parameter)
         {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
+            if (_TargetExecuteMethod != null)
+            {
+                _TargetExecuteMethod((T)parameter);
+            }
         }
-        public void Execute(object parameter)
-        {
-            _execute.Invoke(parameter);
-        }
-        private readonly Action<object> _execute;
-        private readonly Predicate<object> _canExecute;
+        #endregion
     }
 }

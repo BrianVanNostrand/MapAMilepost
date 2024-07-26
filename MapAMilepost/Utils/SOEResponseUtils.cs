@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MapAMilepost.Utils
 {
-    public static class CopyProps
+    public static class SOEResponseUtils
     {
         /// <summary>
         /// -   Used to copy the properties of the SOEResponse object returned from the SOE response to the static SOEResponse
@@ -57,6 +57,30 @@ namespace MapAMilepost.Utils
                 // Passed all tests, lets set the value
                 targetProperty.SetValue(destination, srcProp.GetValue(source, null), null);
             }
+        }
+
+        /// <summary>
+        /// -   Checks whether or not the properties of the SOEResponseModel are all null, indicating that the viewmodel's SOEResponse
+        ///     hasn't been updated yet.
+        /// </summary>
+        /// <param name="myObject"></param>
+        /// <returns></returns>
+        public static bool HasBeenUpdated(object myObject)
+        {
+            foreach (PropertyInfo pi in myObject.GetType().GetProperties())
+            {
+                if (pi.PropertyType == typeof(string))
+                {
+                    string value = (string)pi.GetValue(myObject);
+                    Console.WriteLine(pi.Name);
+                    List<string> excludeList = new List<string> {"ReferenceDate"};//list of keys present in the Find Nearest Route Locations response but not present in the Find Route Locations response.
+                    if (string.IsNullOrEmpty(value)&&!excludeList.Contains(pi.Name))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
     }
 }

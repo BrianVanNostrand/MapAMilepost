@@ -17,19 +17,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace MapAMilepost
 {
     public class MapAMilepostMaptool : ArcGIS.Desktop.Mapping.MapTool
-    {
-        public static MapPointViewModel CurrentPointViewModel { get; set; }
-        public static MapLineViewModel CurrentLineViewModel { get; set; }
+    {   
+        public Utils.ViewModelBase ViewModel {get;set;}
         private string _previousTool = null;//ID of the active tool in use before the creation session initializes
-        public MapAMilepostMaptool()
+        public MapAMilepostMaptool(Utils.ViewModelBase VM)
         {
             IsSketchTool = true;
             SketchType = SketchGeometryType.Point;
             SketchOutputMode = SketchOutputMode.Map;
+            ViewModel = VM;
         }
         /// <summary>
         /// -   Unmodified ESRI methods
@@ -66,9 +67,9 @@ namespace MapAMilepost
                 });
 
 
-                if (CurrentPointViewModel != null)
+                if (this.ViewModel != null)
                 {
-                    CurrentPointViewModel.Submit(mapPoint);
+                    ViewModel.MapPoint2RoutePoint(mapPoint);
                 }
             }
             //e.Handled = true; //Handle the event args to get the call to the corresponding async method
@@ -84,12 +85,8 @@ namespace MapAMilepost
         /// -   If the graphics layer doesn't exist yet, create it.
         /// -   Set the active tool in ArcGIS Pro to this map tool.
         /// </summary>
-        /// <param name="mapPointViewModel"></param>
-        /// <param name="mapLineViewModel"></param>
-        public void SetSession(MapPointViewModel mapPointViewModel = null, MapLineViewModel mapLineViewModel = null)
+        public async void StartSession()
         {
-            CurrentLineViewModel = mapLineViewModel;
-            CurrentPointViewModel = mapPointViewModel;
             Map map = MapView.Active.Map;
             var graphicsLayer = map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
             if (graphicsLayer != null)//if layer exists
@@ -99,13 +96,14 @@ namespace MapAMilepost
             else // else create layer
             {
                 GraphicsLayerCreationParams gl_param = new GraphicsLayerCreationParams { Name = "MilepostMappingLayer" };
-                QueuedTask.Run(() =>
+                await QueuedTask.Run(() =>
                 {
                     GraphicsLayer graphicsLayer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(gl_param, map);
                 });
             };
-            selectMapTool();
-        }
+            _previousTool = FrameworkApplication.ActiveTool.ID;
+            await FrameworkApplication.SetCurrentToolAsync("MapAMilepost_MapTool");
+        }   
 
         /// <summary>
         /// -   Deactivates the mapping session
@@ -114,18 +112,14 @@ namespace MapAMilepost
         public void EndSession()
         {
             OnToolDeactivateAsync(true);
-            FrameworkApplication.SetCurrentToolAsync(_previousTool);
-        }
-
-        /// <summary>
-        /// -   Sets the _previousTool property to whatever the last active tool was being used immediately before the
-        ///     mapping session was initialized.
-        /// -   Sets the current tool to this map tool.
-        /// </summary>
-        private void selectMapTool()
-        {
-            _previousTool = FrameworkApplication.ActiveTool.ID;
-            FrameworkApplication.SetCurrentToolAsync("MapAMilepost_MapTool");
+            if (_previousTool != null)
+            {
+                FrameworkApplication.SetCurrentToolAsync(_previousTool);
+            }
+            else
+            {
+                FrameworkApplication.SetCurrentToolAsync("esri_mapping_exploreTool");
+            }
         }
         #endregion
     }

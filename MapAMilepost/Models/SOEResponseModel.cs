@@ -23,7 +23,7 @@ namespace MapAMilepost.Models
             set
             {
                 _angle = value;
-                OnPropertyChanged("Angle");
+                OnPropertyChanged(nameof(Angle));
             }
         }
 
@@ -34,7 +34,7 @@ namespace MapAMilepost.Models
             set
             {
                 _arm = value;
-                OnPropertyChanged("ARM");
+                OnPropertyChanged(nameof(Arm));
             }
         }
 
@@ -45,7 +45,18 @@ namespace MapAMilepost.Models
             set
             {
                 _back = value;
-                OnPropertyChanged("Back");
+                OnPropertyChanged(nameof(Back));
+            }
+        }
+
+        private bool? _endback;
+        public bool? EndBack
+        {
+            get { return _endback; }
+            set
+            {
+                _endback = value;
+                OnPropertyChanged(nameof(EndBack));
             }
         }
 
@@ -57,7 +68,7 @@ namespace MapAMilepost.Models
             set
             {
                 _decrease = value;
-                OnPropertyChanged("Decrease");
+                OnPropertyChanged(nameof(Decrease));
             }
         }
 
@@ -69,7 +80,7 @@ namespace MapAMilepost.Models
             set
             {
                 _distance = value;
-                OnPropertyChanged("Distance");
+                OnPropertyChanged(nameof(Distance));
             }
         }
 
@@ -81,7 +92,7 @@ namespace MapAMilepost.Models
             set
             {
                 _route = value;
-                OnPropertyChanged("Route");
+                OnPropertyChanged(nameof(Route));
             }
         }
 
@@ -93,7 +104,40 @@ namespace MapAMilepost.Models
             set
             {
                 _srmp = value;
-                OnPropertyChanged("SRMP");
+                OnPropertyChanged(nameof(Srmp));
+            }
+        }
+
+        private string? _referenceDate;
+        public string? ReferenceDate
+        {
+            get { return _referenceDate; }
+            set
+            {
+                _referenceDate = value;
+                OnPropertyChanged(nameof(ReferenceDate));
+            }
+        }
+
+        private string? _responseDate;
+        public string? ResponseDate
+        {
+            get { return _responseDate; }
+            set
+            {
+                _responseDate = value;
+                OnPropertyChanged(nameof(ResponseDate));
+            }
+        }
+
+        private string? _realignmentDate;
+        public string? RealignmentDate
+        {
+            get { return _realignmentDate; }
+            set
+            {
+                _realignmentDate = value;
+                OnPropertyChanged(nameof(RealignmentDate));
             }
         }
         private coordinatePair? _routeGeometry;
@@ -103,13 +147,46 @@ namespace MapAMilepost.Models
             set
             {
                 _routeGeometry = value;
-                OnPropertyChanged("RouteGeometry");
+                OnPropertyChanged(nameof(RouteGeometry));
             }
         }
         public class coordinatePair
         {
             public double x { get; set; }
             public double y { get; set; }
+        }
+    }
+    public class FRLRequestObject
+    {
+        public double? Id { get; set; }
+        public string? Route { get; set; }
+        public bool? Decrease { get; set; }
+        public double? Arm { get; set; }
+        public double? Srmp { get; set; }
+        public bool? Back { get; set; }
+        public string? ReferenceDate { get; set; }
+        public string? ResponseDate { get; set; }
+        public bool? EndBack { get; set; }
+        public coordinatePair? EventPoint { get; set; }
+        public class coordinatePair
+        {
+            public double? x { get; set; }
+            public double? y { get; set; }
+        }
+        public double? Distance { get; set; }
+        public FRLRequestObject(SOEResponseModel FNRL)
+        {
+            Route = FNRL.Route;
+            Decrease = FNRL.Decrease;
+            Arm = FNRL.Arm;
+            Srmp = FNRL.Srmp;
+            Back = FNRL.Back;
+            ReferenceDate = FNRL.ReferenceDate;
+            ResponseDate = FNRL.ResponseDate;
+            EndBack = FNRL.EndBack;
+            EventPoint = new coordinatePair();
+            EventPoint.x = FNRL.RouteGeometry.x;
+            EventPoint.y = FNRL.RouteGeometry.y;
         }
     }
 }

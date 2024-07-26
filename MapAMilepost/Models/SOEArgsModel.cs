@@ -24,7 +24,7 @@ namespace MapAMilepost.Models
             }
         }
 
-        private string? _searchRadius = "200";
+        private string? _searchRadius;
 
         public string? SearchRadius
         {
@@ -87,7 +87,7 @@ namespace MapAMilepost.Models
         public SOEArgsModel()//set default values in constructor
         {
             this._referenceDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
-            this._searchRadius = "200";
+            this._searchRadius = "200000";
         }
     }
 }

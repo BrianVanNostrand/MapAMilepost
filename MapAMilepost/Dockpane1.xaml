@@ -32,17 +32,24 @@
       <RowDefinition Height="*"/>
     </Grid.RowDefinitions>
         <DockPanel DataContext="{StaticResource MainViewModel}"  Background="white" Grid.Row="0" LastChildFill="true" KeyboardNavigation.TabNavigation="Local" Height="50">
-        <TabControl Height="50" x:Name="controlsGrid">
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="SelectionChanged">
-                        <i:InvokeCommandAction Command="{Binding SelectPageCommand}" CommandParameter="{Binding ElementName=controlsGrid}" CommandName="SwitchTabCommand"/>
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-            <TabItem x:Name="MapPointButton" Height="50" Width="80" Header="Map a Point"/>
-                <TabItem x:Name="MapLineButton" Height="50" Width="80" Header="Map a Line"/>
+            <TabControl Height="50" x:Name="controlsGrid">
+                <TabItem x:Name="MapPointTab" Height="50" Width="80" Header="Map a Point">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="PreviewMouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectPageCommand}" CommandParameter="{Binding ElementName=MapPointTab}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </TabItem>
+                <TabItem x:Name="MapLineTab" Height="50" Width="80" Header="Map a Line">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="PreviewMouseDown">
+                            <i:InvokeCommandAction Command="{Binding SelectPageCommand}" CommandParameter="{Binding ElementName=MapLineTab}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </TabItem>
             </TabControl>
     </DockPanel>
-        <ScrollViewer DataContext="{StaticResource MainViewModel}" Background="white" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="1">
+        <ScrollViewer DataContext="{StaticResource MainViewModel}" Background="white" VerticalScrollBarVisibility="Auto" Grid.Row="1">
             <ContentControl DataContext="{StaticResource MainViewModel}" Background="white" ClipToBounds="True" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Row="1" Content="{Binding SelectedViewModel}"/>
         </ScrollViewer>
     </Grid>

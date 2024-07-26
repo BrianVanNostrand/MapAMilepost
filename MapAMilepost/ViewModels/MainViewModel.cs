@@ -63,14 +63,14 @@ namespace MapAMilepost.ViewModels
         /// <summary>
         /// Command used to change the selected viewmodel.
         /// </summary>
-        public ICommand SelectPageCommand { get; set; }
-
+        //public ICommand SelectPageCommand { get; set; }
+        public Commands.RelayCommand<object> SelectPageCommand => new Commands.RelayCommand<object>((button) => Commands.TabCommands.SwitchTab(button, this));
 
         public MainViewModel()
         {
             MapPointVM = new MapPointViewModel();
             MapLineVM = new MapLineViewModel();
-            SelectPageCommand = new SelectPage(viewModel:this);
+            //SelectPageCommand = new SelectPage(viewModel:this);
             SelectedViewModel = MapPointVM;
             TestString = "TEST";
         }

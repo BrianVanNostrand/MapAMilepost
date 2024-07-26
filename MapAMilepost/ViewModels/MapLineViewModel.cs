@@ -12,7 +12,6 @@ namespace MapAMilepost.ViewModels
 {
     public class MapLineViewModel:ViewModelBase
     {
-
         private SOEResponseModel _soeStartResponse;
         private SOEResponseModel _soeEndResponse;
         private SOEArgsModel _soeStartArgs;
@@ -20,7 +19,7 @@ namespace MapAMilepost.ViewModels
         private ICommand _updateSOEStartEndResponse;
         private ICommand _updateSOEStartEndArgs;
         private ICommand _saveLineResultCommand;
-        private MapAMilepostMaptool _mapTool;
+        private MapAMilepostMaptool _lineMapTool;
         private List<List<SOEResponseModel>> _soeLineResponses;
         public MapLineViewModel()//constructor
         {
@@ -55,19 +54,20 @@ namespace MapAMilepost.ViewModels
             get { return _soeEndArgs; }
             set { _soeEndArgs = value; }
         }
-        public MapAMilepostMaptool MapTool
+        public MapAMilepostMaptool LineMapTool
         {
-            get { return _mapTool; }
-            set { _mapTool = value; }
+            get { return _lineMapTool; }
+            set { _lineMapTool = value; }
         }
         public ICommand UpdateSOEStartEndResponseCommand
         {
             get
             {
-                if (_updateSOEStartEndResponse == null)
-                    _updateSOEStartEndResponse = new Commands.RelayCommand(param => this.SubmitStartEnd(param),
-                        null);
-                return _updateSOEStartEndResponse;
+                return null;
+                //if (_updateSOEStartEndResponse == null)
+                //    _updateSOEStartEndResponse = new Commands.RelayCommand(param => this.SubmitStartEnd(param),
+                //        null);
+                //return _updateSOEStartEndResponse;
             }
             set
             {
@@ -78,28 +78,29 @@ namespace MapAMilepost.ViewModels
         {
             get
             {
-                if (_saveLineResultCommand == null)
-                    _saveLineResultCommand = new Commands.RelayCommand(SaveLineResult,
-                        null);
-                return _saveLineResultCommand;
+                return null;
+                //if (_saveLineResultCommand == null)
+                //    _saveLineResultCommand = new Commands.RelayCommand(SaveLineResult,
+                //        null);
+                //return _saveLineResultCommand;
             }
             set
             {
                 _saveLineResultCommand = value;
             }
-        }
+    }
         public async void SubmitStartEnd(object param)
         {
             if (param.ToString() == "start")
             {
-                Dictionary<string, object> response = await Utils.HTTPRequest.QuerySOE(SOEStartArgs);
+                object response = await Utils.HTTPRequest.QuerySOE(SOEStartArgs);
                 if (response != null)
                 {
-                    if (Utils.CheckObject.HasBeenUpdated(SOEEndResponse))
+                    if (Utils.SOEResponseUtils.HasBeenUpdated(SOEEndResponse))
                     {
                         if (SOEStartResponse.Route == SOEEndResponse.Route)
                         {
-                            CopyProps.CopyProperties(response, SOEStartResponse);
+                            SOEResponseUtils.CopyProperties(response, SOEStartResponse);
                             //createLine
                         }
                         else
@@ -109,7 +110,7 @@ namespace MapAMilepost.ViewModels
                     }
                     else
                     {
-                        CopyProps.CopyProperties(response, SOEStartResponse);
+                        SOEResponseUtils.CopyProperties(response, SOEStartResponse);
                     }
                 }
                 else
@@ -119,14 +120,14 @@ namespace MapAMilepost.ViewModels
             }
             else if (param.ToString() == "end")
             {
-                Dictionary<string, object> response = await Utils.HTTPRequest.QuerySOE(SOEEndArgs);
+                object response = await Utils.HTTPRequest.QuerySOE(SOEEndArgs);
                 if (response != null)
                 {
-                    if (Utils.CheckObject.HasBeenUpdated(SOEStartResponse))
+                    if (Utils.SOEResponseUtils.HasBeenUpdated(SOEStartResponse))
                     {
                         if (SOEStartResponse.Route == SOEEndResponse.Route)
                         {
-                            CopyProps.CopyProperties(response, SOEEndResponse);
+                            SOEResponseUtils.CopyProperties(response, SOEEndResponse);
                             //create line
                         }
                         else
@@ -136,7 +137,7 @@ namespace MapAMilepost.ViewModels
                     }
                     else
                     {
-                        CopyProps.CopyProperties(response, SOEEndResponse);
+                        SOEResponseUtils.CopyProperties(response, SOEEndResponse);
                     }
                 }
                 else
@@ -147,7 +148,7 @@ namespace MapAMilepost.ViewModels
         }
         public void SaveLineResult(object state)
         {
-            if (Utils.CheckObject.HasBeenUpdated(SOEStartResponse) && Utils.CheckObject.HasBeenUpdated(SOEEndResponse))
+            if (Utils.SOEResponseUtils.HasBeenUpdated(SOEStartResponse) && Utils.SOEResponseUtils.HasBeenUpdated(SOEEndResponse))
             {
                 // SoeLineResponses.Add({ SOEStartResponse, SOEEndResponse});
             }

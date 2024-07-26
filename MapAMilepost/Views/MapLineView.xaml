@@ -6,7 +6,8 @@
              xmlns:viewmodels="clr-namespace:MapAMilepost.ViewModels" 
              mc:Ignorable="d" 
              xmlns:theme ="../Themes/ButtonTheme.xaml"
-             d:DesignHeight="600" d:DesignWidth="364">
+             d:DesignHeight="600" d:DesignWidth="364"
+             Width="300">
     <UserControl.Resources>
         <ResourceDictionary>
             <viewmodels:MapLineViewModel x:Key="MapLineVM"/>

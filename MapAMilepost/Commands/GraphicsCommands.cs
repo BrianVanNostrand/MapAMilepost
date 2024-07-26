@@ -12,61 +12,30 @@ using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
 using MapAMilepost.Models;
+using MapAMilepost.Utils;
 using MapAMilepost.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Windows;
 namespace MapAMilepost.Commands
 {
     class GraphicsCommands
     {
 
         /// <summary>
-        /// -   Create a point symbol, used when a click or route point is created or a route point is updated to its saved state.
-        /// </summary>
-        /// <param name="fillColor"></param>
-        /// <returns></returns>
-        public static Task<CIMPointSymbol> CreatePointSymbolAsync(string fillColor)
-        {
-            return QueuedTask.Run(() =>
-            {
-                CIMPointSymbol circlePtSymbol = SymbolFactory.Instance.ConstructPointSymbol(ColorFactory.Instance.GreenRGB, 8, SimpleMarkerStyle.Circle);
-                var marker = circlePtSymbol.SymbolLayers[0] as CIMVectorMarker;
-                var polySymbol = marker.MarkerGraphics[0].Symbol as CIMPolygonSymbol;
-                switch (fillColor)
-                {
-                    case "blue":
-                        polySymbol.SymbolLayers[1] = SymbolFactory.Instance.ConstructSolidFill(ColorFactory.Instance.CreateRGBColor(62, 108, 214)); //This is the fill
-                        break;
-                    case "yellow":
-                        polySymbol.SymbolLayers[1] = SymbolFactory.Instance.ConstructSolidFill(ColorFactory.Instance.CreateRGBColor(224, 227, 66)); //This is the fill
-                        break;
-                    case "green":
-                        polySymbol.SymbolLayers[1] = SymbolFactory.Instance.ConstructSolidFill(ColorFactory.Instance.CreateRGBColor(2, 222, 28));
-                        break;
-                    case "red":
-                        polySymbol.SymbolLayers[1] = SymbolFactory.Instance.ConstructSolidFill(ColorFactory.Instance.CreateRGBColor(227, 13, 9));
-                        break;
-                    case "purple":
-                        polySymbol.SymbolLayers[1] = SymbolFactory.Instance.ConstructSolidFill(ColorFactory.Instance.CreateRGBColor(185, 12, 247));
-                        break;
-                }
-                polySymbol.SymbolLayers[0] = SymbolFactory.Instance.ConstructStroke(ColorFactory.Instance.WhiteRGB, 1, SimpleLineStyle.Solid); //This is the outline
-                return circlePtSymbol;
-            });
-        }
-
-        /// <summary>
         /// -   Update the graphics on the map, converting a newly mapped route graphic instance to a persisting
         ///     saved graphic (a green point).
         /// -   Delete the click point.
         /// </summary>
-        public static async void UpdateSaveGraphicInfos()
+        public static async void UpdateSaveGraphicInfos(CustomGraphics CustomPointSymbols)
         {
             GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
-            CIMPointSymbol greenPointSymbol = await Commands.GraphicsCommands.CreatePointSymbolAsync("green");
+            CIMPointSymbol savedRoutePointSymbol = CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["SavedRoutePoint"];
             //var graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
             IEnumerable<GraphicElement> graphicItems = graphicsLayer.GetElementsAsFlattenedList();
             await QueuedTask.Run(() =>
@@ -74,17 +43,14 @@ namespace MapAMilepost.Commands
                 foreach (GraphicElement item in graphicItems)
                 {
                     var cimPointGraphic = item.GetGraphic() as CIMPointGraphic;
-                    //set graphic saved property to true
-                    item.SetCustomProperty("saved", "true");
-                    //if point was generated in a point mapping session and it is a click point, remove it.
-                    if (item.GetCustomProperty("sessionType") == "point" && item.GetCustomProperty("eventType") == "click")
+                    //set route graphic saved property to true
+                    if(item.GetCustomProperty("eventType")== "route")
                     {
-                        graphicsLayer.RemoveElement(item);
+                        item.SetCustomProperty("saved", "true");
                     }
-                    //if point was generated in a point mapping session and it is a route point, turn it green because it is now saved.
                     if (item.GetCustomProperty("eventType") == "route" && item.GetCustomProperty("sessionType") == "point")
                     {
-                        cimPointGraphic.Symbol = greenPointSymbol.MakeSymbolReference();
+                        cimPointGraphic.Symbol = savedRoutePointSymbol.MakeSymbolReference();
                         item.SetGraphic(cimPointGraphic);
                     }
                 }
@@ -102,28 +68,13 @@ namespace MapAMilepost.Commands
         /// </summary>
         /// <param name="SOEArgs"></param>
         /// <param name="SOEResponse"></param>
-        public static async void CreateClickRoutePointGraphics(SOEArgsModel SOEArgs, SOEResponseModel SOEResponse)
+        public static void CreateClickRoutePointGraphics(SOEArgsModel SOEArgs, SOEResponseModel SOEResponse, CustomGraphics CustomPointSymbols)
         {
             GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
-            var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic);
-            #region remove previous element if it isn't saved
-            if (graphics != null)
-            {
-                foreach (GraphicElement item in graphicsLayer.GetElementsAsFlattenedList())
-                {
-                    //if this graphic item was generated in a point mapping session and is unsaved (if it is a click point or unsaved route point)
-                    if (item.GetCustomProperty("sessionType") == "point" && item.GetCustomProperty("saved") == "false")
-                    {
-                        graphicsLayer.RemoveElement(item);
-                    }
-                }
-            }
-            #endregion
-
             #region create and add point graphics
             var clickedPtGraphic = new CIMPointGraphic();
             clickedPtGraphic.Attributes = new Dictionary<string, object>();
-            var clickedPtSymbol = await Commands.GraphicsCommands.CreatePointSymbolAsync("yellow");
+            var clickedPtSymbol = CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["ClickPoint"];
             clickedPtGraphic.Symbol = clickedPtSymbol.MakeSymbolReference();
             clickedPtGraphic.Location = MapPointBuilderEx.CreateMapPoint(SOEArgs.X, SOEArgs.Y, SOEArgs.SR);
             //create custom click point props
@@ -139,7 +90,7 @@ namespace MapAMilepost.Commands
             graphicsLayer.AddElement(cimGraphic: clickedPtGraphic, elementInfo: clickPtElemInfo);
             var soePtGraphic = new CIMPointGraphic();
             soePtGraphic.Attributes = new Dictionary<string, object>();
-            var soePtSymbol = await Commands.GraphicsCommands.CreatePointSymbolAsync("purple");
+            var soePtSymbol = CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["RoutePoint"];
             soePtGraphic.Symbol = soePtSymbol.MakeSymbolReference();
             soePtGraphic.Location = MapPointBuilderEx.CreateMapPoint(SOEResponse.RouteGeometry.x, SOEResponse.RouteGeometry.y, SOEArgs.SR);
             //create custom route point props
@@ -202,14 +153,151 @@ namespace MapAMilepost.Commands
             });
         }
 
-        public static async void SetPointGraphicsSelected()
+        /// <summary>
+        /// -   Delete unsaved graphics, such as click point graphics and unsaved route graphics
+        /// </summary>
+        public static async void DeleteUnsavedGraphics()
         {
-
+            await QueuedTask.Run(() =>
+            {
+                GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+                if (graphicsLayer != null)
+                {
+                    var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic);
+                    #region remove previous element if it isn't saved
+                    if (graphics != null)
+                    {
+                        foreach (GraphicElement item in graphicsLayer.GetElementsAsFlattenedList())
+                        {
+                            //if this graphic item was generated in a point mapping session and is unsaved (if it is a click point or unsaved route point)
+                            if (item.GetCustomProperty("sessionType") == "point" && item.GetCustomProperty("saved") == "false")
+                            {
+                                graphicsLayer.RemoveElement(item);
+                            }
+                        }
+                    }
+                }
+                #endregion
+            });
         }
 
-        public static async void SetPointGraphicsDeselected()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="SelectedItems">List of selected rows in data grid</param>
+        /// <param name="SOEPointResponses">List of saved route points</param>
+        /// <param name="sessionType">Type of session (point or line) </param>
+        public static async void SetPointGraphicsSelected(List<SOEResponseModel> SelectedItems, ObservableCollection<SOEResponseModel> SoePointResponses, string sessionType)
         {
+            List<int> SelectedIndices = new List<int>();
+            for (int i = SoePointResponses.Count - 1; i >= 0; i--)
+            {
+                if (SelectedItems.Contains(SoePointResponses[i]))
+                {
+                    SelectedIndices.Add(i);
+                }
+            }
+            GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+            await QueuedTask.Run(() =>
+            {
+                var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == sessionType);
+                if(SelectedItems.Count > 0) //if items are selected
+                {
+                   for (int i = graphics.Count() - 1; i >= 0; i--)
+                    {
+                        if (SelectedIndices.Contains(i))
+                        {
+                            setGraphicSelected(graphics.ElementAt(i));
+                        }
+                    }
+                }
+                else //if no items are selected
+                {
+                    if (sessionType == "point")
+                    {
+                        for (int i = graphics.Count() - 1; i >= 0; i--)
+                        {
+                            setGraphicDelesected(graphics.ElementAt(i));
+                        }
+                    }
 
+                }
+            });
         }
+
+        private static void setGraphicSelected(GraphicElement pointGraphic)
+        {
+            var newCimDefiition = pointGraphic.GetGraphic();
+            var polyFill = SymbolFactory.Instance.ConstructSolidFill(ColorFactory.Instance.CreateRGBColor(0, 0, 255, 50));
+            var polyStroke = SymbolFactory.Instance.ConstructStroke(ColorFactory.Instance.BlackRGB, 0);
+            var haloPoly = SymbolFactory.Instance.ConstructPolygonSymbol(polyFill, polyStroke);
+            (newCimDefiition.Symbol.Symbol as CIMPointSymbol).HaloSize = 3;
+            (newCimDefiition.Symbol.Symbol as CIMPointSymbol).HaloSymbol = haloPoly;
+            pointGraphic.SetGraphic(newCimDefiition);
+        }
+        private static void setGraphicDelesected(GraphicElement pointGraphic)
+        {
+            var newCimDefiition = pointGraphic.GetGraphic();
+            (newCimDefiition.Symbol.Symbol as CIMPointSymbol).HaloSize = 1;
+            (newCimDefiition.Symbol.Symbol as CIMPointSymbol).HaloSymbol = null;
+            pointGraphic.SetGraphic(newCimDefiition);
+        }
+
+        /// <summary>
+        /// -   Check if the point has already been saved to the saved responses array, and if so,
+        ///     present a dialog box to confirm the decision to save a duplicate
+        /// -   If it has not already been saved
+        ///         -   Clear all datagrid selections
+        ///         -   create new instance of the SOEResponseModel data object,
+        ///             duplicating the properties of the target response model, and add the new instance to the 
+        ///             saved response model array.
+        /// </summary>
+        public static async void SavePointResult(DataGrid myGrid, Utils.ViewModelBase VM)
+        {
+            //if a point has been mapped
+            if (Utils.SOEResponseUtils.HasBeenUpdated(VM.SOEResponse))
+            {
+                if (VM.SoePointResponses.Contains(VM.SOEResponse))
+                {
+                    System.Windows.MessageBox.Show("This route location has already been saved.");
+                }
+                else
+                //create a duplicate responsemodel object and add it to the array of response models that will persist
+                { 
+                    //clear selected items
+                    VM.SelectedItems.Clear();
+                    //clear selected rows
+                    myGrid.SelectedItems.Clear();
+                    VM.SoePointResponses.Add(new SOEResponseModel()
+                    {
+                        Angle = VM.SOEResponse.Angle,
+                        Arm = VM.SOEResponse.Arm,
+                        Back = VM.SOEResponse.Back,
+                        Decrease = VM.SOEResponse.Decrease,
+                        Distance = VM.SOEResponse.Distance,
+                        Route = VM.SOEResponse.Route,
+                        RouteGeometry = VM.SOEResponse.RouteGeometry,
+                        Srmp = VM.SOEResponse.Srmp,
+                        RealignmentDate = VM.SOEResponse.RealignmentDate,
+                        ResponseDate = VM.SOEResponse.ResponseDate
+                    });
+                    CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
+                    UpdateSaveGraphicInfos(customPointSymbols);
+                    DeleteUnsavedGraphics();
+                    VM.SOEArgs.X = 0;
+                    VM.SOEArgs.Y = 0;
+                    VM.SOEResponse = new SOEResponseModel();//clear the SOE response info panel
+                    if (VM.SoePointResponses.Count > 0)
+                    {
+                        VM.ShowResultsTable = true;
+                    };
+                }
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("Create a point to save it to the results tab.", "Save error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
     }
 }

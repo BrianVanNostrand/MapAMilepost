@@ -16,6 +16,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using ArcGIS.Desktop.Internal.Reports;
+using ArcGIS.Desktop.Framework;
+using ActiproSoftware.Windows.Controls.DataGrid;
 
 namespace MapAMilepost.ViewModels
 {
@@ -27,26 +29,34 @@ namespace MapAMilepost.ViewModels
         private SOEResponseModel _soeResponse;
         private SOEArgsModel _soeArgs;
         private ObservableCollection<SOEResponseModel> _soePointResponses;
-        private ICommand _savePointResultCommand;
-        private ICommand _initializeMapToolSession;
-        private bool _isSaved = false;
-        private bool _sessionActive = false;
-        private MapAMilepostMaptool _pointMapTool;
         private string _mapButtonLabel = "Start Mapping";
         private bool _showResultsTable = false;
-        private List<GraphicElement> _selectedGraphics;
+        private MapToolInfo _mapToolInfos;
         public MapPointViewModel()//constructor
         {
             _soeResponse = new SOEResponseModel();
             _soeArgs = new SOEArgsModel();
             _soePointResponses = new ObservableCollection<SOEResponseModel>();
-            PointMapTool = new MapAMilepost.MapAMilepostMaptool();
+            _mapToolInfos = new MapToolInfo {
+                SessionActive = false,
+                MapButtonLabel = "Start Mapping",
+                MapButtonToolTip = "Start mapping session.",
+                VM = this,
+                MappingTool = new MapAMilepost.MapAMilepostMaptool(this),
+            };
         }
 
-        /// <summary>
-        /// -   The label of the MapPointExecuteButton element in MapPointView.xaml. Used as the content of that element via data binding.
-        /// </summary>
-        public string MapButtonLabel
+        public override MapToolInfo MapToolInfos
+        {
+            get { return _mapToolInfos; }
+            set
+            {
+                _mapToolInfos = value;
+                OnPropertyChanged(nameof(MapToolInfos));
+            }
+        }
+
+        public override string MapButtonLabel
         {
             get { return _mapButtonLabel; }
             set
@@ -56,20 +66,7 @@ namespace MapAMilepost.ViewModels
             }
         }
 
-        /// <summary>
-        /// -   Whether or not the currently maped route point feature already exists in the array of saved SOE responses (SOEPointResponses)
-        /// </summary>
-        public bool IsSaved
-        {
-            get { return _isSaved; }
-            set
-            {
-                _isSaved = value;
-                OnPropertyChanged(nameof(IsSaved));
-            }
-        }
-
-        public bool ShowResultsTable
+        public override bool ShowResultsTable
         {
             get { return _showResultsTable; }
             set
@@ -82,7 +79,7 @@ namespace MapAMilepost.ViewModels
         /// <summary>
         /// -   The SOE response of the currently mapped route point feature.
         /// </summary>
-        public SOEResponseModel SOEResponse
+        public override SOEResponseModel SOEResponse
         {
             get { return _soeResponse; }
             set { _soeResponse = value; OnPropertyChanged("SOEResponse"); }
@@ -91,7 +88,7 @@ namespace MapAMilepost.ViewModels
         /// <summary>
         /// -   Arguments passed to the SOE HTTP query.
         /// </summary>
-        public SOEArgsModel SOEArgs
+        public override SOEArgsModel SOEArgs
         {
             get { return _soeArgs; }
             set { _soeArgs = value; OnPropertyChanged("SOEArgs"); }
@@ -100,7 +97,7 @@ namespace MapAMilepost.ViewModels
         /// <summary>
         /// -   Array of saved SOEResponse data objects.
         /// </summary>
-        public ObservableCollection<SOEResponseModel> SoePointResponses
+        public override ObservableCollection<SOEResponseModel> SoePointResponses
         {
             get { return _soePointResponses; }
             set { _soePointResponses = value; OnPropertyChanged("SOEPointResponses"); }
@@ -110,193 +107,26 @@ namespace MapAMilepost.ViewModels
         /// -   Array of selected saved SOE response data objects in the DataGrid in ResultsView.xaml. Updated when a row is clicked in he DataGrid
         ///     via data binding.
         /// </summary>
-        public List<SOEResponseModel> SelectedItems { get; set; } = new List<SOEResponseModel>();
+        public override List<SOEResponseModel> SelectedItems { get; set; } = new List<SOEResponseModel>();
+   
+        public Commands.RelayCommand<object> UpdateSelectionCommand => new Commands.RelayCommand<object>((grid) => Commands.DataGridCommands.UpdateSelection(grid as DataGrid, this));
+
+        public Commands.RelayCommand<object> DeleteItemsCommand => new Commands.RelayCommand<object>((parms) => Commands.DataGridCommands.DeleteItems(this));
         
-        /// <summary>
-        /// -   Instance of MapTool used to interact with map.
-        /// </summary>
-        public MapAMilepostMaptool PointMapTool
-        {
-            get { return _pointMapTool; }
-            set { _pointMapTool = value; OnPropertyChanged("MapTool"); }
-        }
+        public Commands.RelayCommand<object> ClearItemsCommand => new Commands.RelayCommand<object>((parms) => Commands.DataGridCommands.ClearItems(this));
 
-        /// <summary>
-        /// -   Select map graphics using indices of selected records.
-        /// </summary>
-        public ICommand SelectGraphicsCommand
-        {
-            get
-            {
-                return new Commands.RelayCommand(list =>
-                {
-                    
-                    GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
-                    if (_sessionActive)
-                    {
-                        InitializeSession(null);
-                    }
-                    QueuedTask.Run(() =>
-                    {
-                        var pointSessionGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == "point");
-                        foreach (GraphicElement item in pointSessionGraphics)
-                        {
-                            //remove unsaved graphics
-                            if (item.GetCustomProperty("saved") == "false" && item.GetCustomProperty("sessionType") == "point")
-                            {
-                                graphicsLayer.RemoveElement(item);
-                            }
-                        }
-                        for (int i = 0; i < SoePointResponses.Count-1; i++)
-                        {
-                            if (SelectedItems.Contains(SoePointResponses[i]))
-                            {
-                                //update graphic at index
-                            }
-                        }
-                    });
-                });
-            }
-        }
+        public Commands.RelayCommand<object> SavePointResultCommand => new Commands.RelayCommand<object>((grid) => Commands.GraphicsCommands.SavePointResult(grid as DataGrid, this));       
 
-        /// <summary>
-        /// -   Update the selected items array based on the rows selected in the DataGrid in ResultsView.xaml via data binding.
-        /// </summary>
-        public ICommand UpdateSelection
-        {
-            get
-            {
-                return new Commands.RelayCommand(grid =>
-                {
-                    List<DataGridRow> selectedRows = new();
-                    DataGrid myGrid = grid as DataGrid;
-                    var selItems = myGrid.SelectedItems;
-                    bool dataGridRowSelected = false;
-                    foreach (var item in selItems)
-                    {
-                        DataGridRow dgr = myGrid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
-                        if (dgr.IsMouseOver)
-                        {
-                            dataGridRowSelected = true;
-                        }
-                    }
-                    //if no row is clicked, clear the selection
-                    if (dataGridRowSelected == false)
-                    {
-                        SelectedItems.Clear();
-                        myGrid.SelectedItems.Clear();
-                    }
-                    else
-                    {
-                        SelectedItems.Clear();
-                        SelectedItems = Commands.DataGridCommands.UpdateSelection(SelectedItems, myGrid.SelectedItems);
-                    }
-                });
+        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new Commands.RelayCommand<object>((parms) => { 
+            if (!this.MapToolInfos.SessionActive) {
+                Utils.MapToolUtils.InitializeSession(this);
             }
-        }
+            else{
+                Utils.MapToolUtils.DeactivateSession(this);
+            }
+        });
 
-        /// <summary>
-        /// -   Delete the selected saved SOEPointResponses array. Accessed by the DeleteItemsButton in ResultsView.xaml via data binding.
-        /// </summary>
-        public ICommand DeleteItemsCommand
-        {
-            get
-            {
-                return new Commands.RelayCommand((list) =>
-                {
-                    if (SoePointResponses.Count > 0 && SelectedItems.Count > 0)
-                    {
-                        if (MessageBox.Show(
-                            $"Are you sure you wish to delete these {SelectedItems.Count} records?",
-                            "Delete Rows",
-                            MessageBoxButton.YesNo,
-                            MessageBoxImage.Question) == MessageBoxResult.Yes
-                        )
-                        {
-                            List<int> deleteIndices = new List<int>();
-                            for (int i = SoePointResponses.Count - 1; i >= 0; i--)
-                            {
-                                if (SelectedItems.Contains(SoePointResponses[i]))
-                                {
-                                    SoePointResponses.Remove(SoePointResponses[i]);
-                                    deleteIndices.Add(i);
-                                }
-                            }
-                            Commands.GraphicsCommands.DeleteGraphics(deleteIndices, "point");
-                            if (SoePointResponses.Count == 0)
-                            {
-                                ShowResultsTable = false;
-                            };
-                        }
-                    }
-
-                });
-            }
-        }
-
-        /// <summary>
-        /// -   Clear the saved SOEPointResponses array. Accessed by the ClearItemsButton in ResultsView.xaml via data binding.
-        /// </summary>
-        public ICommand ClearItemsCommand
-        {
-            get
-            {
-                return new Commands.RelayCommand(list =>
-                {
-                    if (SoePointResponses.Count > 0)
-                    {
-                        if (MessageBox.Show(
-                            $"Are you sure you wish to clear all {SoePointResponses.Count} point records?",
-                            "Clear Results",
-                            MessageBoxButton.YesNo,
-                            MessageBoxImage.Question) == MessageBoxResult.Yes
-                        )
-                        {
-                            SoePointResponses.Clear();
-                        }
-                    }
-                    if(SoePointResponses.Count == 0)
-                    {
-                        ShowResultsTable = false;
-                    };
-                });
-            }
-        }
-
-        /// <summary>
-        /// -   Icommand granting UI access to the SavePointResult method via data binding to the MapPointSaveButton element in the MapPointView.
-        /// </summary>
-        public ICommand SavePointResultCommand
-        {
-            get
-            {
-                if (_savePointResultCommand == null)
-                    _savePointResultCommand = new Commands.RelayCommand(SavePointResult,
-                        null);
-                return _savePointResultCommand;
-            }
-            set
-            {
-                _savePointResultCommand = value;
-            }
-        }
-
-        /// <summary>
-        /// -   Icommand granting UI access to the InitializeSession method via data binding to the MapPointExecuteButton element in the MapPointView.
-        /// </summary>
-        public ICommand InitializeMapToolSession
-        {
-            get
-            {
-                if (_initializeMapToolSession == null)
-                    _initializeMapToolSession = new Commands.RelayCommand(InitializeSession, null);
-                return _initializeMapToolSession;
-            }
-            set
-            {
-                _initializeMapToolSession = value;
-            }
-        }
+       
 
         /// <summary>
         /// -   Update the SOEArgs that will be passed
@@ -308,103 +138,27 @@ namespace MapAMilepost.ViewModels
         /// look at using overlays to display these graphics rather than a graphics layer.
         /// </summary>
         /// <param name="mapPoint"></param>
-        public async void Submit(object mapPoint)
+        public override async void MapPoint2RoutePoint(object mapPoint)
         {
-           if ((MapPoint)mapPoint != null)
+            SOEResponse = new SOEResponseModel();
+            if ((MapPoint)mapPoint != null)
             {
                 SOEArgs.X = ((MapPoint)mapPoint).X;
                 SOEArgs.Y = ((MapPoint)mapPoint).Y;
                 SOEArgs.SR = ((MapPoint)mapPoint).SpatialReference.Wkid;
             }
-            Dictionary<string, object> response = await Utils.HTTPRequest.QuerySOE(SOEArgs);
-            if ((string)response["message"] == "success")
+            object response = await Utils.HTTPRequest.QuerySOE(SOEArgs);
+            if (response!=null)
             {
-                IsSaved = false;
-                CopyProps.CopyProperties(response["soeResponse"], SOEResponse);
-                if (SoePointResponses.Contains(SOEResponse))
-                {
-                    IsSaved = true;
-                }
-                else
-                {
-                    IsSaved = false;
-                }
+                CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
+                SOEResponseUtils.CopyProperties(response, SOEResponse);
                 await QueuedTask.Run(() =>
                 {
-                    Commands.GraphicsCommands.CreateClickRoutePointGraphics(SOEArgs, SOEResponse);
+                    Commands.GraphicsCommands.DeleteUnsavedGraphics();
+                    Commands.GraphicsCommands.CreateClickRoutePointGraphics(SOEArgs, SOEResponse, customPointSymbols);
                 });
             }
         }
-        /// <summary>
-        /// -   Check if the point has already been saved to the saved responses array, and if so,
-        ///     present a dialog box to confirm the decision to save a duplicate
-        /// -   If it has not already been saved, create new instance of the SOEResponseModel data object,
-        ///     duplicating the properties of the target response model, and add the new instance to the 
-        ///     saved response model array.
-        /// </summary>
-        /// <param name="state"></param>
-        public void SavePointResult(object state)
-        {
-            //if a point has been mapped
-            if (Utils.CheckObject.HasBeenUpdated(SOEResponse))
-            {
-                if (SoePointResponses.Contains(SOEResponse))
-                {
-                    MessageBox.Show("This route location has already been saved.");
-                }
-                else
-                //create a duplicate responsemodel object and add it to the array of response models that will persist
-                {
-                    SoePointResponses.Add(new SOEResponseModel()
-                    {
-                        Angle = SOEResponse.Angle,
-                        Arm = SOEResponse.Arm,
-                        Back = SOEResponse.Back,
-                        Decrease = SOEResponse.Decrease,
-                        Distance = SOEResponse.Distance,
-                        Route = SOEResponse.Route,
-                        RouteGeometry = SOEResponse.RouteGeometry,
-                        Srmp = SOEResponse.Srmp,
-                    });
-                    Commands.GraphicsCommands.UpdateSaveGraphicInfos();
-                    //Commands.GraphicsCommands.CreateLabel(SOEResponse,SOEArgs);
-                    IsSaved = true;
-                    if (SoePointResponses.Count > 0)
-                    {
-                        ShowResultsTable = true;
-                    };
-                }
-            }
-            else
-            {
-                MessageBox.Show("Create a point to save it to the results tab.", "Save error", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
 
-
-        /// <summary>
-        /// -   Initialize a mapping session (using the setsession method in MapAMilepostMaptool viewmodel)
-        /// -   Update the public MapButtonLabel property to reflect the behavior of the MapPointExecuteButton.
-        ///     This value is bound to the content of the button as a label.
-        /// -   Update the private _setSession property to change the behavior of the method.
-        /// </summary>
-        /// <param name="state"></param>
-        public void InitializeSession(object state)
-        {
-            if (!_sessionActive)
-            {
-                _sessionActive = true;
-                MapButtonLabel = "Stop Mapping";
-                PointMapTool.SetSession(mapPointViewModel: this);
-            }
-            else
-            {
-                _sessionActive = false;
-                MapButtonLabel = "Start Mapping";
-                //  Calls the EndSession method from the MapAMilepostMapTool viewmodel, setting the active tool
-                //  to whatever was selected before the mapping session was initialized.
-                PointMapTool.EndSession();
-            }
-        }
     }
 }

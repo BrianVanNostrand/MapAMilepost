@@ -10,6 +10,9 @@ using System.Net.Http;
 using System.Security.Policy;
 using System.Text.Json;
 using System.Windows;
+using ArcGIS.Desktop.Core;
+using System.Text.Json.Nodes;
+using Flurl.Util;
 
 namespace MapAMilepost.Utils
 {
@@ -24,10 +27,25 @@ namespace MapAMilepost.Utils
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static async Task<Dictionary<string, object>> QuerySOE(SOEArgsModel args)
+        
+        
+        public static async Task<object> QuerySOE(SOEArgsModel args)
         {
-            var url = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Nearest%20Route%20Locations");
-            Dictionary<string, string> queryParams = new Dictionary<string, string> {
+            object response = new object();// assume find nearest route location fails
+            var FNRLResponse = await findNearestRouteLocation(args);
+            if (FNRLResponse != null)
+            {
+                var FRLParams = new FRLRequestObject(FNRLResponse as SOEResponseModel);
+                object FRLResponse = await findRouteLocation(FRLParams, args);
+                response = FRLResponse;
+            }
+            return response;
+        }
+        private static async Task<object> findNearestRouteLocation(SOEArgsModel args)
+        {
+            var FNRLurl = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Nearest%20Route%20Locations");
+            Dictionary<string, string> FNRLQueryParams = new()
+            {
                 {"referenceDate", args.ReferenceDate},
                 {"coordinates", $"[{args.X},{args.Y}]"},
                 {"searchRadius", args.SearchRadius},
@@ -35,38 +53,72 @@ namespace MapAMilepost.Utils
                 {"outSR", args.SR.ToString()},
                 {"f", "json"},
             };
-            url.SetQueryParams(queryParams);
-            var responseObject = new Dictionary<string, object>();
-            try { 
-                var response = await url.GetAsync();
-                var soeResponse = new SOEResponseModel();
-                if (response.StatusCode == 200)
+            FNRLurl.SetQueryParams(FNRLQueryParams);
+            var responseObject = new object();
+            try
+            {
+                var FNRLresponse = await FNRLurl.GetAsync();
+                if (FNRLresponse.StatusCode == 200)
                 {
-                    string responseString = await response.ResponseMessage.Content.ReadAsStringAsync();
+                    string responseString = await FNRLresponse.ResponseMessage.Content.ReadAsStringAsync();
                     var soeResponses = JsonSerializer.Deserialize<List<SOEResponseModel?>>(responseString);
                     if (soeResponses.Count > 0)
                     {
-                        responseObject.Add("soeResponse", soeResponses.First());
-                        responseObject.Add("message", "success");
+                        responseObject = soeResponses.First();
                     }
                     else
                     {
                         MessageBox.Show($"No results found within {args.SearchRadius} feet of clicked point.");
-                        responseObject.Add("message", "failure");
                     }
                 }
                 else
                 {
-                    MessageBox.Show(response.ResponseMessage.ToString());
-                    responseObject.Add("message", "failure");
+                    MessageBox.Show(FNRLresponse.ResponseMessage.ToString());
                 }
             }
             catch
             {
-                MessageBox.Show("HTTP Request timed out. Please check internet connection and try again.");
-                responseObject.Add("message", "failure");
+                MessageBox.Show("HTTP Request  1 timed out. Please check internet connection and try again.");
+            }
+            return responseObject;
+        }
+        private static async Task<object> findRouteLocation(object FNRLResponse, SOEArgsModel args)
+        {
+            var FNRLurl = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Route%20Locations");
+            Dictionary<string,object> FNRLQueryParams = new Dictionary<string, object> {
+                {"f", "json"},
+                {"locations", $"[{JsonSerializer.Serialize(FNRLResponse)}]"},
+                {"outSR",args.SR}
+            };
+            FNRLurl.SetQueryParams(FNRLQueryParams);
+            var responseObject = new object();
+            try
+            {
+                var FRLresponse = await FNRLurl.GetAsync();
+                if (FRLresponse.StatusCode == 200)
+                {
+                    string responseString = await FRLresponse.ResponseMessage.Content.ReadAsStringAsync();
+                    var soeResponses = JsonSerializer.Deserialize<List<SOEResponseModel?>>(responseString);
+                    if (soeResponses.Count > 0)
+                    {
+                        responseObject = soeResponses.First();
+                    }
+                    else
+                    {
+                        MessageBox.Show($"HTTP Request 2 failed. Please try again.");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(FRLresponse.ResponseMessage.ToString());
+                }
+            }
+            catch
+            {
+                MessageBox.Show("HTTP Request  2 timed out. Please check internet connection and try again.");
             }
             return responseObject;
         }
     }
+    
 }
