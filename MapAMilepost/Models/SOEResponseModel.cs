@@ -13,7 +13,7 @@ namespace MapAMilepost.Models
     /// -   SOE Response properties that are deserialized from the HTTP response, and 
     ///     used by the viewmodels.
     /// </summary>
-    public class SOEResponseModel : ObservableObject
+    public class SoeResponseModel : ObservableObject
     {
 
         private double? _angle;
@@ -174,7 +174,7 @@ namespace MapAMilepost.Models
             public double? y { get; set; }
         }
         public double? Distance { get; set; }
-        public FRLRequestObject(SOEResponseModel FNRL)
+        public FRLRequestObject(SoeResponseModel FNRL)
         {
             Route = FNRL.Route;
             Decrease = FNRL.Decrease;

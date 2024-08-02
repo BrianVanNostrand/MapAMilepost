@@ -1,4 +1,7 @@
-﻿using ArcGIS.Desktop.Framework;
+﻿using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Framework;
+using ArcGIS.Desktop.Framework.Threading.Tasks;
+using MapAMilepost.Models;
 using MapAMilepost.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -17,14 +20,21 @@ namespace MapAMilepost.Utils
         /// -   Update the private _sessionActive property to change the behavior of the method.
         /// </summary>
         /// <param name="VM">the target viewmodel</param>
-        public static void InitializeSession(Utils.ViewModelBase VM)
+        public static void InitializeSession(Utils.ViewModelBase VM, string startEnd = null)
         {
             if (!VM.MapToolInfos.SessionActive)
             {
                 VM.MapToolInfos.SessionActive = true;
-                VM.MapToolInfos.MapButtonLabel = "Stop Mapping";
-                VM.MapToolInfos.MapButtonToolTip = "End mapping session.";
-                VM.MappingTool.StartSession(VM);
+                VM.MappingTool.StartSession(VM, startEnd);
+                if (startEnd == null||startEnd=="start")//if point mapping
+                {
+                    VM.MapToolInfos.MapButtonLabel = "Stop Mapping";
+                    VM.MapToolInfos.MapButtonToolTip = "End mapping session.";
+                }
+                else {
+                    VM.MapToolInfos.MapButtonEndLabel = "Stop Mapping";
+                    VM.MapToolInfos.MapButtonEndToolTip = "End mapping session.";
+                }
             }
         }
 
@@ -47,7 +57,59 @@ namespace MapAMilepost.Utils
                 Commands.GraphicsCommands.DeleteUnsavedGraphics();
             }
         }
+
+        /// <summary>
+        /// -   Update the SoeArgs that will be passed
+        ///     to the HTTP query based on the clicked point on the map.
+        /// -   Query the SOE and if the query executes successfully, update the IsSaved public property to determine whether
+        ///     or not a dialog box will be displayed, confirming that the user wants to save a duplicate point.
+        ///     
+        /// ##TODO## 
+        /// look at using overlays to display these graphics rather than a graphics layer.
+        /// </summary>
+        /// <param name="mapPoint"></param>
+        public static async void MapPoint2RoutePoint(object mapPoint, Utils.ViewModelBase VM, string startEnd)
+        {
+            VM.SoeResponse = new SoeResponseModel();
+            object response = new object();
+            if ((MapPoint)mapPoint != null)
+            {
+                if (startEnd == "end")
+                {
+                    VM.SoeEndArgs.X = ((MapPoint)mapPoint).X;
+                    VM.SoeEndArgs.Y = ((MapPoint)mapPoint).Y;
+                    VM.SoeEndArgs.SR = ((MapPoint)mapPoint).SpatialReference.Wkid;
+                    response = await Utils.HTTPRequest.QuerySOE(VM.SoeEndArgs);
+                }
+                else
+                {
+                    VM.SoeArgs.X = ((MapPoint)mapPoint).X;
+                    VM.SoeArgs.Y = ((MapPoint)mapPoint).Y;
+                    VM.SoeArgs.SR = ((MapPoint)mapPoint).SpatialReference.Wkid;
+                    response = await Utils.HTTPRequest.QuerySOE(VM.SoeArgs);
+                }
+            }
+            if (response != null)
+            {
+                CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
+                await QueuedTask.Run(() =>
+                {
+                    Commands.GraphicsCommands.DeleteUnsavedGraphics();//delete all unsaved graphics
+                    if (startEnd == "end")
+                    {
+                        SoeResponseUtils.CopyProperties(response, VM.SoeEndResponse);
+                        Commands.GraphicsCommands.CreateClickRoutePointGraphics(VM.SoeEndArgs, VM.SoeEndResponse, customPointSymbols, startEnd);
+                    }
+                    else
+                    {
+                        SoeResponseUtils.CopyProperties(response, VM.SoeResponse);
+                        Commands.GraphicsCommands.CreateClickRoutePointGraphics(VM.SoeArgs, VM.SoeResponse, customPointSymbols, startEnd);
+                    }
+                });
+            }
+        }
     }
+
     public class MapToolInfo : ObservableObject
     {
         private bool _sessionActive { get; set; }
@@ -63,11 +125,21 @@ namespace MapAMilepost.Utils
         private string _mapButtonToolTip {  get; set; }
         public string MapButtonToolTip
         {
-            get { return _mapButtonToolTip; }
+            get { return _mapButtonEndToolTip; }
             set
             {
-                _mapButtonToolTip = value;
+                _mapButtonEndToolTip = value;
                 OnPropertyChanged(nameof(MapButtonToolTip));
+            }
+        }
+        private string _mapButtonEndToolTip { get; set; }
+        public string MapButtonEndToolTip
+        {
+            get { return _mapButtonEndToolTip; }
+            set
+            {
+                _mapButtonEndToolTip = value;
+                OnPropertyChanged(nameof(MapButtonEndToolTip));
             }
         }
 

@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace MapAMilepost.Utils
 {
-    public static class SOEResponseUtils
+    public static class SoeResponseUtils
     {
         /// <summary>
-        /// -   Used to copy the properties of the SOEResponse object returned from the SOE response to the static SOEResponse
+        /// -   Used to copy the properties of the SoeResponse object returned from the SOE response to the static SoeResponse
         ///     instance in the viewmodel.
         /// </summary>
         /// <param name="source">The source.</param>
@@ -60,7 +60,7 @@ namespace MapAMilepost.Utils
         }
 
         /// <summary>
-        /// -   Checks whether or not the properties of the SOEResponseModel are all null, indicating that the viewmodel's SOEResponse
+        /// -   Checks whether or not the properties of the SoeResponseModel are all null, indicating that the viewmodel's SoeResponse
         ///     hasn't been updated yet.
         /// </summary>
         /// <param name="myObject"></param>

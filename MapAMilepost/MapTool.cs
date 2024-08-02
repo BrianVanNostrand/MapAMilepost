@@ -11,6 +11,7 @@ using ArcGIS.Desktop.Framework.Dialogs;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
+using MapAMilepost.Utils;
 using MapAMilepost.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -22,9 +23,9 @@ using System.Windows.Input;
 namespace MapAMilepost
 {
     public class MapAMilepostMaptool : ArcGIS.Desktop.Mapping.MapTool
-    {   
-        private string _previousTool = null;//ID of the active tool in use before the creation session initializes
-        public Utils.ViewModelBase TargetVM { get; set; }
+    {
+        private static Utils.ViewModelBase CurrentViewModel {  get; set; }
+        private static string StartEnd {  get; set; } 
         public MapAMilepostMaptool()
         {
             IsSketchTool = true;
@@ -58,21 +59,17 @@ namespace MapAMilepost
         /// <param name="e"></param>
         protected override async void OnToolMouseDown(MapViewMouseButtonEventArgs e)
         {
+            
             if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
             {
                 MapPoint mapPoint = await QueuedTask.Run(() =>
                 {
                     return MapView.Active.ClientToMap(e.ClientPoint);
                 });
-                if (TargetVM != null)
-                {
-                    TargetVM.MapPoint2RoutePoint(mapPoint);
-                }
+                MapToolUtils.MapPoint2RoutePoint(mapPoint, CurrentViewModel, StartEnd);
             }
-            //e.Handled = true; //Handle the event args to get the call to the corresponding async method
         }
-
-
+        //e.Handled = true; //Handle the event args to get the call to the corresponding async method
         #region Methods for selecting and delesecting the point creation map tool
 
         /// <summary>
@@ -82,9 +79,10 @@ namespace MapAMilepost
         /// -   If the graphics layer doesn't exist yet, create it.
         /// -   Set the active tool in ArcGIS Pro to this map tool.
         /// </summary>
-        public void StartSession(Utils.ViewModelBase VM)
+        public void StartSession(Utils.ViewModelBase currentVM, string startEnd)
         {
-            TargetVM = VM;
+            CurrentViewModel = currentVM;
+            StartEnd = startEnd;
             Map map = MapView.Active.Map;
             var graphicsLayer = map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
             if (graphicsLayer != null)//if layer exists
@@ -99,9 +97,8 @@ namespace MapAMilepost
                     GraphicsLayer graphicsLayer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(gl_param, map);
                 });
             };
-            _previousTool = FrameworkApplication.ActiveTool.ID;
             FrameworkApplication.SetCurrentToolAsync("MapAMilepost_MapTool");
-        }   
+        }
 
         /// <summary>
         /// -   Deactivates the mapping session
@@ -109,15 +106,8 @@ namespace MapAMilepost
         /// </summary>
         public void EndSession()
         {
-            OnToolDeactivateAsync(true);
-            if (_previousTool != null)
-            {
-                FrameworkApplication.SetCurrentToolAsync(_previousTool);
-            }
-            else
-            {
-                FrameworkApplication.SetCurrentToolAsync("esri_mapping_exploreTool");
-            }
+            OnToolDeactivateAsync(true);    
+            FrameworkApplication.SetCurrentToolAsync("esri_mapping_exploreTool");
         }
         #endregion
     }

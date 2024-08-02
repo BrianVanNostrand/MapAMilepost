@@ -10,7 +10,7 @@ namespace MapAMilepost.Models
     /// <summary>
     /// -   SOE Arguments passed to the SOE HTTP get request
     /// </summary>
-    public class SOEArgsModel : ObservableObject
+    public class SoeArgsModel : ObservableObject
     {
         private string? _referenceDate;
 
@@ -20,7 +20,7 @@ namespace MapAMilepost.Models
             set
             {
                 _referenceDate = value;
-                OnPropertyChanged("ReferenceDate");
+                OnPropertyChanged(nameof(ReferenceDate));
             }
         }
 
@@ -32,7 +32,7 @@ namespace MapAMilepost.Models
             set
             {
                 _searchRadius = value;
-                OnPropertyChanged("SearchRadius");
+                OnPropertyChanged(nameof(SearchRadius));
             }
         }
 
@@ -44,7 +44,7 @@ namespace MapAMilepost.Models
             set
             {
                 _sR = value;
-                OnPropertyChanged("SR");
+                OnPropertyChanged(nameof(SR));
             }
         }
 
@@ -56,7 +56,7 @@ namespace MapAMilepost.Models
             set
             {
                 _searchRadiusUnits = value;
-                OnPropertyChanged("SearchRadiusUnits");
+                OnPropertyChanged(nameof(SearchRadiusUnits));
             }
         }
 
@@ -68,7 +68,7 @@ namespace MapAMilepost.Models
             set
             {
                 _x = value;
-                OnPropertyChanged("X");
+                OnPropertyChanged(nameof(X));
             }
         }
 
@@ -80,11 +80,11 @@ namespace MapAMilepost.Models
             set
             {
                 _y = value;
-                OnPropertyChanged("Y");
+                OnPropertyChanged(nameof(Y));
             }
         }
 
-        public SOEArgsModel()//set default values in constructor
+        public SoeArgsModel()//set default values in constructor
         {
             this._referenceDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
             this._searchRadius = "200000";

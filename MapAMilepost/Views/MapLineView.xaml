@@ -27,7 +27,7 @@
             <RowDefinition Height="200px"/>
             <RowDefinition Height="30px"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" x:Name="SOEArgsGrid">
+        <Grid Grid.Row="0" x:Name="SoeArgsGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="125px"/>
                 <ColumnDefinition Width="*"/>
@@ -91,15 +91,15 @@
             <Label Grid.Column="0" Grid.Row="8">X</Label>
             <Label Grid.Column="0" Grid.Row="9">Y</Label>
             <!--Start Point Bindings-->
-            <Label Grid.Column="1" Grid.Row="1" Content="{Binding SOEStartResponse.Angle,UpdateSourceTrigger=PropertyChanged}" />
-            <Label Grid.Column="1" Grid.Row="2" Content="{Binding SOEStartResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="3" Content="{Binding SOEStartResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="4" Content="{Binding SOEStartResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="5" Content="{Binding SOEStartResponse.Distance, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="6" Content="{Binding SOEStartResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="7" Content="{Binding SOEStartResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="8" Content="{Binding SOEStartResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="9" Content="{Binding SOEStartResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="1" Content="{Binding SoeStartResponse.Angle,UpdateSourceTrigger=PropertyChanged}" />
+            <Label Grid.Column="1" Grid.Row="2" Content="{Binding SoeStartResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="3" Content="{Binding SoeStartResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="4" Content="{Binding SoeStartResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="5" Content="{Binding SoeStartResponse.Distance, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="6" Content="{Binding SoeStartResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="7" Content="{Binding SoeStartResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="8" Content="{Binding SoeStartResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="9" Content="{Binding SoeStartResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
             <!--End Point Bindings-->
             <Label Grid.Column="2" Grid.Row="1" Content="{Binding SOEEndResponse.Angle,UpdateSourceTrigger=PropertyChanged}" />
             <Label Grid.Column="2" Grid.Row="2" Content="{Binding SOEEndResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
@@ -130,8 +130,8 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="MapStartPointExecuteButton" Grid.Row="3" Grid.Column="0" Command="{Binding UpdateSOEStartEndResponseCommand}" CommandParameter="start" ToolTip="Start a session to map the start point." Style="{StaticResource whiteButton}">Map Start</Button>
-            <Button x:Name="MapEndPointExecuteButton" Grid.Row="3" Grid.Column="1" Command="{Binding UpdateSOEStartEndResponseCommand}" CommandParameter="end" ToolTip="Start a session to map the end point." Style="{StaticResource whiteButton}">Map End</Button>
+            <Button x:Name="MapStartPointExecuteButton" Grid.Row="3" Grid.Column="0" Command="{Binding ToggleMapToolSessionCommand}" CommandParameter="start" ToolTip="{Binding MapToolInfos.MapButtonToolTip}" Style="{StaticResource whiteButton}" Content="{Binding MapToolInfos.MapButtonLabel}"/>
+            <Button x:Name="MapEndPointExecuteButton" Grid.Row="3" Grid.Column="1" Command="{Binding ToggleMapToolSessionCommand}" CommandParameter="end" ToolTip="{Binding MapToolInfos.MapButtonEndToolTip}" Style="{StaticResource whiteButton}" Content="{Binding MapToolInfos.MapButtonEndLabel}"/>
             <Button x:Name="ClearReultsButton" Grid.Row="3" Grid.Column="2" Command="{Binding UpdateSOEStartEndResponse}" CommandParameter="end" ToolTip="Clear the selection in this tab." Style="{StaticResource whiteButton}">Clear</Button>
             <Button x:Name="SaveResultsButton" Grid.Row="3" Grid.Column="3" Command="{Binding SaveLineResultCommand}" CommandParameter="end" Style="{StaticResource whiteButton}">Save Results</Button>
         </Grid>

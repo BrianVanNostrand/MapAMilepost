@@ -66,41 +66,51 @@ namespace MapAMilepost.Commands
         /// -   Add the new route and click point to the map, then clear the selection on the graphics layer, since points are added
         ///     to the graphics layer in a "selected" state, displaying editing guide marks.
         /// </summary>
-        /// <param name="SOEArgs"></param>
-        /// <param name="SOEResponse"></param>
-        public static void CreateClickRoutePointGraphics(SOEArgsModel SOEArgs, SOEResponseModel SOEResponse, CustomGraphics CustomPointSymbols)
+        /// <param name="SoeArgs"></param>
+        /// <param name="SoeResponse"></param>
+        public static void CreateClickRoutePointGraphics(SoeArgsModel SoeArgs, SoeResponseModel SoeResponse, CustomGraphics CustomPointSymbols, string startEnd)
         {
             GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
-            #region create and add point graphics
-            var clickedPtGraphic = new CIMPointGraphic();
-            clickedPtGraphic.Attributes = new Dictionary<string, object>();
-            var clickedPtSymbol = CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["ClickPoint"];
-            clickedPtGraphic.Symbol = clickedPtSymbol.MakeSymbolReference();
-            clickedPtGraphic.Location = MapPointBuilderEx.CreateMapPoint(SOEArgs.X, SOEArgs.Y, SOEArgs.SR);
+            #region create and add click point graphic
+            
+            var clickedPtGraphic = new CIMPointGraphic() { 
+                Symbol = (CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["ClickPoint"]).MakeSymbolReference(),
+                Location = (MapPointBuilderEx.CreateMapPoint(SoeArgs.X, SoeArgs.Y, SoeArgs.SR))
+            };
             //create custom click point props
             var clickPtElemInfo = new ArcGIS.Desktop.Layouts.ElementInfo()
             {
                 CustomProperties = new List<CIMStringMap>()
                 {
-                    new CIMStringMap(){ Key="saved", Value="false"},
-                    new CIMStringMap(){ Key="sessionType", Value="point"},
-                    new CIMStringMap(){ Key="eventType", Value="click"}
+                    new CIMStringMap() { Key = "saved", Value = "false" },
+                    new CIMStringMap() { Key = "eventType", Value = "click" },
+                    new CIMStringMap() { Key = "sessionType", Value = startEnd!=null?"line":"point" },
+                    new CIMStringMap() { Key = "startEnd", Value = startEnd }
                 }
             };
             graphicsLayer.AddElement(cimGraphic: clickedPtGraphic, elementInfo: clickPtElemInfo);
-            var soePtGraphic = new CIMPointGraphic();
-            soePtGraphic.Attributes = new Dictionary<string, object>();
-            var soePtSymbol = CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["RoutePoint"];
-            soePtGraphic.Symbol = soePtSymbol.MakeSymbolReference();
-            soePtGraphic.Location = MapPointBuilderEx.CreateMapPoint(SOEResponse.RouteGeometry.x, SOEResponse.RouteGeometry.y, SOEArgs.SR);
+            #endregion
+
+            #region create and add route point graphic
+            CIMSymbolReference routePointSymbol = (
+                startEnd == "start" ? (CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["StartRoutePoint"]).MakeSymbolReference() :
+                startEnd == "end" ? (CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["EndRoutePoint"]).MakeSymbolReference() :
+                (CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["RoutePoint"]).MakeSymbolReference()
+            );
+            var soePtGraphic = new CIMPointGraphic() { 
+                Symbol = routePointSymbol,
+                Location = MapPointBuilderEx.CreateMapPoint(SoeResponse.RouteGeometry.x, SoeResponse.RouteGeometry.y, SoeArgs.SR)
+            };
+
             //create custom route point props
             var routePtElemInfo = new ElementInfo()
             {
                 CustomProperties = new List<CIMStringMap>()
                 {
-                    new CIMStringMap(){ Key="saved", Value="false"},
-                    new CIMStringMap(){ Key="sessionType", Value="point"},
-                    new CIMStringMap(){ Key="eventType", Value="route"}
+                    new CIMStringMap() { Key = "saved", Value="false"},
+                    new CIMStringMap() { Key = "eventType", Value="route"},
+                    new CIMStringMap() { Key = "sessionType", Value = startEnd!=null?"line":"point"},
+                    new CIMStringMap() { Key = "startEnd", Value = startEnd }
                 }
             };
             graphicsLayer.AddElement(cimGraphic: soePtGraphic, elementInfo: routePtElemInfo);
@@ -112,21 +122,21 @@ namespace MapAMilepost.Commands
         /// -   Use the geometry of the route point from the SOE response to generate a label that is displayed
         ///     in an overlay on the map.
         /// </summary>
-        /// <param name="soeResponse"></param>
-        public static async void CreateLabel(SOEResponseModel soeResponse, SOEArgsModel soeArgs)
+        /// <param name="SoeResponse"></param>
+        public static async void CreateLabel(SoeResponseModel SoeResponse, SoeArgsModel SoeArgs)
         {
             var textSymbol = new CIMTextSymbol();
             //define the text graphic
             var textGraphic = new CIMTextGraphic();
             await QueuedTask.Run(() =>
             {
-                var labelGeometry = (MapPointBuilderEx.CreateMapPoint(soeResponse.RouteGeometry.x, soeResponse.RouteGeometry.y, soeArgs.SR));
+                var labelGeometry = (MapPointBuilderEx.CreateMapPoint(SoeResponse.RouteGeometry.x, SoeResponse.RouteGeometry.y, SoeArgs.SR));
                 //Create a simple text symbol
                 textSymbol = SymbolFactory.Instance.ConstructTextSymbol(ColorFactory.Instance.BlackRGB, 10, "Arial", "Bold");
                 //Sets the geometry of the text graphic
                 textGraphic.Shape = labelGeometry;
                 //Sets the text string to use in the text graphic
-                textGraphic.Text = $"    {soeResponse.Srmp}";
+                textGraphic.Text = $"    {SoeResponse.Srmp}";
                 //Sets symbol to use to draw the text graphic
                 textGraphic.Symbol = textSymbol.MakeSymbolReference();
                 //Draw the overlay text graphic
@@ -185,14 +195,14 @@ namespace MapAMilepost.Commands
         /// 
         /// </summary>
         /// <param name="SelectedItems">List of selected rows in data grid</param>
-        /// <param name="SOEPointResponses">List of saved route points</param>
+        /// <param name="SoeResponses">List of saved route points</param>
         /// <param name="sessionType">Type of session (point or line) </param>
-        public static async void SetPointGraphicsSelected(List<SOEResponseModel> SelectedItems, ObservableCollection<SOEResponseModel> SoePointResponses, string sessionType)
+        public static async void SetPointGraphicsSelected(List<SoeResponseModel> SelectedItems, ObservableCollection<SoeResponseModel> SoeResponses, string sessionType)
         {
             List<int> SelectedIndices = new List<int>();
-            for (int i = SoePointResponses.Count - 1; i >= 0; i--)
+            for (int i = SoeResponses.Count - 1; i >= 0; i--)
             {
-                if (SelectedItems.Contains(SoePointResponses[i]))
+                if (SelectedItems.Contains(SoeResponses[i]))
                 {
                     SelectedIndices.Add(i);
                 }
@@ -248,16 +258,16 @@ namespace MapAMilepost.Commands
         ///     present a dialog box to confirm the decision to save a duplicate
         /// -   If it has not already been saved
         ///         -   Clear all datagrid selections
-        ///         -   create new instance of the SOEResponseModel data object,
+        ///         -   create new instance of the SoeResponseModel data object,
         ///             duplicating the properties of the target response model, and add the new instance to the 
         ///             saved response model array.
         /// </summary>
         public static async void SavePointResult(DataGrid myGrid, Utils.ViewModelBase VM)
         {
             //if a point has been mapped
-            if (Utils.SOEResponseUtils.HasBeenUpdated(VM.SOEResponse))
+            if (Utils.SoeResponseUtils.HasBeenUpdated(VM.SoeResponse))
             {
-                if (VM.SoePointResponses.Contains(VM.SOEResponse))
+                if (VM.SoeResponses.Contains(VM.SoeResponse))
                 {
                     System.Windows.MessageBox.Show("This route location has already been saved.");
                 }
@@ -268,26 +278,26 @@ namespace MapAMilepost.Commands
                     VM.SelectedItems.Clear();
                     //clear selected rows
                     myGrid.SelectedItems.Clear();
-                    VM.SoePointResponses.Add(new SOEResponseModel()
+                    VM.SoeResponses.Add(new SoeResponseModel()
                     {
-                        Angle = VM.SOEResponse.Angle,
-                        Arm = VM.SOEResponse.Arm,
-                        Back = VM.SOEResponse.Back,
-                        Decrease = VM.SOEResponse.Decrease,
-                        Distance = VM.SOEResponse.Distance,
-                        Route = VM.SOEResponse.Route,
-                        RouteGeometry = VM.SOEResponse.RouteGeometry,
-                        Srmp = VM.SOEResponse.Srmp,
-                        RealignmentDate = VM.SOEResponse.RealignmentDate,
-                        ResponseDate = VM.SOEResponse.ResponseDate
+                        Angle = VM.SoeResponse.Angle,
+                        Arm = VM.SoeResponse.Arm,
+                        Back = VM.SoeResponse.Back,
+                        Decrease = VM.SoeResponse.Decrease,
+                        Distance = VM.SoeResponse.Distance,
+                        Route = VM.SoeResponse.Route,
+                        RouteGeometry = VM.SoeResponse.RouteGeometry,
+                        Srmp = VM.SoeResponse.Srmp,
+                        RealignmentDate = VM.SoeResponse.RealignmentDate,
+                        ResponseDate = VM.SoeResponse.ResponseDate
                     });
                     CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
                     UpdateSaveGraphicInfos(customPointSymbols);
                     DeleteUnsavedGraphics();
-                    VM.SOEArgs.X = 0;
-                    VM.SOEArgs.Y = 0;
-                    VM.SOEResponse = new SOEResponseModel();//clear the SOE response info panel
-                    if (VM.SoePointResponses.Count > 0)
+                    VM.SoeArgs.X = 0;
+                    VM.SoeArgs.Y = 0;
+                    VM.SoeResponse = new SoeResponseModel();//clear the SOE response info panel
+                    if (VM.SoeResponses.Count > 0)
                     {
                         VM.ShowResultsTable = true;
                     };

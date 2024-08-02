@@ -30,7 +30,7 @@
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" x:Name="SOEArgsGrid">
+        <Grid Grid.Row="0" x:Name="SoeArgsGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -42,10 +42,10 @@
             </Grid.RowDefinitions>
             <TextBox Style="{StaticResource SelectableTextBox}" x:Name="MapPointSearchDistanceLabel" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0">Search Distance</TextBox>
             <Label  Grid.Row="0" Grid.Column="2" VerticalAlignment="Center">Feet</Label>
-            <TextBox BorderBrush="#b3c1fc" BorderThickness="1" x:Name="MapPointSearcDistanceTextBox" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.Column="1" Text="{Binding SOEArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the nearest route location"></TextBox>
+            <TextBox BorderBrush="#b3c1fc" BorderThickness="1" x:Name="MapPointSearcDistanceTextBox" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.Column="1" Text="{Binding SoeArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the nearest route location"></TextBox>
             <TextBox Style="{StaticResource SelectableTextBox}" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">Coordinates of Click</TextBox>
-            <TextBox Style="{StaticResource SelectableTextBox}" Margin="5px 0px" Grid.Row="2" Grid.Column="1" Text="{Binding SOEArgs.X}"  VerticalAlignment="Center" ToolTip="The X coordinate of the click event"/>
-            <TextBox Style="{StaticResource SelectableTextBox}" Margin="5px 0px" Grid.Row="2" Grid.Column="2" Text="{Binding SOEArgs.Y}" VerticalAlignment="Center" ToolTip="The Y coordinate of the click event"/>
+            <TextBox Style="{StaticResource SelectableTextBox}" Margin="5px 0px" Grid.Row="2" Grid.Column="1" Text="{Binding SoeArgs.X}"  VerticalAlignment="Center" ToolTip="The X coordinate of the click event"/>
+            <TextBox Style="{StaticResource SelectableTextBox}" Margin="5px 0px" Grid.Row="2" Grid.Column="2" Text="{Binding SoeArgs.Y}" VerticalAlignment="Center" ToolTip="The Y coordinate of the click event"/>
         </Grid>
         <Grid Grid.Row="1" x:Name="SOEResultsGrid" >
             <Grid.ColumnDefinitions>
@@ -74,15 +74,15 @@
             <TextBox Grid.Column="0" Grid.Row="7" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location represent back mileage." Style="{StaticResource SelectableTextBox}">Back</TextBox>
             <TextBox Grid.Column="0" Grid.Row="8" HorizontalContentAlignment="Center" ToolTip="Realignment date of the route location." Style="{StaticResource SelectableTextBox}">Realignment Date</TextBox>
             <TextBox Grid.Column="0" Grid.Row="9" HorizontalContentAlignment="Center" ToolTip="Response date of the route location found." Style="{StaticResource SelectableTextBox}">Response Date</TextBox>
-            <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding SOEResponse.Route, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding SOEResponse.Srmp, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding SOEResponse.Arm, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding SOEResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="5" Text="{Binding SOEResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="6" Text="{Binding SOEResponse.Decrease, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="7" Text="{Binding SOEResponse.Back, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="8" Text="{Binding SOEResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="9" Text="{Binding SOEResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding SoeResponse.Route, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding SoeResponse.Srmp, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding SoeResponse.Arm, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding SoeResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="5" Text="{Binding SoeResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="6" Text="{Binding SoeResponse.Decrease, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="7" Text="{Binding SoeResponse.Back, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="8" Text="{Binding SoeResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="9" Text="{Binding SoeResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <Border Grid.ColumnSpan="3" Grid.Row="2" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="3" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="4" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
@@ -143,9 +143,9 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBox Style="{StaticResource SelectableTextBox}" Grid.Row="0" Grid.Column="0">Saved Points:</TextBox>
-                <Label Grid.Row="0" Grid.Column="1" Content="{Binding SoePointResponses.Count}"/>
+                <Label Grid.Row="0" Grid.Column="1" Content="{Binding SoeResponses.Count}"/>
             </Grid>
-            <DataGrid CanUserAddRows="False" Grid.ColumnSpan="3" Grid.Row="1" x:Name="PointsGrid" HorizontalAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding SoePointResponses}" CellStyle="{DynamicResource DataGridCellStyle}">
+            <DataGrid CanUserAddRows="False" Grid.ColumnSpan="3" Grid.Row="1" x:Name="PointsGrid" HorizontalAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding SoeResponses}" CellStyle="{DynamicResource DataGridCellStyle}">
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
                         <Style.Triggers>

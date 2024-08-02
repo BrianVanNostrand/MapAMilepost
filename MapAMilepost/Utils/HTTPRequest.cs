@@ -20,7 +20,7 @@ namespace MapAMilepost.Utils
     {
         /// <summary>
         /// -   Uses Flurl to execute an HTTP Get request, with URL parameters generated using the SOE arguments passed from the MapPointViewModel and MapLineViewModel.
-        /// -   Deserializes the HTTP response to an array of SOEResponseModels and parses that array to return the appropriate value, depending on if this method
+        /// -   Deserializes the HTTP response to an array of SoeResponseModels and parses that array to return the appropriate value, depending on if this method
         ///     was invoked by Map A Point or Map A Line.
         /// -   The initial deserialization to an array is performed because the SOE Always returns an array, even if only one response is found. This array is ordered 
         ///     based on proximity to the geometry of the argument passed in via URL params, so the first response in the array is used.
@@ -29,19 +29,19 @@ namespace MapAMilepost.Utils
         /// <returns></returns>
         
         
-        public static async Task<object> QuerySOE(SOEArgsModel args)
+        public static async Task<object> QuerySOE(SoeArgsModel args)
         {
             object response = new object();// assume find nearest route location fails
             var FNRLResponse = await findNearestRouteLocation(args);
             if (FNRLResponse != null)
             {
-                var FRLParams = new FRLRequestObject(FNRLResponse as SOEResponseModel);
+                var FRLParams = new FRLRequestObject(FNRLResponse as SoeResponseModel);
                 object FRLResponse = await findRouteLocation(FRLParams, args);
                 response = FRLResponse;
             }
             return response;
         }
-        private static async Task<object> findNearestRouteLocation(SOEArgsModel args)
+        private static async Task<object> findNearestRouteLocation(SoeArgsModel args)
         {
             var FNRLurl = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Nearest%20Route%20Locations");
             Dictionary<string, string> FNRLQueryParams = new()
@@ -61,10 +61,10 @@ namespace MapAMilepost.Utils
                 if (FNRLresponse.StatusCode == 200)
                 {
                     string responseString = await FNRLresponse.ResponseMessage.Content.ReadAsStringAsync();
-                    var soeResponses = JsonSerializer.Deserialize<List<SOEResponseModel?>>(responseString);
-                    if (soeResponses.Count > 0)
+                    var SoeResponses = JsonSerializer.Deserialize<List<SoeResponseModel?>>(responseString);
+                    if (SoeResponses.Count > 0)
                     {
-                        responseObject = soeResponses.First();
+                        responseObject = SoeResponses.First();
                     }
                     else
                     {
@@ -82,7 +82,7 @@ namespace MapAMilepost.Utils
             }
             return responseObject;
         }
-        private static async Task<object> findRouteLocation(object FNRLResponse, SOEArgsModel args)
+        private static async Task<object> findRouteLocation(object FNRLResponse, SoeArgsModel args)
         {
             var FNRLurl = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Route%20Locations");
             Dictionary<string,object> FNRLQueryParams = new Dictionary<string, object> {
@@ -98,10 +98,10 @@ namespace MapAMilepost.Utils
                 if (FRLresponse.StatusCode == 200)
                 {
                     string responseString = await FRLresponse.ResponseMessage.Content.ReadAsStringAsync();
-                    var soeResponses = JsonSerializer.Deserialize<List<SOEResponseModel?>>(responseString);
-                    if (soeResponses.Count > 0)
+                    var SoeResponses = JsonSerializer.Deserialize<List<SoeResponseModel?>>(responseString);
+                    if (SoeResponses.Count > 0)
                     {
-                        responseObject = soeResponses.First();
+                        responseObject = SoeResponses.First();
                     }
                     else
                     {

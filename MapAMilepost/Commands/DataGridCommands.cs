@@ -15,10 +15,10 @@ namespace MapAMilepost.Commands
 {
     class DataGridCommands
     {
-        public static List<SOEResponseModel> CastToList(List<SOEResponseModel> SelectedItems, object list)
+        public static List<SoeResponseModel> CastToList(List<SoeResponseModel> SelectedItems, object list)
         {
             System.Collections.IList items = (System.Collections.IList)list;
-            var collection = items.Cast<SOEResponseModel>();
+            var collection = items.Cast<SoeResponseModel>();
             return collection.ToList();
         }
 
@@ -28,8 +28,8 @@ namespace MapAMilepost.Commands
         public static void UpdateSelection(DataGrid grid, Utils.ViewModelBase VM)
         {
             Commands.GraphicsCommands.DeleteUnsavedGraphics();
-            VM.SOEArgs.X = 0;
-            VM.SOEArgs.Y = 0;
+            VM.SoeArgs.X = 0;
+            VM.SoeArgs.Y = 0;
             DataGrid myGrid = grid as DataGrid;
             var selItems = myGrid.SelectedItems;
             bool dataGridRowSelected = false;
@@ -49,27 +49,27 @@ namespace MapAMilepost.Commands
                 //clear selected rows
                 myGrid.SelectedItems.Clear();
                 //clear selected graphics
-                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedItems, VM.SoePointResponses, "point");
+                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedItems, VM.SoeResponses, "point");
             }
             //if a row is clicked, select the row and graphic
             else
             {
                 VM.SelectedItems.Clear();
                 //clear selected graphics
-                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedItems, VM.SoePointResponses, "point");
+                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedItems, VM.SoeResponses, "point");
                 //update selected items
                 VM.SelectedItems = CastToList(VM.SelectedItems, myGrid.SelectedItems);
                 //update selected graphics
-                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedItems, VM.SoePointResponses, "point");
+                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedItems, VM.SoeResponses, "point");
                 if (VM.SelectedItems.Count == 1)
                 {
-                    VM.SOEResponse = VM.SelectedItems[0];
+                    VM.SoeResponse = VM.SelectedItems[0];
                 }
             }
         }
         public static void DeleteItems(Utils.ViewModelBase VM)
         {
-            if (VM.SoePointResponses.Count > 0 && VM.SelectedItems.Count > 0)
+            if (VM.SoeResponses.Count > 0 && VM.SelectedItems.Count > 0)
             {
                 if (MessageBox.Show(
                     $"Are you sure you wish to delete these {VM.SelectedItems.Count} records?",
@@ -79,16 +79,16 @@ namespace MapAMilepost.Commands
                 )
                 {
                     List<int> deleteIndices = new List<int>();
-                    for (int i = VM.SoePointResponses.Count - 1; i >= 0; i--)
+                    for (int i = VM.SoeResponses.Count - 1; i >= 0; i--)
                     {
-                        if (VM.SelectedItems.Contains(VM.SoePointResponses[i]))
+                        if (VM.SelectedItems.Contains(VM.SoeResponses[i]))
                         {
-                            VM.SoePointResponses.Remove(VM.SoePointResponses[i]);
+                            VM.SoeResponses.Remove(VM.SoeResponses[i]);
                             deleteIndices.Add(i);
                         }
                     }
                     Commands.GraphicsCommands.DeleteGraphics(deleteIndices, "point");
-                    if (VM.SoePointResponses.Count == 0)
+                    if (VM.SoeResponses.Count == 0)
                     {
                         VM.ShowResultsTable = false;
                     };
@@ -99,28 +99,28 @@ namespace MapAMilepost.Commands
         public static void ClearItems(Utils.ViewModelBase VM)
         {
             Commands.GraphicsCommands.DeleteUnsavedGraphics();
-            VM.SOEArgs.X = 0;
-            VM.SOEArgs.Y = 0;
-            if (VM.SoePointResponses.Count > 0)
+            VM.SoeArgs.X = 0;
+            VM.SoeArgs.Y = 0;
+            if (VM.SoeResponses.Count > 0)
             {
                 if (MessageBox.Show(
-                    $"Are you sure you wish to clear all {VM.SoePointResponses.Count} point records?",
+                    $"Are you sure you wish to clear all {VM.SoeResponses.Count} point records?",
                     "Clear Results",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question) == MessageBoxResult.Yes
                 )
                 {
                     List<int> deleteIndices = new List<int>();
-                    for (int i = VM.SoePointResponses.Count - 1; i >= 0; i--)
+                    for (int i = VM.SoeResponses.Count - 1; i >= 0; i--)
                     {
                         deleteIndices.Add(i);
                     }
                     Commands.GraphicsCommands.DeleteGraphics(deleteIndices, "point");
-                    VM.SoePointResponses.Clear();
-                    VM.SOEResponse = new SOEResponseModel();//clear the SOE response info panel
+                    VM.SoeResponses.Clear();
+                    VM.SoeResponse = new SoeResponseModel();//clear the SOE response info panel
                 }
             }
-            if (VM.SoePointResponses.Count == 0)
+            if (VM.SoeResponses.Count == 0)
             {
                 VM.ShowResultsTable = false;
             };
