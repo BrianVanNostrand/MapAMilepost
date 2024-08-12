@@ -166,7 +166,7 @@ namespace MapAMilepost.Commands
         /// <summary>
         /// -   Delete unsaved graphics, such as click point graphics and unsaved route graphics
         /// </summary>
-        public static async void DeleteUnsavedGraphics()
+        public static async void DeleteUnsavedGraphics(string startEnd = null)
         {
             await QueuedTask.Run(() =>
             {
@@ -180,9 +180,16 @@ namespace MapAMilepost.Commands
                         foreach (GraphicElement item in graphicsLayer.GetElementsAsFlattenedList())
                         {
                             //if this graphic item was generated in a point mapping session and is unsaved (if it is a click point or unsaved route point)
-                            if (item.GetCustomProperty("sessionType") == "point" && item.GetCustomProperty("saved") == "false")
+                            if (item.GetCustomProperty("saved") == "false")
                             {
-                                graphicsLayer.RemoveElement(item);
+                                if (startEnd == null)
+                                {
+                                    graphicsLayer.RemoveElement(item);
+                                }
+                                else if (item.GetCustomProperty("startEnd") == startEnd)
+                                {
+                                    graphicsLayer.RemoveElement(item);
+                                }
                             }
                         }
                     }

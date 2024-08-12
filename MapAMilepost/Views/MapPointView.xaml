@@ -4,10 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              d:DesignHeight="600" d:DesignWidth="364"
              xmlns:viewmodels="clr-namespace:MapAMilepost.ViewModels"
              xmlns:b ="http://schemas.microsoft.com/xaml/behaviors"
-            
              >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -16,10 +16,10 @@
                 <ResourceDictionary Source="../Themes/DataGridRowTheme.xaml" />
                 <ResourceDictionary Source="../Themes/SelectableTextStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <viewmodels:MapPointViewModel x:Key="MapPointVM"/>
+            <viewmodels:MainViewModel x:Key="MainVM"/>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid DataContext="{StaticResource MapPointVM}" x:Name="MainGrid" Background="White">
+    <Grid DataContext="{StaticResource MainVM}" x:Name="MainGrid" Background="White">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -44,10 +44,10 @@
             <Label  Grid.Row="0" Grid.Column="2" VerticalAlignment="Center">Feet</Label>
             <TextBox BorderBrush="#b3c1fc" BorderThickness="1" x:Name="MapPointSearcDistanceTextBox" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.Column="1" Text="{Binding SoeArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the nearest route location"></TextBox>
             <TextBox Style="{StaticResource SelectableTextBox}" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">Coordinates of Click</TextBox>
-            <TextBox Style="{StaticResource SelectableTextBox}" Margin="5px 0px" Grid.Row="2" Grid.Column="1" Text="{Binding SoeArgs.X}"  VerticalAlignment="Center" ToolTip="The X coordinate of the click event"/>
-            <TextBox Style="{StaticResource SelectableTextBox}" Margin="5px 0px" Grid.Row="2" Grid.Column="2" Text="{Binding SoeArgs.Y}" VerticalAlignment="Center" ToolTip="The Y coordinate of the click event"/>
+            <TextBox Style="{StaticResource SelectableTextBox}" Margin="5px 0px" Grid.Row="2" Grid.Column="1" Text="{Binding MapPointVM.SoeArgs.X}"  VerticalAlignment="Center" ToolTip="The X coordinate of the click event"/>
+            <TextBox Style="{StaticResource SelectableTextBox}" Margin="5px 0px" Grid.Row="2" Grid.Column="2" Text="{Binding MapPointVM.SoeArgs.Y}" VerticalAlignment="Center" ToolTip="The Y coordinate of the click event"/>
         </Grid>
-        <Grid Grid.Row="1" x:Name="SOEResultsGrid" >
+        <Grid DataContext="{StaticResource MainVM}" Grid.Row="1" x:Name="SOEResultsGrid" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
@@ -74,15 +74,15 @@
             <TextBox Grid.Column="0" Grid.Row="7" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location represent back mileage." Style="{StaticResource SelectableTextBox}">Back</TextBox>
             <TextBox Grid.Column="0" Grid.Row="8" HorizontalContentAlignment="Center" ToolTip="Realignment date of the route location." Style="{StaticResource SelectableTextBox}">Realignment Date</TextBox>
             <TextBox Grid.Column="0" Grid.Row="9" HorizontalContentAlignment="Center" ToolTip="Response date of the route location found." Style="{StaticResource SelectableTextBox}">Response Date</TextBox>
-            <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding SoeResponse.Route, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding SoeResponse.Srmp, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding SoeResponse.Arm, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding SoeResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="5" Text="{Binding SoeResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="6" Text="{Binding SoeResponse.Decrease, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="7" Text="{Binding SoeResponse.Back, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="8" Text="{Binding SoeResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="9" Text="{Binding SoeResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding MapPointVM.SoeResponse.Route, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding MapPointVM.SoeResponse.Srmp, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding MapPointVM.SoeResponse.Arm, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding MapPointVM.SoeResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="5" Text="{Binding MapPointVM.SoeResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="6" Text="{Binding MapPointVM.SoeResponse.Decrease, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="7" Text="{Binding MapPointVM.SoeResponse.Back, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="8" Text="{Binding MapPointVM.SoeResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="9" Text="{Binding MapPointVM.SoeResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <Border Grid.ColumnSpan="3" Grid.Row="2" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="3" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="4" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
@@ -98,8 +98,8 @@
                 <ColumnDefinition />
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button Margin="5px 0px" x:Name="MapPointExecuteButton" Style="{StaticResource whiteButton}" Grid.Row="1" Grid.Column="0" CommandParameter="{Binding SessionActive}" Command="{Binding ToggleMapToolSessionCommand}" Content="{Binding MapToolInfos.MapButtonLabel}" ToolTip="{Binding MapToolInfos.MapButtonToolTip}"/>
-            <Button Margin="10px 0px" x:Name="MapPointSaveButton" Grid.Row="1" Grid.Column="1" CommandParameter="{Binding ElementName=PointsGrid}" Command="{Binding SavePointResultCommand}" ToolTip="Save selection to the results tab.">
+            <Button Margin="5px 0px" x:Name="MapPointExecuteButton" Style="{StaticResource whiteButton}" Grid.Row="1" Grid.Column="0" CommandParameter="{Binding MapToolInfos.SessionActive}" Command="{Binding MapPointVM.ToggleMapToolSessionCommand}" Content="{Binding MapPointVM.MapToolInfos.MapButtonLabel}" ToolTip="{Binding MapPointVM.MapToolInfos.MapButtonToolTip}"/>
+            <Button Margin="10px 0px" x:Name="MapPointSaveButton" Grid.Row="1" Grid.Column="1" CommandParameter="{Binding ElementName=PointsGrid}" Command="{Binding MapPointVM.SavePointResultCommand}" ToolTip="Save selection to the results tab.">
                 <Button.Style>
                     <Style BasedOn="{StaticResource whiteButton}" TargetType="{x:Type Button}">
                         <Setter Property="Content" Value="Save Result" />
@@ -119,10 +119,10 @@
             <Grid.Resources>
                 <Style TargetType="Grid">
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding ShowResultsTable}" Value="true">
+                        <DataTrigger Binding="{Binding MapPointVM.ShowResultsTable}" Value="true">
                             <Setter Property="Visibility" Value="Visible" />
                         </DataTrigger>
-                        <DataTrigger Binding="{Binding ShowResultsTable}" Value="false">
+                        <DataTrigger Binding="{Binding MapPointVM.ShowResultsTable}" Value="false">
                             <Setter Property="Visibility" Value="Hidden" />
                         </DataTrigger>
                     </Style.Triggers>
@@ -143,9 +143,9 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <TextBox Style="{StaticResource SelectableTextBox}" Grid.Row="0" Grid.Column="0">Saved Points:</TextBox>
-                <Label Grid.Row="0" Grid.Column="1" Content="{Binding SoeResponses.Count}"/>
+                <Label Grid.Row="0" Grid.Column="1" Content="{Binding MapPointVM.SoeResponses.Count}"/>
             </Grid>
-            <DataGrid CanUserAddRows="False" Grid.ColumnSpan="3" Grid.Row="1" x:Name="PointsGrid" HorizontalAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding SoeResponses}" CellStyle="{DynamicResource DataGridCellStyle}">
+            <DataGrid CanUserAddRows="False" Grid.ColumnSpan="3" Grid.Row="1" x:Name="PointsGrid" HorizontalAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding MapPointVM.SoeResponses}" CellStyle="{DynamicResource DataGridCellStyle}">
                 <DataGrid.RowStyle>
                     <Style TargetType="DataGridRow">
                         <Style.Triggers>
@@ -183,10 +183,10 @@
             <Grid.Resources>
                 <Style TargetType="Grid">
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding ShowResultsTable}" Value="true">
+                        <DataTrigger Binding="{Binding MapPointVM.ShowResultsTable}" Value="true">
                             <Setter Property="Visibility" Value="Visible" />
                         </DataTrigger>
-                        <DataTrigger Binding="{Binding ShowResultsTable}" Value="false">
+                        <DataTrigger Binding="{Binding MapPointVM.ShowResultsTable}" Value="false">
                             <Setter Property="Visibility" Value="Hidden" />
                         </DataTrigger>
                     </Style.Triggers>
@@ -195,10 +195,10 @@
             <Button Margin="10px 0px" Grid.Row="2" Grid.Column="0" Style="{StaticResource whiteButton}">
                 Export Data
             </Button>
-            <Button Margin="10px 0px" x:Name="DeleteItemsButton" Grid.Row="2" Grid.Column="1" Command="{Binding DeleteItemsCommand}" Style="{StaticResource whiteButton}">
+            <Button Margin="10px 0px" x:Name="DeleteItemsButton" Grid.Row="2" Grid.Column="1" Command="{Binding MapPointVM.DeleteItemsCommand}" Style="{StaticResource whiteButton}">
                 Delete Record(s)
             </Button>
-            <Button Margin="10px 0px" x:Name="ClearItemsButton" Grid.Row="2" Grid.Column="2"  Command="{Binding ClearItemsCommand}" Style="{StaticResource whiteButton}">
+            <Button Margin="10px 0px" x:Name="ClearItemsButton" Grid.Row="2" Grid.Column="2"  Command="{Binding MapPointVM.ClearItemsCommand}" Style="{StaticResource whiteButton}">
                 Clear
             </Button>
         </Grid>

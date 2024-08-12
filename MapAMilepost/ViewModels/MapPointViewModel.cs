@@ -1,7 +1,10 @@
 ﻿using MapAMilepost.Models;
 using MapAMilepost.Utils;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 
 namespace MapAMilepost.ViewModels
@@ -16,6 +19,9 @@ namespace MapAMilepost.ViewModels
         private ObservableCollection<SoeResponseModel> _SoeResponses;
         private bool _showResultsTable = false;
         private MapToolInfo _mapToolInfos;
+        private string _tabLabel = "TEST TAB LABEL";
+        public delegate void ParameterChange(SoeResponseModel parameter);
+        public ParameterChange OnParameterChange { get; set; }
         public MapPointViewModel()//constructor
         {
             _SoeResponse = new SoeResponseModel();
@@ -26,6 +32,11 @@ namespace MapAMilepost.ViewModels
                 MapButtonLabel = "Start Mapping",
                 MapButtonToolTip = "Start mapping session."
             };
+        }
+
+        public string TabLabel
+        {
+            get { return _tabLabel; }
         }
         public override MapToolInfo MapToolInfos
         {
@@ -53,7 +64,7 @@ namespace MapAMilepost.ViewModels
         public override SoeResponseModel SoeResponse
         {
             get { return _SoeResponse; }
-            set { _SoeResponse = value; OnPropertyChanged(nameof(SoeResponse)); }
+            set { _SoeResponse = value; OnPropertyChanged(nameof(SoeResponse)); if (OnParameterChange != null) OnParameterChange(_SoeResponse); }
         }
 
         /// <summary>

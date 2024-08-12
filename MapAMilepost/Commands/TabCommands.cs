@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace MapAMilepost.Commands
@@ -25,12 +26,12 @@ namespace MapAMilepost.Commands
                 switch (Name)
                 {
                     case "MapPointTab":
+                       // MapToolUtils.DeactivateSession(VM.MapLineVM);
                         VM.SelectedViewModel = VM.MapPointVM;
-                        MapToolUtils.DeactivateSession(VM.MapLineVM);
                         break;
                     case "MapLineTab":
+                       // MapToolUtils.DeactivateSession(VM.MapPointVM);
                         VM.SelectedViewModel = VM.MapLineVM;
-                        MapToolUtils.DeactivateSession(VM.MapPointVM);
                         break;
                     default:
                         throw new ArgumentException("Control name not found");

@@ -10,7 +10,7 @@ namespace MapAMilepost.ViewModels
 {
     public class MapLineViewModel:ViewModelBase
     {
-        private SoeResponseModel _SoeStartResponse;
+        private SoeResponseModel _SoeResponse;
         private SoeResponseModel _soeEndResponse;
         private SoeArgsModel _soeStartArgs;
         private SoeArgsModel _soeEndArgs;
@@ -19,7 +19,7 @@ namespace MapAMilepost.ViewModels
         private MapToolInfo _mapToolInfos;
         public MapLineViewModel()//constructor
         {
-            _SoeStartResponse = new SoeResponseModel();
+            _SoeResponse = new SoeResponseModel();
             _soeEndResponse = new SoeResponseModel();
             _soeStartArgs = new SoeArgsModel();
             _soeEndArgs = new SoeArgsModel();
@@ -27,6 +27,7 @@ namespace MapAMilepost.ViewModels
             _mapToolInfos = new MapToolInfo
             {
                 SessionActive = false,
+                SessionEndActive = false,
                 MapButtonLabel = "Start Mapping",
                 MapButtonEndLabel = "Start Mapping",
                 MapButtonToolTip = "Start 'start point' mapping session.",
@@ -52,10 +53,10 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(ShowResultsTable));
             }
         }
-        public SoeResponseModel SoeStartResponse
+        public override SoeResponseModel SoeResponse
         {
-            get { return _SoeStartResponse; }
-            set { _SoeStartResponse = value; OnPropertyChanged(nameof(SoeStartResponse)); }
+            get { return _SoeResponse; }
+            set { _SoeResponse = value; OnPropertyChanged(nameof(SoeResponse)); }
         }
 
         public override SoeResponseModel SoeEndResponse
@@ -96,15 +97,16 @@ namespace MapAMilepost.ViewModels
 
         public Commands.RelayCommand<object> SavePointResultCommand => new Commands.RelayCommand<object>((grid) => Commands.GraphicsCommands.SavePointResult(grid as DataGrid, this));
 
-        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new Commands.RelayCommand<object>((direction) =>
+        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new Commands.RelayCommand<object>((startEnd) =>
         {
-            if (!this.MapToolInfos.SessionActive)
+            if(MapToolInfos.SessionActive&&(string)startEnd=="start"|| MapToolInfos.SessionEndActive && (string)startEnd == "end")
             {
-                Utils.MapToolUtils.InitializeSession(this, (string)direction);
+                Utils.MapToolUtils.DeactivateSession(this, (string)startEnd);
             }
             else
             {
-                Utils.MapToolUtils.DeactivateSession(this);
+                Utils.MapToolUtils.DeactivateSession(this, (string)startEnd);
+                Utils.MapToolUtils.InitializeSession(this, (string)startEnd);
             }
         });
     }

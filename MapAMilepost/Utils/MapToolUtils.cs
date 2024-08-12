@@ -22,20 +22,20 @@ namespace MapAMilepost.Utils
         /// <param name="VM">the target viewmodel</param>
         public static void InitializeSession(Utils.ViewModelBase VM, string startEnd = null)
         {
-            if (!VM.MapToolInfos.SessionActive)
+            VM.MappingTool.StartSession(VM, startEnd);
+            if (startEnd == null||startEnd=="start")//if point mapping
             {
                 VM.MapToolInfos.SessionActive = true;
-                VM.MappingTool.StartSession(VM, startEnd);
-                if (startEnd == null||startEnd=="start")//if point mapping
-                {
-                    VM.MapToolInfos.MapButtonLabel = "Stop Mapping";
-                    VM.MapToolInfos.MapButtonToolTip = "End mapping session.";
-                }
-                else {
-                    VM.MapToolInfos.MapButtonEndLabel = "Stop Mapping";
-                    VM.MapToolInfos.MapButtonEndToolTip = "End mapping session.";
-                }
+                VM.MapToolInfos.MapButtonLabel = "Stop Mapping";
+                VM.MapToolInfos.MapButtonToolTip = "End mapping session.";
             }
+            else
+            {
+                VM.MapToolInfos.SessionEndActive = true;
+                VM.MapToolInfos.MapButtonEndLabel = "Stop Mapping";
+                VM.MapToolInfos.MapButtonEndToolTip = "End mapping session.";
+            }
+            
         }
 
         /// <summary>
@@ -45,16 +45,23 @@ namespace MapAMilepost.Utils
         /// -   Update the private _setSession property to change the behavior of the method.
         /// </summary>
         /// <param name="VM">the target viewmodel</param>
-        public static void DeactivateSession(Utils.ViewModelBase VM)
+        public static void DeactivateSession(Utils.ViewModelBase VM, string startEnd = null)
         {
             {
                 VM.MapToolInfos.SessionActive = false;
                 VM.MapToolInfos.MapButtonLabel = "Start Mapping";
                 VM.MapToolInfos.MapButtonToolTip = "Start mapping session.";
+                VM.MapToolInfos.SessionEndActive = false;
+                VM.MapToolInfos.MapButtonEndLabel = "Start Mapping";
+                VM.MapToolInfos.MapButtonEndToolTip = "Start mapping session.";
+
                 //  Calls the EndSession method from the MapAMilepostMapTool viewmodel, setting the active tool
                 //  to whatever was selected before the mapping session was initialized.
                 VM.MappingTool.EndSession();
-                Commands.GraphicsCommands.DeleteUnsavedGraphics();
+                if(startEnd == null)
+                {
+                    Commands.GraphicsCommands.DeleteUnsavedGraphics(startEnd);
+                }
             }
         }
 
@@ -70,8 +77,8 @@ namespace MapAMilepost.Utils
         /// <param name="mapPoint"></param>
         public static async void MapPoint2RoutePoint(object mapPoint, Utils.ViewModelBase VM, string startEnd)
         {
-            VM.SoeResponse = new SoeResponseModel();
-            object response = new object();
+            //VM.SoeResponse = new SoeResponseModel();
+            SoeResponseModel response = new SoeResponseModel();
             if ((MapPoint)mapPoint != null)
             {
                 if (startEnd == "end")
@@ -79,14 +86,14 @@ namespace MapAMilepost.Utils
                     VM.SoeEndArgs.X = ((MapPoint)mapPoint).X;
                     VM.SoeEndArgs.Y = ((MapPoint)mapPoint).Y;
                     VM.SoeEndArgs.SR = ((MapPoint)mapPoint).SpatialReference.Wkid;
-                    response = await Utils.HTTPRequest.QuerySOE(VM.SoeEndArgs);
+                    response = (await Utils.HTTPRequest.QuerySOE(VM.SoeEndArgs) as SoeResponseModel);
                 }
                 else
                 {
                     VM.SoeArgs.X = ((MapPoint)mapPoint).X;
                     VM.SoeArgs.Y = ((MapPoint)mapPoint).Y;
                     VM.SoeArgs.SR = ((MapPoint)mapPoint).SpatialReference.Wkid;
-                    response = await Utils.HTTPRequest.QuerySOE(VM.SoeArgs);
+                    response = (await Utils.HTTPRequest.QuerySOE(VM.SoeArgs) as SoeResponseModel);
                 }
             }
             if (response != null)
@@ -94,15 +101,17 @@ namespace MapAMilepost.Utils
                 CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
                 await QueuedTask.Run(() =>
                 {
-                    Commands.GraphicsCommands.DeleteUnsavedGraphics();//delete all unsaved graphics
+                    Commands.GraphicsCommands.DeleteUnsavedGraphics(startEnd);//delete all unsaved graphics
                     if (startEnd == "end")
                     {
-                        SoeResponseUtils.CopyProperties(response, VM.SoeEndResponse);
+                        VM.SoeEndResponse = response;
+                        //SoeResponseUtils.CopyProperties(response, VM.SoeEndResponse);
                         Commands.GraphicsCommands.CreateClickRoutePointGraphics(VM.SoeEndArgs, VM.SoeEndResponse, customPointSymbols, startEnd);
                     }
                     else
                     {
-                        SoeResponseUtils.CopyProperties(response, VM.SoeResponse);
+                        VM.SoeResponse = response;
+                        //SoeResponseUtils.CopyProperties(response, VM.SoeResponse);
                         Commands.GraphicsCommands.CreateClickRoutePointGraphics(VM.SoeArgs, VM.SoeResponse, customPointSymbols, startEnd);
                     }
                 });
@@ -121,7 +130,16 @@ namespace MapAMilepost.Utils
                 OnPropertyChanged(nameof(SessionActive));
             }
         }
-
+        private bool _sessionEndActive { get; set; }
+        public bool SessionEndActive
+        {
+            get { return _sessionEndActive; }
+            set
+            {
+                _sessionActive = value;
+                OnPropertyChanged(nameof(SessionEndActive));
+            }
+        }
         private string _mapButtonToolTip {  get; set; }
         public string MapButtonToolTip
         {

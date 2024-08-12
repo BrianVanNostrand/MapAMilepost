@@ -1,4 +1,5 @@
 ﻿using MapAMilepost.Commands;
+using MapAMilepost.Models;
 using MapAMilepost.Utils;
 using System;
 using System.Windows.Controls;
@@ -8,25 +9,20 @@ namespace MapAMilepost.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
-
         /// <summary>
         /// Private variables with associated public variables, granting access to the INotifyPropertyChanged command via ViewModelBase.
         /// </summary>
         private ViewModelBase _selectedViewModel;
         private MapPointViewModel _mapPointVM;
         private MapLineViewModel _mapLineVM;
-        private string _testString = "TEST";
+        private string _testString = "MainVMTestString";
 
-        public string TestString
-        {
-            get { return _testString; }
-            set
+        public string TestString{
+            get
             {
-                _testString = value;
-                OnPropertyChanged(nameof(TestString));
-            }
+                return _testString;
+            }    
         }
-
         /// <summary>
         /// -   The currently selected viewmodel, used when a tab is selected in the controlsGrid in MilepostDockpane.xaml
         ///     via data binding.
@@ -63,16 +59,23 @@ namespace MapAMilepost.ViewModels
         /// <summary>
         /// Command used to change the selected viewmodel.
         /// </summary>
-        //public ICommand SelectPageCommand { get; set; }
-        public Commands.RelayCommand<object> SelectPageCommand => new Commands.RelayCommand<object>((button) => Commands.TabCommands.SwitchTab(button, this));
-
+        public Commands.RelayCommand<object> SelectPageCommand => new Commands.RelayCommand<object>((button) => {
+            //MapToolUtils.DeactivateSession(this.SelectedViewModel);
+            Console.WriteLine(MapPointVM);
+            Commands.TabCommands.SwitchTab(button, this);
+        });
+        public void MapPointViewModel_onParameterChange(SoeResponseModel parameter)
+        {
+            // Do something with the new parameter data here
+            MapPointVM.SoeResponse = parameter;
+            Console.WriteLine(parameter.ToString());
+        }
         public MainViewModel()
         {
             MapPointVM = new MapPointViewModel();
+            MapPointVM.OnParameterChange += MapPointViewModel_onParameterChange;
             MapLineVM = new MapLineViewModel();
-            //SelectPageCommand = new SelectPage(viewModel:this);
             SelectedViewModel = MapPointVM;
-            TestString = "TEST";
         }
     }
 }

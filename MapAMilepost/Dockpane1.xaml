@@ -12,15 +12,9 @@
              d:DesignHeight="600" d:DesignWidth="364">
   <UserControl.Resources>
         <ResourceDictionary>
-            <viewmodels:MainViewModel x:Key="MainViewModel"/>
+            <viewmodels:MainViewModel x:Key="MainViewModel" d:IsDataSource="True"/>
             <views:MapLineView x:Key="MapLineView"/>
             <views:MapPointView x:Key="MapPointView"/>
-            <DataTemplate DataType="{x:Type viewmodels:MapPointViewModel}">
-                <ContentControl Content="{StaticResource MapPointView}"/>
-            </DataTemplate>
-            <DataTemplate DataType="{x:Type viewmodels:MapLineViewModel}">
-                <ContentControl Content="{StaticResource MapLineView}"/>
-            </DataTemplate>
             <ResourceDictionary.MergedDictionaries>
                 <extensions:DesignOnlyResourceDictionary Source="pack://application:,,,/ArcGIS.Desktop.Framework;component\Themes\Default.xaml"/>
             </ResourceDictionary.MergedDictionaries>
@@ -49,8 +43,17 @@
                 </TabItem>
             </TabControl>
     </DockPanel>
-        <ScrollViewer DataContext="{StaticResource MainViewModel}" Background="white" VerticalScrollBarVisibility="Auto" Grid.Row="1">
-            <ContentControl DataContext="{StaticResource MainViewModel}" Background="white" ClipToBounds="True" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Row="1" Content="{Binding SelectedViewModel}"/>
+        <ScrollViewer Background="white" VerticalScrollBarVisibility="Auto" Grid.Row="1">
+            <ContentControl DataContext="{StaticResource MainViewModel}" Background="white" ClipToBounds="True" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Row="1" Content="{Binding SelectedViewModel}">
+                <ContentControl.Resources>
+                    <DataTemplate DataType="{x:Type viewmodels:MapPointViewModel}">
+                        <ContentControl Content="{StaticResource MapPointView}"/>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type viewmodels:MapLineViewModel}">
+                        <ContentControl Content="{StaticResource MapLineView}"/>
+                    </DataTemplate>
+                </ContentControl.Resources>
+            </ContentControl>
         </ScrollViewer>
     </Grid>
 </UserControl>

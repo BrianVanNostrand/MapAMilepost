@@ -91,15 +91,15 @@
             <Label Grid.Column="0" Grid.Row="8">X</Label>
             <Label Grid.Column="0" Grid.Row="9">Y</Label>
             <!--Start Point Bindings-->
-            <Label Grid.Column="1" Grid.Row="1" Content="{Binding SoeStartResponse.Angle,UpdateSourceTrigger=PropertyChanged}" />
-            <Label Grid.Column="1" Grid.Row="2" Content="{Binding SoeStartResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="3" Content="{Binding SoeStartResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="4" Content="{Binding SoeStartResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="5" Content="{Binding SoeStartResponse.Distance, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="6" Content="{Binding SoeStartResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="7" Content="{Binding SoeStartResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="8" Content="{Binding SoeStartResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="9" Content="{Binding SoeStartResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="1" Content="{Binding SoeResponse.Angle,UpdateSourceTrigger=PropertyChanged}" />
+            <Label Grid.Column="1" Grid.Row="2" Content="{Binding SoeResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="3" Content="{Binding SoeResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="4" Content="{Binding SoeResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="5" Content="{Binding SoeResponse.Distance, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="6" Content="{Binding SoeResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="7" Content="{Binding SoeResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="8" Content="{Binding SoeResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="9" Content="{Binding SoeResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
             <!--End Point Bindings-->
             <Label Grid.Column="2" Grid.Row="1" Content="{Binding SOEEndResponse.Angle,UpdateSourceTrigger=PropertyChanged}" />
             <Label Grid.Column="2" Grid.Row="2" Content="{Binding SOEEndResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>

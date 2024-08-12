@@ -27,7 +27,7 @@ namespace MapAMilepost.Utils
         public virtual SoeArgsModel SoeEndArgs { get; set; } //used for lines
         public virtual ObservableCollection<SoeResponseModel> SoeResponses { get; set; }
         public virtual List<SoeResponseModel> SelectedItems { get; set; }
-        
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {

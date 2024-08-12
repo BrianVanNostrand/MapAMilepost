@@ -44,10 +44,6 @@ namespace MapAMilepost.Commands
                     break;
                 case "MapLineButton":
                     _viewModel.SelectedViewModel = _viewModel.MapLineVM;
-                    if (_viewModel.MapPointVM.MapToolInfos.SessionActive)
-                    {
-                        MapToolUtils.InitializeSession(_viewModel.MapPointVM);//end the mapping session
-                    }
                     break;
                 default:
                     throw new ArgumentException("Control name not found");
