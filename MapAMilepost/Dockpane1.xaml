@@ -9,8 +9,13 @@
              xmlns:extensions="clr-namespace:ArcGIS.Desktop.Extensions;assembly=ArcGIS.Desktop.Extensions"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="364">
-  <UserControl.Resources>
+             d:DesignHeight="600" d:DesignWidth="364"
+             x:Name="MainUserControl">
+    
+    <UserControl.DataContext>
+        <viewmodels:MainViewModel/>
+    </UserControl.DataContext>
+    <UserControl.Resources>
         <ResourceDictionary>
             <viewmodels:MainViewModel x:Key="MainViewModel" d:IsDataSource="True"/>
             <views:MapLineView x:Key="MapLineView"/>
@@ -19,13 +24,13 @@
                 <extensions:DesignOnlyResourceDictionary Source="pack://application:,,,/ArcGIS.Desktop.Framework;component\Themes\Default.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-  </UserControl.Resources>
-  <Grid>
+    </UserControl.Resources>
+    <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="50"/>
       <RowDefinition Height="*"/>
     </Grid.RowDefinitions>
-        <DockPanel DataContext="{StaticResource MainViewModel}"  Background="white" Grid.Row="0" LastChildFill="true" KeyboardNavigation.TabNavigation="Local" Height="50">
+        <DockPanel DataContext="{DynamicResource MainViewModel}"  Background="white" Grid.Row="0" LastChildFill="true" KeyboardNavigation.TabNavigation="Local" Height="50">
             <TabControl Height="50" x:Name="controlsGrid">
                 <TabItem x:Name="MapPointTab" Height="50" Width="80" Header="Map a Point">
                     <i:Interaction.Triggers>
@@ -42,15 +47,22 @@
                     </i:Interaction.Triggers>
                 </TabItem>
             </TabControl>
-    </DockPanel>
+            <Button x:Name="SynchronizeButton" Width="80" Content="Synchronize">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="PreviewMouseDown">
+                        <i:InvokeCommandAction Command="{Binding TrySync}" CommandParameter="{Binding ElementName=SynchronizeButton}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
+        </DockPanel>
         <ScrollViewer Background="white" VerticalScrollBarVisibility="Auto" Grid.Row="1">
-            <ContentControl DataContext="{StaticResource MainViewModel}" Background="white" ClipToBounds="True" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Row="1" Content="{Binding SelectedViewModel}">
+            <ContentControl DataContext="{DynamicResource MainViewModel}" Background="white" ClipToBounds="True" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Row="1" Content="{Binding SelectedViewModel}">
                 <ContentControl.Resources>
                     <DataTemplate DataType="{x:Type viewmodels:MapPointViewModel}">
-                        <ContentControl Content="{StaticResource MapPointView}"/>
+                        <views:MapPointView/>
                     </DataTemplate>
                     <DataTemplate DataType="{x:Type viewmodels:MapLineViewModel}">
-                        <ContentControl Content="{StaticResource MapLineView}"/>
+                        <views:MapLineView/>
                     </DataTemplate>
                 </ContentControl.Resources>
             </ContentControl>

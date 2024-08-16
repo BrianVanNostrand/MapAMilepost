@@ -10,13 +10,12 @@
              Width="300">
     <UserControl.Resources>
         <ResourceDictionary>
-            <viewmodels:MapLineViewModel x:Key="MapLineVM"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Themes/ButtonTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid DataContext="{StaticResource MapLineVM}" x:Name="MainGrid" Background="White">
+    <Grid x:Name="MainGrid" Background="White">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -101,15 +100,15 @@
             <Label Grid.Column="1" Grid.Row="8" Content="{Binding SoeResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
             <Label Grid.Column="1" Grid.Row="9" Content="{Binding SoeResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
             <!--End Point Bindings-->
-            <Label Grid.Column="2" Grid.Row="1" Content="{Binding SOEEndResponse.Angle,UpdateSourceTrigger=PropertyChanged}" />
-            <Label Grid.Column="2" Grid.Row="2" Content="{Binding SOEEndResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="3" Content="{Binding SOEEndResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="4" Content="{Binding SOEEndResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="5" Content="{Binding SOEEndResponse.Distance, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="6" Content="{Binding SOEEndResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="7" Content="{Binding SOEEndResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="8" Content="{Binding SOEEndResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="9" Content="{Binding SOEEndResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="1" Content="{Binding SoeEndResponse.Angle,UpdateSourceTrigger=PropertyChanged}" />
+            <Label Grid.Column="2" Grid.Row="2" Content="{Binding SoeEndResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="3" Content="{Binding SoeEndResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="4" Content="{Binding SoeEndResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="5" Content="{Binding SoeEndResponse.Distance, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="6" Content="{Binding SoeEndResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="7" Content="{Binding SoeEndResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="8" Content="{Binding SoeEndResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="9" Content="{Binding SoeEndResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
 
             <Border Grid.ColumnSpan="3" Grid.Row="2" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="3" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />

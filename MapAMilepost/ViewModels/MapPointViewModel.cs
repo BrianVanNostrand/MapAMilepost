@@ -20,8 +20,6 @@ namespace MapAMilepost.ViewModels
         private bool _showResultsTable = false;
         private MapToolInfo _mapToolInfos;
         private string _tabLabel = "TEST TAB LABEL";
-        public delegate void ParameterChange(SoeResponseModel parameter);
-        public ParameterChange OnParameterChange { get; set; }
         public MapPointViewModel()//constructor
         {
             _SoeResponse = new SoeResponseModel();
@@ -64,7 +62,7 @@ namespace MapAMilepost.ViewModels
         public override SoeResponseModel SoeResponse
         {
             get { return _SoeResponse; }
-            set { _SoeResponse = value; OnPropertyChanged(nameof(SoeResponse)); if (OnParameterChange != null) OnParameterChange(_SoeResponse); }
+            set { _SoeResponse = value; OnPropertyChanged(nameof(SoeResponse));}
         }
 
         /// <summary>

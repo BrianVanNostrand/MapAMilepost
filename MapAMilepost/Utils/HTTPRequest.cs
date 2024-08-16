@@ -13,6 +13,8 @@ using System.Windows;
 using ArcGIS.Desktop.Core;
 using System.Text.Json.Nodes;
 using Flurl.Util;
+using System.Diagnostics;
+using MapAMilepost.ViewModels;
 
 namespace MapAMilepost.Utils
 {
@@ -32,16 +34,17 @@ namespace MapAMilepost.Utils
         public static async Task<object> QuerySOE(SoeArgsModel args)
         {
             object response = new object();// assume find nearest route location fails
-            var FNRLResponse = await findNearestRouteLocation(args);
+            object FNRLResponse = await FindNearestRouteLocation(args);
             if (FNRLResponse != null)
             {
                 var FRLParams = new FRLRequestObject(FNRLResponse as SoeResponseModel);
-                object FRLResponse = await findRouteLocation(FRLParams, args);
+                object FRLResponse = await FindRouteLocation(FRLParams, args);
                 response = FRLResponse;
             }
             return response;
         }
-        private static async Task<object> findNearestRouteLocation(SoeArgsModel args)
+
+        private static async Task<object> FindNearestRouteLocation(SoeArgsModel args)
         {
             var FNRLurl = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Nearest%20Route%20Locations");
             Dictionary<string, string> FNRLQueryParams = new()
@@ -78,11 +81,11 @@ namespace MapAMilepost.Utils
             }
             catch
             {
-                MessageBox.Show("HTTP Request  1 timed out. Please check internet connection and try again.");
+                MessageBox.Show("'Find Nearest Route Location' timed out. Please check internet connection and try again.");
             }
             return responseObject;
         }
-        private static async Task<object> findRouteLocation(object FNRLResponse, SoeArgsModel args)
+        private static async Task<object> FindRouteLocation(object FNRLResponse, SoeArgsModel args)
         {
             var FNRLurl = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Route%20Locations");
             Dictionary<string,object> FNRLQueryParams = new Dictionary<string, object> {
@@ -105,7 +108,7 @@ namespace MapAMilepost.Utils
                     }
                     else
                     {
-                        MessageBox.Show($"HTTP Request 2 failed. Please try again.");
+                        MessageBox.Show($"Location couldn't be found. Please try again.");
                     }
                 }
                 else
@@ -115,7 +118,54 @@ namespace MapAMilepost.Utils
             }
             catch
             {
-                MessageBox.Show("HTTP Request  2 timed out. Please check internet connection and try again.");
+                MessageBox.Show("'Find Route Location' timed out. Please check internet connection and try again.");
+            }
+            return responseObject;
+        }
+        public static async Task<object> FindLineLocation(SoeResponseModel startResponse, SoeResponseModel endResponse, SoeArgsModel args)
+        {
+            var lineRequestURL = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Route%20Locations");
+            SOELineArgsModel lineLocations = new SOELineArgsModel
+            {
+                Route = startResponse.Route,
+                Decrease = startResponse.Decrease,
+                Srmp = startResponse.Srmp,
+                Back = startResponse.Back,
+                ReferenceDate = args.ReferenceDate,
+                EndSrmp = endResponse.Srmp,
+                EndBack = endResponse.Back,
+            };
+            Dictionary<string, object> lineRequestParams = new Dictionary<string, object> {
+                {"f", "json"},
+                {"locations", $"[{JsonSerializer.Serialize(lineLocations)}]"},
+                {"outSR",args.SR}
+            };
+            lineRequestURL.SetQueryParams(lineRequestParams);
+            var responseObject = new object();
+            try
+            {
+                var FRLresponse = await lineRequestURL.GetAsync();
+                if (FRLresponse.StatusCode == 200)
+                {
+                    string responseString = await FRLresponse.ResponseMessage.Content.ReadAsStringAsync();
+                    var SoeResponses = JsonSerializer.Deserialize<List<FRLLineGeometryModel>>(responseString);
+                    if (SoeResponses.Count > 0)
+                    {
+                        responseObject = SoeResponses.First();
+                    }
+                    else
+                    {
+                        MessageBox.Show($"No lines found. Please try again.");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(FRLresponse.ResponseMessage.ToString());
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Line request timed out. Please check internet connection and try again.");
             }
             return responseObject;
         }

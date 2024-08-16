@@ -90,6 +90,23 @@ namespace MapAMilepost.Models
             this._searchRadius = "200000";
         }
     }
+
+    /// <summary>
+    /// The subset of properties returned by the "Find Route Locations" API endpoint,
+    /// that are used in a subsequent "Find Route Locations" API call, to retrieve line
+    /// geometry. 
+    /// </summary>
+    class SOELineArgsModel
+    {
+        public string Route { get; set; }
+        public bool? Decrease { get; set; }
+        public double? Srmp { get; set; }
+        public bool? Back { get; set; }
+        public string ReferenceDate { get; set; }
+        public double? EndSrmp { get; set; }
+        public bool? EndBack { get; set; }
+
+    }
 }
 //https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Nearest%20Route%20Locations?f=json&referenceDate=5%2F8%2F2024&coordinates=%5B-13644740.56427878%2C5960013.904550078%5D&searchRadius=200&inSR=102100&outSR=102100&lrsYear=&routeFilter=
 

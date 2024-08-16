@@ -1,5 +1,6 @@
 ﻿using ArcGIS.Core.CIM;
 using ArcGIS.Core.Data;
+using ArcGIS.Core.Data.UtilityNetwork.Trace;
 using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Catalog;
 using ArcGIS.Desktop.Core;
@@ -11,6 +12,8 @@ using ArcGIS.Desktop.Framework.Dialogs;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
+using MapAMilepost.Commands;
+using MapAMilepost.Models;
 using MapAMilepost.Utils;
 using MapAMilepost.ViewModels;
 using System;
@@ -79,7 +82,7 @@ namespace MapAMilepost
         /// -   If the graphics layer doesn't exist yet, create it.
         /// -   Set the active tool in ArcGIS Pro to this map tool.
         /// </summary>
-        public void StartSession(Utils.ViewModelBase currentVM, string startEnd)
+        public async void StartSession(Utils.ViewModelBase currentVM, string startEnd)
         {
             CurrentViewModel = currentVM;
             StartEnd = startEnd;
@@ -91,13 +94,18 @@ namespace MapAMilepost
             }
             else // else create layer
             {
-                GraphicsLayerCreationParams gl_param = new() { Name = "MilepostMappingLayer" };
-                QueuedTask.Run(() =>
-                {
-                    GraphicsLayer graphicsLayer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(gl_param, map);
-                });
+                CreateLayer(map);
             };
-            FrameworkApplication.SetCurrentToolAsync("MapAMilepost_MapTool");
+            await FrameworkApplication.SetCurrentToolAsync("MapAMilepost_MapTool");
+                
+        }
+        private void CreateLayer(Map map)
+        {
+            GraphicsLayerCreationParams gl_param = new() { Name = "MilepostMappingLayer" };
+            QueuedTask.Run(() =>
+            {
+                GraphicsLayer graphicsLayer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(gl_param, map);
+            });
         }
 
         /// <summary>

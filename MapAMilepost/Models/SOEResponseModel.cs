@@ -156,6 +156,11 @@ namespace MapAMilepost.Models
             public double y { get; set; }
         }
     }
+
+    /// <summary>
+    /// The subset of properties returned by the "Find Nearest Route Location" API endpoint,
+    /// that are used in the "Find Route Locations" API Endpoint. 
+    /// </summary>
     public class FRLRequestObject
     {
         public double? Id { get; set; }
@@ -174,6 +179,13 @@ namespace MapAMilepost.Models
             public double? y { get; set; }
         }
         public double? Distance { get; set; }
+
+        /// <summary>
+        /// -   Constructor to automatically assign the properties of the response object returned by the
+        ///     "Find Nearest Route Location" request, to the new serialized object used to define the
+        ///     URL parameters of the "Find Route Locations" request.
+        /// </summary>
+        /// <param name="FNRL"></param>
         public FRLRequestObject(SoeResponseModel FNRL)
         {
             Route = FNRL.Route;
@@ -189,4 +201,26 @@ namespace MapAMilepost.Models
             EventPoint.y = FNRL.RouteGeometry.y;
         }
     }
+    public class FRLLineGeometryModel : ObservableObject
+    {
+        private PathsArray? _routeGeometry;
+        public PathsArray? RouteGeometry
+        {
+            get { return _routeGeometry; }
+            set
+            {
+                _routeGeometry = value;
+                OnPropertyChanged(nameof(RouteGeometry));
+            }
+        }
+        public class PathsArray
+        {
+            public List<List<List<double>>> paths { get; set; }
+        }
+        public FRLLineGeometryModel()
+        {
+            
+        }
+    }
 }
+

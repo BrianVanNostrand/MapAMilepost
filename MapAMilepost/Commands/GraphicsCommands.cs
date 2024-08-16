@@ -22,6 +22,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows;
+using ArcGIS.Desktop.Internal.Catalog.DistributedGeodatabase.ManageReplicas;
 namespace MapAMilepost.Commands
 {
     class GraphicsCommands
@@ -82,10 +83,10 @@ namespace MapAMilepost.Commands
             {
                 CustomProperties = new List<CIMStringMap>()
                 {
-                    new CIMStringMap() { Key = "saved", Value = "false" },
-                    new CIMStringMap() { Key = "eventType", Value = "click" },
-                    new CIMStringMap() { Key = "sessionType", Value = startEnd!=null?"line":"point" },
-                    new CIMStringMap() { Key = "startEnd", Value = startEnd }
+                    new() { Key = "saved", Value = "false" },
+                    new() { Key = "eventType", Value = "click" },
+                    new() { Key = "sessionType", Value = startEnd!=null?"line":"point" },
+                    new() { Key = "startEnd", Value = startEnd }
                 }
             };
             graphicsLayer.AddElement(cimGraphic: clickedPtGraphic, elementInfo: clickPtElemInfo);
@@ -107,10 +108,21 @@ namespace MapAMilepost.Commands
             {
                 CustomProperties = new List<CIMStringMap>()
                 {
-                    new CIMStringMap() { Key = "saved", Value="false"},
-                    new CIMStringMap() { Key = "eventType", Value="route"},
-                    new CIMStringMap() { Key = "sessionType", Value = startEnd!=null?"line":"point"},
-                    new CIMStringMap() { Key = "startEnd", Value = startEnd }
+                    new() { Key = "Route",Value = SoeResponse.Route},
+                    new() { Key = "Decrease",Value = SoeResponse.Decrease.ToString()},
+                    new() { Key = "Arm",Value = SoeResponse.Arm.ToString()},
+                    new() { Key = "Srmp",Value = SoeResponse.Srmp.ToString()},
+                    new() { Key = "Back",Value = SoeResponse.Back.ToString()},
+                    new() { Key = "ResponseDate",Value = SoeResponse.ResponseDate.ToString()},
+                    new() { Key = "EndBack",Value = SoeResponse.EndBack.ToString()},
+                    new() { Key = "x",Value = SoeResponse.RouteGeometry.x.ToString()},
+                    new() { Key = "y",Value = SoeResponse.RouteGeometry.y.ToString()},
+                    new() { Key = "RealignmentDate",Value = SoeResponse.RealignmentDate},
+                    new() { Key = "ResponseDate",Value = SoeResponse.ResponseDate},
+                    new() { Key = "saved", Value="false"},
+                    new() { Key = "eventType", Value="route"},
+                    new() { Key = "sessionType", Value = startEnd!=null?"line":"point"},
+                    new() { Key = "startEnd", Value = startEnd }
                 }
             };
             graphicsLayer.AddElement(cimGraphic: soePtGraphic, elementInfo: routePtElemInfo);
@@ -196,6 +208,22 @@ namespace MapAMilepost.Commands
                 }
                 #endregion
             });
+        }
+        public static async Task DeselectAllGraphics()
+        {
+            GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+            if (graphicsLayer != null)
+            {
+                await QueuedTask.Run(() =>
+                {
+                    var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic);
+                    for (int i = graphics.Count() - 1; i >= 0; i--)
+                    {
+                        setGraphicDelesected(graphics.ElementAt(i));
+                    }
+                });
+            }
+           
         }
 
         /// <summary>
@@ -316,5 +344,51 @@ namespace MapAMilepost.Commands
             }
         }
 
-    }
+        public async static Task<ObservableCollection<SoeResponseModel>> TrySyncAddIn(MainViewModel VM)
+        {
+            ObservableCollection<SoeResponseModel> responses = new ObservableCollection<SoeResponseModel>();
+            await QueuedTask.Run(() =>
+            {
+                GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+                if(graphicsLayer != null)
+                {
+                    var pointGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == "point");
+                    var lineGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == "line");
+                    ObservableCollection<SoeResponseModel> pointSoeResponses = parseResponses(pointGraphics);
+                    VM.MapPointVM.SoeResponses = pointSoeResponses;
+                    if(pointSoeResponses.Count > 0)
+                    {
+                        VM.MapPointVM.ShowResultsTable = true;
+                    }
+                }
+            });
+            return responses;
+        }
+
+        private static ObservableCollection<SoeResponseModel> parseResponses(IEnumerable<GraphicElement> Graphics)
+        {
+            ObservableCollection<SoeResponseModel> Responses = new ObservableCollection<SoeResponseModel>();
+            foreach (GraphicElement item in Graphics)
+            {
+                SoeResponseModel response = new SoeResponseModel
+                {
+                    Route = item.GetCustomProperty("Route"),
+                    Decrease = Convert.ToBoolean(item.GetCustomProperty("Decrease")),
+                    Arm = Convert.ToDouble(item.GetCustomProperty("Arm")),
+                    Srmp = Convert.ToDouble(item.GetCustomProperty("Srmp")),
+                    Back = Convert.ToBoolean(item.GetCustomProperty("Back")),
+                    EndBack = Convert.ToBoolean(item.GetCustomProperty("EndBack")),
+                    Angle = Convert.ToDouble(item.GetCustomProperty("Angle")),
+                    ResponseDate =item.GetCustomProperty("ResponseDate"),
+                    RealignmentDate = item.GetCustomProperty("RealignmentDate"),
+                    RouteGeometry = new SoeResponseModel.coordinatePair { 
+                        x= Convert.ToDouble(item.GetCustomProperty("x")), y= Convert.ToDouble(item.GetCustomProperty("y"))
+                    }
+                };
+                Responses.Add(response);
+            }
+            return Responses;
+        }
+    }   
+
 }

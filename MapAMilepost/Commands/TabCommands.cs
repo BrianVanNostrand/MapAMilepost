@@ -26,11 +26,9 @@ namespace MapAMilepost.Commands
                 switch (Name)
                 {
                     case "MapPointTab":
-                       // MapToolUtils.DeactivateSession(VM.MapLineVM);
-                        VM.SelectedViewModel = VM.MapPointVM;
+                         VM.SelectedViewModel = VM.MapPointVM;
                         break;
                     case "MapLineTab":
-                       // MapToolUtils.DeactivateSession(VM.MapPointVM);
                         VM.SelectedViewModel = VM.MapLineVM;
                         break;
                     default:

@@ -44,6 +44,8 @@ namespace MapAMilepost.Commands
             //if no row is clicked, clear the selection
             if (dataGridRowSelected == false)
             {
+                //clear the response
+                VM.SoeResponse = new SoeResponseModel();
                 //clear selected items
                 VM.SelectedItems.Clear();
                 //clear selected rows

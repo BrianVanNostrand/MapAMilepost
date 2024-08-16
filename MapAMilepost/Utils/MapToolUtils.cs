@@ -22,20 +22,22 @@ namespace MapAMilepost.Utils
         /// <param name="VM">the target viewmodel</param>
         public static void InitializeSession(Utils.ViewModelBase VM, string startEnd = null)
         {
-            VM.MappingTool.StartSession(VM, startEnd);
-            if (startEnd == null||startEnd=="start")//if point mapping
+            if (MapViewUtils.CheckMapView())
             {
-                VM.MapToolInfos.SessionActive = true;
-                VM.MapToolInfos.MapButtonLabel = "Stop Mapping";
-                VM.MapToolInfos.MapButtonToolTip = "End mapping session.";
+                VM.MappingTool.StartSession(VM, startEnd);
+                if (startEnd == null||startEnd=="start")//if point mapping
+                {
+                    VM.MapToolInfos.SessionActive = true;
+                    VM.MapToolInfos.MapButtonLabel = "Stop Mapping";
+                    VM.MapToolInfos.MapButtonToolTip = "End mapping session.";
+                }
+                else
+                {
+                    VM.MapToolInfos.SessionEndActive = true;
+                    VM.MapToolInfos.MapButtonEndLabel = "Stop Mapping";
+                    VM.MapToolInfos.MapButtonEndToolTip = "End mapping session.";
+                }
             }
-            else
-            {
-                VM.MapToolInfos.SessionEndActive = true;
-                VM.MapToolInfos.MapButtonEndLabel = "Stop Mapping";
-                VM.MapToolInfos.MapButtonEndToolTip = "End mapping session.";
-            }
-            
         }
 
         /// <summary>
@@ -79,6 +81,7 @@ namespace MapAMilepost.Utils
         {
             //VM.SoeResponse = new SoeResponseModel();
             SoeResponseModel response = new SoeResponseModel();
+            FRLLineGeometryModel lineGeometryResponse = new FRLLineGeometryModel();
             if ((MapPoint)mapPoint != null)
             {
                 if (startEnd == "end")
@@ -87,6 +90,7 @@ namespace MapAMilepost.Utils
                     VM.SoeEndArgs.Y = ((MapPoint)mapPoint).Y;
                     VM.SoeEndArgs.SR = ((MapPoint)mapPoint).SpatialReference.Wkid;
                     response = (await Utils.HTTPRequest.QuerySOE(VM.SoeEndArgs) as SoeResponseModel);
+                    VM.SoeEndResponse = response;
                 }
                 else
                 {
@@ -94,9 +98,13 @@ namespace MapAMilepost.Utils
                     VM.SoeArgs.Y = ((MapPoint)mapPoint).Y;
                     VM.SoeArgs.SR = ((MapPoint)mapPoint).SpatialReference.Wkid;
                     response = (await Utils.HTTPRequest.QuerySOE(VM.SoeArgs) as SoeResponseModel);
+                    VM.SoeResponse = response;
+                }
+                if(VM.SoeResponse.Route == VM.SoeEndResponse.Route) {//if the start and end of a line exists
+                    var lineResponse = Utils.HTTPRequest.FindLineLocation(VM.SoeResponse, VM.SoeEndResponse, VM.SoeArgs);
                 }
             }
-            if (response != null)
+            if (response.Route != null)
             {
                 CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
                 await QueuedTask.Run(() =>
@@ -104,17 +112,17 @@ namespace MapAMilepost.Utils
                     Commands.GraphicsCommands.DeleteUnsavedGraphics(startEnd);//delete all unsaved graphics
                     if (startEnd == "end")
                     {
-                        VM.SoeEndResponse = response;
-                        //SoeResponseUtils.CopyProperties(response, VM.SoeEndResponse);
                         Commands.GraphicsCommands.CreateClickRoutePointGraphics(VM.SoeEndArgs, VM.SoeEndResponse, customPointSymbols, startEnd);
                     }
                     else
                     {
-                        VM.SoeResponse = response;
-                        //SoeResponseUtils.CopyProperties(response, VM.SoeResponse);
                         Commands.GraphicsCommands.CreateClickRoutePointGraphics(VM.SoeArgs, VM.SoeResponse, customPointSymbols, startEnd);
                     }
                 });
+            }
+            if (lineGeometryResponse.paths)
+            {
+
             }
         }
     }
