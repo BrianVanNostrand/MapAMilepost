@@ -42,8 +42,8 @@
             <Label Grid.Row="0" Grid.Column="2">End Point</Label>
             <Label x:Name="MapPointSearchDistanceLabel" Grid.Row="1" Grid.Column="0">Search Distance</Label>
             <Label  Grid.Row="1" Grid.Column="3">Feet</Label>
-            <TextBox x:Name="MapStartPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="1" Text="{Binding SOEStartArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped start point."/>
-            <TextBox x:Name="MapEndPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="2" Text="{Binding SOEEndArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped end point."/>
+            <TextBox x:Name="MapStartPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="1" Text="{Binding SoeArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped start point."/>
+            <TextBox x:Name="MapEndPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="2" Text="{Binding SoeEndArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped end point."/>
             <Label Grid.Row="2" Grid.Column="0">Coordinates of Click</Label>
             <Label Grid.Row="2" Grid.Column="1">
                 <MultiBinding StringFormat="{}{0} , {1}">
@@ -80,36 +80,36 @@
             <Label Grid.Column="0" Grid.Row="0" Background="#cfd8ff" >Results</Label>
             <Label Background="#cfd8ff" Grid.Column="1" Grid.Row="0">Start</Label>
             <Label Background="#cfd8ff" Grid.Column="2" Grid.Row="0">End</Label>
-            <Label Grid.Column="0" Grid.Row="1">Angle</Label>
-            <Label Grid.Column="0" Grid.Row="2">ARM</Label>
-            <Label Grid.Column="0" Grid.Row="3">Back</Label>
-            <Label Grid.Column="0" Grid.Row="4">Decrease</Label>
-            <Label Grid.Column="0" Grid.Row="5">Distance</Label>
-            <Label Grid.Column="0" Grid.Row="6">Route</Label>
-            <Label Grid.Column="0" Grid.Row="7">SRMP</Label>
-            <Label Grid.Column="0" Grid.Row="8">X</Label>
-            <Label Grid.Column="0" Grid.Row="9">Y</Label>
+            <Label Grid.Column="0" Grid.Row="1">Route</Label>
+            <Label Grid.Column="0" Grid.Row="2">SRMP</Label>
+            <Label Grid.Column="0" Grid.Row="3">ARM</Label>
+            <Label Grid.Column="0" Grid.Row="4">X</Label>
+            <Label Grid.Column="0" Grid.Row="5">Y</Label>
+            <Label Grid.Column="0" Grid.Row="6">Decrease</Label>
+            <Label Grid.Column="0" Grid.Row="7">Back</Label>
+            <Label Grid.Column="0" Grid.Row="8">Realignment Date</Label>
+            <Label Grid.Column="0" Grid.Row="9">Response Date</Label>
             <!--Start Point Bindings-->
-            <Label Grid.Column="1" Grid.Row="1" Content="{Binding SoeResponse.Angle,UpdateSourceTrigger=PropertyChanged}" />
-            <Label Grid.Column="1" Grid.Row="2" Content="{Binding SoeResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="3" Content="{Binding SoeResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="4" Content="{Binding SoeResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="5" Content="{Binding SoeResponse.Distance, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="6" Content="{Binding SoeResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="7" Content="{Binding SoeResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="8" Content="{Binding SoeResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="9" Content="{Binding SoeResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
-            <!--End Point Bindings-->
-            <Label Grid.Column="2" Grid.Row="1" Content="{Binding SoeEndResponse.Angle,UpdateSourceTrigger=PropertyChanged}" />
-            <Label Grid.Column="2" Grid.Row="2" Content="{Binding SoeEndResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="3" Content="{Binding SoeEndResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="4" Content="{Binding SoeEndResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="5" Content="{Binding SoeEndResponse.Distance, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="6" Content="{Binding SoeEndResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="7" Content="{Binding SoeEndResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="8" Content="{Binding SoeEndResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="9" Content="{Binding SoeEndResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
-
+            <Label Grid.Column="1" Grid.Row="1" Content="{Binding SoeResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="2" Content="{Binding SoeResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="3" Content="{Binding SoeResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="4" Content="{Binding SoeResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="5" Content="{Binding SoeResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="6" Content="{Binding SoeResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="7" Content="{Binding SoeResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="8" Content="{Binding SoeResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="9" Content="{Binding SoeResponse.ResponseDate, UpdateSourceTrigger=PropertyChanged}"/>
+             <!--End Point Bindings-->
+            <Label Grid.Column="2" Grid.Row="1" Content="{Binding SoeEndResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="2" Content="{Binding SoeEndResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="3" Content="{Binding SoeEndResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="4" Content="{Binding SoeEndResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="5" Content="{Binding SoeEndResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="6" Content="{Binding SoeEndResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="7" Content="{Binding SoeEndResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="8" Content="{Binding SoeEndResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="9" Content="{Binding SoeEndResponse.ResponseDate, UpdateSourceTrigger=PropertyChanged}"/>
+            
             <Border Grid.ColumnSpan="3" Grid.Row="2" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="3" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="4" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
@@ -151,6 +151,7 @@
                 </Grid.ColumnDefinitions>
                 <Label Grid.Row="0" Grid.Column="0">Lines:</Label>
                 <Label Grid.Row="0" Grid.Column="1" Content="{Binding SoeLineResponses.Count}"/>
+                <Label Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" Visibility="{Binding ShowWarningLabel}" Content="{Binding WarningLabel}" Background="LightCoral"/>
             </Grid>
             <ScrollViewer  Grid.ColumnSpan="3" Grid.Row="3">
                 <DataGrid CanUserAddRows="False" x:Name="LinesGrid" HorizontalAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding SoeLineResponses}">
@@ -165,13 +166,6 @@
                     </DataGrid.RowStyle>
                     <DataGrid.Columns>
                         <!--Start Info-->
-                        <DataGridTemplateColumn Header="Delete">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <!-- <Button Content="Delete" Command="Delete"/> -->
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
                         <DataGridTextColumn Header="Route" Binding="{Binding [0].Route}"/>
                         <DataGridTextColumn Header="ARM" Binding="{Binding [0].Arm}"/>
                         <DataGridTextColumn Header="EndARM" Binding="{Binding [1].Arm}"/>

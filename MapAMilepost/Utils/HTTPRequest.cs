@@ -33,13 +33,17 @@ namespace MapAMilepost.Utils
         
         public static async Task<object> QuerySOE(SoeArgsModel args)
         {
-            object response = new object();// assume find nearest route location fails
+            object response = new();// assume find nearest route location fails
             object FNRLResponse = await FindNearestRouteLocation(args);
             if (FNRLResponse != null)
             {
                 var FRLParams = new FRLRequestObject(FNRLResponse as SoeResponseModel);
                 object FRLResponse = await FindRouteLocation(FRLParams, args);
                 response = FRLResponse;
+            }
+            else
+            {
+                response = null;
             }
             return response;
         }
@@ -72,6 +76,7 @@ namespace MapAMilepost.Utils
                     else
                     {
                         MessageBox.Show($"No results found within {args.SearchRadius} feet of clicked point.");
+                        responseObject = null;
                     }
                 }
                 else
@@ -122,7 +127,7 @@ namespace MapAMilepost.Utils
             }
             return responseObject;
         }
-        public static async Task<object> FindLineLocation(SoeResponseModel startResponse, SoeResponseModel endResponse, SoeArgsModel args)
+        public static async Task<List<List<double>>> FindLineLocation(SoeResponseModel startResponse, SoeResponseModel endResponse, SoeArgsModel args)
         {
             var lineRequestURL = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Route%20Locations");
             SOELineArgsModel lineLocations = new SOELineArgsModel
@@ -141,7 +146,7 @@ namespace MapAMilepost.Utils
                 {"outSR",args.SR}
             };
             lineRequestURL.SetQueryParams(lineRequestParams);
-            var responseObject = new object();
+            List<List<double>> responseObject = new List<List<double>>();
             try
             {
                 var FRLresponse = await lineRequestURL.GetAsync();
@@ -151,7 +156,7 @@ namespace MapAMilepost.Utils
                     var SoeResponses = JsonSerializer.Deserialize<List<FRLLineGeometryModel>>(responseString);
                     if (SoeResponses.Count > 0)
                     {
-                        responseObject = SoeResponses.First();
+                         responseObject = (SoeResponses.First().RouteGeometry.paths).First();
                     }
                     else
                     {

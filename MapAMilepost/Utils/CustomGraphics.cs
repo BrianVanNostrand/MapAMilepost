@@ -14,15 +14,15 @@ namespace MapAMilepost.Utils
 {
     public class CustomGraphics
     {
-        public Dictionary<string, Dictionary<string, CIMPointSymbol>> SymbolsLibrary { get; set; }
+        public Dictionary<string, Dictionary<string, object>> SymbolsLibrary { get; set; }
 
         public async static Task<CustomGraphics> CreateCustomGraphicSymbolsAsync()
         {
-            Dictionary<string, Dictionary<string, CIMPointSymbol>> tempSymbolsLibrary = new();
+            Dictionary<string, Dictionary<string, object>> tempSymbolsLibrary = new();
             //selected graphics
             //var SelectedSymbolsDictionary = new Dictionary<string, CIMPointSymbol>();
             //deselected graphics 
-            var DeselectedSymbolsDictionary = new Dictionary<string, CIMPointSymbol>{
+            var DeselectedSymbolsDictionary = new Dictionary<string, object>{
                 { "ClickPoint", await CreatePointSymbolAsync("yellow","cross") },
                 { "RoutePoint", await CreatePointSymbolAsync("darkblue", "circle") },
                 { "SavedRoutePoint", await CreatePointSymbolAsync("blue", "circle") },
@@ -30,12 +30,15 @@ namespace MapAMilepost.Utils
                 { "SavedStartRoutePoint", await CreatePointSymbolAsync("green", "circle") },
                 { "EndRoutePoint", await CreatePointSymbolAsync("darkred", "circle") },
                 { "SavedEndRoutePoint", await CreatePointSymbolAsync("red", "circle") },
-                { "SelectedRoutePoint", await CreatePointSymbolAsync("selected", "circle") }
+                { "SelectedRoutePoint", await CreatePointSymbolAsync("selected", "circle") },
+                { "RouteLine", await CreateLineSymbolAsync("blue", "dash") },
+                { "SavedRouteLine", await CreateLineSymbolAsync("blue", "solid") },
+                { "SelectedRouteLine", await CreateLineSymbolAsync("selected", "solid") }
             };
             tempSymbolsLibrary.Add("DeselectedSymbols", DeselectedSymbolsDictionary);
             return new CustomGraphics(tempSymbolsLibrary);
         }
-        private CustomGraphics(Dictionary<string, Dictionary<string, CIMPointSymbol>> Data)
+        private CustomGraphics(Dictionary<string, Dictionary<string, object>> Data)
         {
             this.SymbolsLibrary = Data;
         }
@@ -50,7 +53,7 @@ namespace MapAMilepost.Utils
         {
             return QueuedTask.Run(() =>
             {
-                SimpleMarkerStyle Style = new SimpleMarkerStyle(); 
+                SimpleMarkerStyle Style = new(); 
                 switch (style){
                     case "cross":
                         Style = SimpleMarkerStyle.Cross;
@@ -59,8 +62,8 @@ namespace MapAMilepost.Utils
                         Style = SimpleMarkerStyle.Circle;
                         break;
                 }
-                CIMPointSymbol circlePtSymbol = SymbolFactory.Instance.ConstructPointSymbol(ColorFactory.Instance.GreenRGB, 8, Style);
-                var marker = circlePtSymbol.SymbolLayers[0] as CIMVectorMarker;
+                CIMPointSymbol ptSymbol = SymbolFactory.Instance.ConstructPointSymbol(ColorFactory.Instance.GreenRGB, 8, Style);
+                var marker = ptSymbol.SymbolLayers[0] as CIMVectorMarker;
                 var polySymbol = marker.MarkerGraphics[0].Symbol as CIMPolygonSymbol;
                 switch (fillColor)
                 {
@@ -87,7 +90,26 @@ namespace MapAMilepost.Utils
                         break;
                 }
                 polySymbol.SymbolLayers[0] = SymbolFactory.Instance.ConstructStroke(ColorFactory.Instance.WhiteRGB, 1, SimpleLineStyle.Solid); //This is the outline
-                return circlePtSymbol;
+                return ptSymbol;
+            });
+        }
+
+        private static Task<CIMLineSymbol> CreateLineSymbolAsync(string fillColor, string style)
+        {
+            return QueuedTask.Run(() =>
+            {
+                SimpleLineStyle Style = new();
+                switch (style)
+                {
+                    case "dash":
+                        Style = SimpleLineStyle.Dash;
+                        break;
+                    case "solid":
+                        Style = SimpleLineStyle.Solid;
+                        break;
+                }
+                CIMLineSymbol lineSymbol = SymbolFactory.Instance.ConstructLineSymbol(ColorFactory.Instance.GreenRGB, 4, Style);
+                return lineSymbol;
             });
         }
     }

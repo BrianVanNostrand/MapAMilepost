@@ -36,7 +36,7 @@ namespace MapAMilepost.Commands
         public static async void UpdateSaveGraphicInfos(CustomGraphics CustomPointSymbols)
         {
             GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
-            CIMPointSymbol savedRoutePointSymbol = CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["SavedRoutePoint"];
+            CIMPointSymbol savedRoutePointSymbol = CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["SavedRoutePoint"] as CIMPointSymbol;
             //var graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
             IEnumerable<GraphicElement> graphicItems = graphicsLayer.GetElementsAsFlattenedList();
             await QueuedTask.Run(() =>
@@ -75,8 +75,8 @@ namespace MapAMilepost.Commands
             #region create and add click point graphic
             
             var clickedPtGraphic = new CIMPointGraphic() { 
-                Symbol = (CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["ClickPoint"]).MakeSymbolReference(),
-                Location = (MapPointBuilderEx.CreateMapPoint(SoeArgs.X, SoeArgs.Y, SoeArgs.SR))
+                Symbol = (CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["ClickPoint"] as CIMPointSymbol).MakeSymbolReference(),
+                Location = (MapPointBuilderEx.CreateMapPoint(SoeArgs.X, SoeArgs.Y))
             };
             //create custom click point props
             var clickPtElemInfo = new ArcGIS.Desktop.Layouts.ElementInfo()
@@ -89,18 +89,18 @@ namespace MapAMilepost.Commands
                     new() { Key = "startEnd", Value = startEnd }
                 }
             };
-            graphicsLayer.AddElement(cimGraphic: clickedPtGraphic, elementInfo: clickPtElemInfo);
+            graphicsLayer.AddElement(cimGraphic: clickedPtGraphic, elementInfo: clickPtElemInfo, select: false);
             #endregion
 
             #region create and add route point graphic
             CIMSymbolReference routePointSymbol = (
-                startEnd == "start" ? (CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["StartRoutePoint"]).MakeSymbolReference() :
-                startEnd == "end" ? (CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["EndRoutePoint"]).MakeSymbolReference() :
-                (CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["RoutePoint"]).MakeSymbolReference()
+                startEnd == "start" ? (CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["StartRoutePoint"] as CIMPointSymbol).MakeSymbolReference() :
+                startEnd == "end" ? (CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["EndRoutePoint"] as CIMPointSymbol).MakeSymbolReference() :
+                (CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["RoutePoint"] as CIMPointSymbol).MakeSymbolReference()
             );
             var soePtGraphic = new CIMPointGraphic() { 
                 Symbol = routePointSymbol,
-                Location = MapPointBuilderEx.CreateMapPoint(SoeResponse.RouteGeometry.x, SoeResponse.RouteGeometry.y, SoeArgs.SR)
+                Location = MapPointBuilderEx.CreateMapPoint(SoeResponse.RouteGeometry.x, SoeResponse.RouteGeometry.y)
             };
 
             //create custom route point props
@@ -125,10 +125,38 @@ namespace MapAMilepost.Commands
                     new() { Key = "startEnd", Value = startEnd }
                 }
             };
-            graphicsLayer.AddElement(cimGraphic: soePtGraphic, elementInfo: routePtElemInfo);
-            graphicsLayer.ClearSelection();
+            graphicsLayer.AddElement(cimGraphic: soePtGraphic, elementInfo: routePtElemInfo, select: false);
             #endregion
         }
+
+        public static void CreateRouteLineGraphics(SoeResponseModel startPoint, SoeResponseModel endPoint, CustomGraphics CustomSymbols, List<Coordinate2D> points)
+        {
+            GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+            var lineGraphic = new CIMLineGraphic()
+            {
+                Symbol = (CustomSymbols.SymbolsLibrary["DeselectedSymbols"]["RouteLine"] as CIMLineSymbol).MakeSymbolReference(),
+                Line = (PolylineBuilderEx.CreatePolyline(points))
+            };
+            var routePtElemInfo = new ElementInfo()
+            {
+                CustomProperties = new List<CIMStringMap>()
+                {
+                    new() { Key = "Route",Value = startPoint.Route},
+                    new() { Key = "Decrease",Value = startPoint.Decrease.ToString()},
+                    new() { Key = "Arm",Value = startPoint.Arm.ToString()},
+                    new() { Key = "EndArm",Value = endPoint.Arm.ToString()},
+                    new() { Key = "Srmp",Value = startPoint.Srmp.ToString()},
+                    new() { Key = "EndSRMP",Value = endPoint.Srmp.ToString()},
+                    new() { Key = "Back",Value = startPoint.Back.ToString()},
+                    new() { Key = "ResponseDate",Value = startPoint.ResponseDate.ToString()},
+                    new() { Key = "EndBack",Value = endPoint.EndBack.ToString()},
+                    new() { Key = "saved", Value="false"},
+                    new() { Key = "sessionType", Value = "line"}
+                }
+            };
+            graphicsLayer.AddElement(cimGraphic: lineGraphic, elementInfo: routePtElemInfo, select: false);
+            OrganizeGraphics(graphicsLayer);
+        }   
 
         /// <summary>
         /// -   Use the geometry of the route point from the SOE response to generate a label that is displayed
@@ -199,6 +227,10 @@ namespace MapAMilepost.Commands
                                     graphicsLayer.RemoveElement(item);
                                 }
                                 else if (item.GetCustomProperty("startEnd") == startEnd)
+                                {
+                                    graphicsLayer.RemoveElement(item);
+                                }
+                                if (item.Name.Contains("Line"))
                                 {
                                     graphicsLayer.RemoveElement(item);
                                 }
@@ -369,8 +401,8 @@ namespace MapAMilepost.Commands
         {
             ObservableCollection<SoeResponseModel> Responses = new ObservableCollection<SoeResponseModel>();
             foreach (GraphicElement item in Graphics)
-            {
-                SoeResponseModel response = new SoeResponseModel
+            {//if saved TODO
+                SoeResponseModel response = new()
                 {
                     Route = item.GetCustomProperty("Route"),
                     Decrease = Convert.ToBoolean(item.GetCustomProperty("Decrease")),
@@ -388,6 +420,20 @@ namespace MapAMilepost.Commands
                 Responses.Add(response);
             }
             return Responses;
+        }
+
+        private static async void OrganizeGraphics(GraphicsLayer graphicsLayer)
+        {
+            await QueuedTask.Run(() =>
+            {
+                var elements = graphicsLayer.GetElementsAsFlattenedList();
+                foreach (GraphicElement item in elements)
+                { 
+                    if (item.Name.Contains("Line")) {
+                        graphicsLayer.SendToBack(item);
+                    }
+                }
+            });
         }
     }   
 

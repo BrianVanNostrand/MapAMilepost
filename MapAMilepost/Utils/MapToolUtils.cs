@@ -79,9 +79,10 @@ namespace MapAMilepost.Utils
         /// <param name="mapPoint"></param>
         public static async void MapPoint2RoutePoint(object mapPoint, Utils.ViewModelBase VM, string startEnd)
         {
+            CustomGraphics customSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
             //VM.SoeResponse = new SoeResponseModel();
             SoeResponseModel response = new SoeResponseModel();
-            FRLLineGeometryModel lineGeometryResponse = new FRLLineGeometryModel();
+            List<List<double>> lineGeometryResponse = new();
             if ((MapPoint)mapPoint != null)
             {
                 if (startEnd == "end")
@@ -100,29 +101,49 @@ namespace MapAMilepost.Utils
                     response = (await Utils.HTTPRequest.QuerySOE(VM.SoeArgs) as SoeResponseModel);
                     VM.SoeResponse = response;
                 }
-                if(VM.SoeResponse.Route == VM.SoeEndResponse.Route) {//if the start and end of a line exists
-                    var lineResponse = Utils.HTTPRequest.FindLineLocation(VM.SoeResponse, VM.SoeEndResponse, VM.SoeArgs);
-                }
+                if(VM.SoeEndResponse != null && VM.SoeResponse != null)
+                {
+                    if(VM.SoeResponse.Route == VM.SoeEndResponse.Route) 
+                    {//if the start and end of a line exists
+                        if(VM.SoeResponse.Decrease == VM.SoeEndResponse.Decrease)
+                        {
+                            VM.ShowWarningLabel = false;
+                            lineGeometryResponse = (await Utils.HTTPRequest.FindLineLocation(VM.SoeResponse, VM.SoeEndResponse, VM.SoeArgs));
+                        }
+                        else
+                        {
+                            VM.ShowWarningLabel = true;
+                            VM.WarningLabel = "Start and End points must be located on the same route and lane direction.";
+                        }
+                    }
+                } 
             }
-            if (response.Route != null)
+            if (response != null)
             {
-                CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
                 await QueuedTask.Run(() =>
                 {
                     Commands.GraphicsCommands.DeleteUnsavedGraphics(startEnd);//delete all unsaved graphics
                     if (startEnd == "end")
                     {
-                        Commands.GraphicsCommands.CreateClickRoutePointGraphics(VM.SoeEndArgs, VM.SoeEndResponse, customPointSymbols, startEnd);
+                        Commands.GraphicsCommands.CreateClickRoutePointGraphics(VM.SoeEndArgs, VM.SoeEndResponse, customSymbols, startEnd);
                     }
                     else
                     {
-                        Commands.GraphicsCommands.CreateClickRoutePointGraphics(VM.SoeArgs, VM.SoeResponse, customPointSymbols, startEnd);
+                        Commands.GraphicsCommands.CreateClickRoutePointGraphics(VM.SoeArgs, VM.SoeResponse, customSymbols, startEnd);
                     }
                 });
             }
-            if (lineGeometryResponse.paths)
+            if (lineGeometryResponse != null && lineGeometryResponse.Count > 0 )
             {
-
+                await QueuedTask.Run(() =>
+                {
+                    List<Coordinate2D> points = new List<Coordinate2D>();
+                    foreach (var item in lineGeometryResponse)
+                    {
+                        points.Add(new Coordinate2D(item[0], item[1]));
+                    }  
+                    Commands.GraphicsCommands.CreateRouteLineGraphics(VM.SoeResponse, VM.SoeEndResponse, customSymbols, points);
+                });
             }
         }
     }

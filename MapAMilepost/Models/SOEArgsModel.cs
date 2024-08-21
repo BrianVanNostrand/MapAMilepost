@@ -87,7 +87,7 @@ namespace MapAMilepost.Models
         public SoeArgsModel()//set default values in constructor
         {
             this._referenceDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
-            this._searchRadius = "200000";
+            this._searchRadius = "200";
         }
     }
 

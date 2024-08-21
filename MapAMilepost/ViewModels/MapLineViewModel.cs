@@ -17,6 +17,8 @@ namespace MapAMilepost.ViewModels
         private ObservableCollection<SoeResponseModel> _soeLineResponses;
         private bool _showResultsTable = false;
         private MapToolInfo _mapToolInfos;
+        private bool _showWarningLabel = false;
+        private string _warningLabel;
         public MapLineViewModel()//constructor
         {
             _SoeResponse = new SoeResponseModel();
@@ -51,6 +53,24 @@ namespace MapAMilepost.ViewModels
             {
                 _showResultsTable = value;
                 OnPropertyChanged(nameof(ShowResultsTable));
+            }
+        }
+        public override bool ShowWarningLabel
+        {
+            get { return _showWarningLabel; }
+            set
+            {
+                _showWarningLabel = value;
+                OnPropertyChanged(nameof(ShowWarningLabel));
+            }
+        }
+        public override string WarningLabel
+        {
+            get { return _warningLabel; }
+            set
+            {
+                _warningLabel = value;
+                OnPropertyChanged(nameof(WarningLabel));
             }
         }
         public override SoeResponseModel SoeResponse
