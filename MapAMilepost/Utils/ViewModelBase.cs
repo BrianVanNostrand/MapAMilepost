@@ -21,8 +21,6 @@ namespace MapAMilepost.Utils
         public MapAMilepostMaptool MappingTool { get; set; }
         public virtual MapToolInfo MapToolInfos { get; set; }
         public virtual bool ShowResultsTable { get; set; }
-        public virtual bool ShowWarningLabel { get; set; }
-        public virtual string WarningLabel { get; set; }
         public virtual SoeResponseModel SoeResponse { get; set; } //used for both points and lines
         public virtual SoeResponseModel SoeEndResponse { get; set; } //used for lines
         public virtual SoeArgsModel SoeArgs { get; set; } //used for both points and lines

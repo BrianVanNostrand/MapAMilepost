@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media;
 
 namespace MapAMilepost.Utils
 {
@@ -24,7 +26,6 @@ namespace MapAMilepost.Utils
         {
             if (MapViewUtils.CheckMapView())
             {
-                VM.MappingTool.StartSession(VM, startEnd);
                 if (startEnd == null||startEnd=="start")//if point mapping
                 {
                     VM.MapToolInfos.SessionActive = true;
@@ -37,6 +38,7 @@ namespace MapAMilepost.Utils
                     VM.MapToolInfos.MapButtonEndLabel = "Stop Mapping";
                     VM.MapToolInfos.MapButtonEndToolTip = "End mapping session.";
                 }
+                VM.MappingTool.StartSession(VM, startEnd);
             }
         }
 
@@ -49,22 +51,26 @@ namespace MapAMilepost.Utils
         /// <param name="VM">the target viewmodel</param>
         public static void DeactivateSession(Utils.ViewModelBase VM, string startEnd = null)
         {
+            if (startEnd == null||startEnd=="start")//if start session or point session
             {
                 VM.MapToolInfos.SessionActive = false;
                 VM.MapToolInfos.MapButtonLabel = "Start Mapping";
                 VM.MapToolInfos.MapButtonToolTip = "Start mapping session.";
+            }
+            else if (startEnd == "end")//if end session
+            {
                 VM.MapToolInfos.SessionEndActive = false;
                 VM.MapToolInfos.MapButtonEndLabel = "Start Mapping";
                 VM.MapToolInfos.MapButtonEndToolTip = "Start mapping session.";
-
-                //  Calls the EndSession method from the MapAMilepostMapTool viewmodel, setting the active tool
-                //  to whatever was selected before the mapping session was initialized.
-                VM.MappingTool.EndSession();
-                if(startEnd == null)
-                {
-                    Commands.GraphicsCommands.DeleteUnsavedGraphics(startEnd);
-                }
             }
+            //  Calls the EndSession method from the MapAMilepostMapTool viewmodel, setting the active tool
+            //  to whatever was selected before the mapping session was initialized.
+            VM.MappingTool.EndSession();
+            if(startEnd == null)//if point session
+            {
+                Commands.GraphicsCommands.DeleteUnsavedGraphics(startEnd);
+            }
+            
         }
 
         /// <summary>
@@ -107,13 +113,30 @@ namespace MapAMilepost.Utils
                     {//if the start and end of a line exists
                         if(VM.SoeResponse.Decrease == VM.SoeEndResponse.Decrease)
                         {
-                            VM.ShowWarningLabel = false;
                             lineGeometryResponse = (await Utils.HTTPRequest.FindLineLocation(VM.SoeResponse, VM.SoeEndResponse, VM.SoeArgs));
                         }
                         else
                         {
-                            VM.ShowWarningLabel = true;
-                            VM.WarningLabel = "Start and End points must be located on the same route and lane direction.";
+                            Notification notification = new Notification();
+                            notification.Title = FrameworkApplication.Title;
+                            notification.Message = "Start and End points must be located on the same lane direction.";
+
+                            ArcGIS.Desktop.Framework.FrameworkApplication.AddNotification(notification);
+                            //MessageBox.Show("Start and End points must be located on the same lane direction.");
+                        }
+                    }
+                    else
+                    {
+                        //MessageBox.Show("Start and End points must be located on the same route.");
+                        if (VM.SoeResponse.Route != null && VM.SoeEndResponse.Route != null)
+                        {
+                            Notification notification = new Notification()
+                            {
+                                Title = "SOE Error",
+                                Message = "Start and End points must be located on the same route.",
+                                Severity = (Notification.SeverityLevel)1
+                            };
+                            FrameworkApplication.AddNotification(notification);
                         }
                     }
                 } 
@@ -165,7 +188,7 @@ namespace MapAMilepost.Utils
             get { return _sessionEndActive; }
             set
             {
-                _sessionActive = value;
+                _sessionEndActive = value;
                 OnPropertyChanged(nameof(SessionEndActive));
             }
         }

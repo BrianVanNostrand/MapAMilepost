@@ -17,8 +17,6 @@ namespace MapAMilepost.ViewModels
         private ObservableCollection<SoeResponseModel> _soeLineResponses;
         private bool _showResultsTable = false;
         private MapToolInfo _mapToolInfos;
-        private bool _showWarningLabel = false;
-        private string _warningLabel;
         public MapLineViewModel()//constructor
         {
             _SoeResponse = new SoeResponseModel();
@@ -53,24 +51,6 @@ namespace MapAMilepost.ViewModels
             {
                 _showResultsTable = value;
                 OnPropertyChanged(nameof(ShowResultsTable));
-            }
-        }
-        public override bool ShowWarningLabel
-        {
-            get { return _showWarningLabel; }
-            set
-            {
-                _showWarningLabel = value;
-                OnPropertyChanged(nameof(ShowWarningLabel));
-            }
-        }
-        public override string WarningLabel
-        {
-            get { return _warningLabel; }
-            set
-            {
-                _warningLabel = value;
-                OnPropertyChanged(nameof(WarningLabel));
             }
         }
         public override SoeResponseModel SoeResponse
@@ -119,15 +99,31 @@ namespace MapAMilepost.ViewModels
 
         public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new Commands.RelayCommand<object>((startEnd) =>
         {
-            if(MapToolInfos.SessionActive&&(string)startEnd=="start"|| MapToolInfos.SessionEndActive && (string)startEnd == "end")
+            if((string)startEnd=="start")//if start button is clicked
             {
-                Utils.MapToolUtils.DeactivateSession(this, (string)startEnd);
+                if (this.MapToolInfos.SessionEndActive == true || this.MapToolInfos.SessionActive == false)
+                {
+                    Utils.MapToolUtils.DeactivateSession(this, "end");
+                    Utils.MapToolUtils.InitializeSession(this, "start");
+                }
+                else if(this.MapToolInfos.SessionActive == true)
+                {
+                    Utils.MapToolUtils.DeactivateSession(this, "start");
+                }
             }
-            else
+            if ((string)startEnd == "end")
             {
-                Utils.MapToolUtils.DeactivateSession(this, (string)startEnd);
-                Utils.MapToolUtils.InitializeSession(this, (string)startEnd);
+                if (this.MapToolInfos.SessionActive == true || this.MapToolInfos.SessionEndActive == false)
+                {
+                    Utils.MapToolUtils.DeactivateSession(this, "start");
+                    Utils.MapToolUtils.InitializeSession(this, "end");
+                }
+                else if (this.MapToolInfos.SessionEndActive == true)
+                {
+                    Utils.MapToolUtils.DeactivateSession(this, "end");
+                }
             }
+           
         });
     }
 }

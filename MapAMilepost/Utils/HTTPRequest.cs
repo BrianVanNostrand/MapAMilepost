@@ -75,18 +75,18 @@ namespace MapAMilepost.Utils
                     }
                     else
                     {
-                        MessageBox.Show($"No results found within {args.SearchRadius} feet of clicked point.");
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"No results found within {args.SearchRadius} feet of clicked point.");
                         responseObject = null;
                     }
                 }
                 else
                 {
-                    MessageBox.Show(FNRLresponse.ResponseMessage.ToString());
+                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(FNRLresponse.ResponseMessage.ToString());
                 }
             }
             catch
             {
-                MessageBox.Show("'Find Nearest Route Location' timed out. Please check internet connection and try again.");
+                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("'Find Nearest Route Location' timed out. Please check internet connection and try again.");
             }
             return responseObject;
         }
@@ -109,21 +109,27 @@ namespace MapAMilepost.Utils
                     var SoeResponses = JsonSerializer.Deserialize<List<SoeResponseModel?>>(responseString);
                     if (SoeResponses.Count > 0)
                     {
-                        responseObject = SoeResponses.First();
+                        if(SoeResponses.First().RouteGeometry.x != 0 && SoeResponses.First().RouteGeometry.y != 0) { 
+                            responseObject = SoeResponses.First();
+                        }
+                        else
+                        {
+                            ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"The nearest route, {SoeResponses.First().Route}, did not return a route location.");
+                        }
                     }
                     else
                     {
-                        MessageBox.Show($"Location couldn't be found. Please try again.");
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"Location couldn't be found. Please try again.");
                     }
                 }
                 else
                 {
-                    MessageBox.Show(FRLresponse.ResponseMessage.ToString());
+                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(FRLresponse.ResponseMessage.ToString());
                 }
             }
             catch
             {
-                MessageBox.Show("'Find Route Location' timed out. Please check internet connection and try again.");
+                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("'Find Route Location' timed out. Please check internet connection and try again.");
             }
             return responseObject;
         }

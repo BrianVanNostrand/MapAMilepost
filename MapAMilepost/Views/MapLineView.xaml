@@ -144,14 +144,17 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Grid Grid.Row="0" Grid.Column="0">
+            <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="40px"/>
+                    <ColumnDefinition Width="40px"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
                 <Label Grid.Row="0" Grid.Column="0">Lines:</Label>
                 <Label Grid.Row="0" Grid.Column="1" Content="{Binding SoeLineResponses.Count}"/>
-                <Label Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" Visibility="{Binding ShowWarningLabel}" Content="{Binding WarningLabel}" Background="LightCoral"/>
             </Grid>
             <ScrollViewer  Grid.ColumnSpan="3" Grid.Row="3">
                 <DataGrid CanUserAddRows="False" x:Name="LinesGrid" HorizontalAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding SoeLineResponses}">
@@ -195,10 +198,10 @@
             <Button Grid.Row="2" Grid.Column="0" Style="{StaticResource whiteButton}">
                 Export Data
             </Button>
-            <Button x:Name="DeleteItemsButton" Grid.Row="2" Grid.Column="1" Command="{Binding DataContext.MapPointVM.DeleteItemsCommand,RelativeSource={RelativeSource AncestorType={x:Type viewmodels:MainViewModel}}}" Style="{StaticResource whiteButton}">
+            <Button x:Name="DeleteItemsButton" Grid.Row="2" Grid.Column="1" Command="{Binding DeleteItemsCommand}" Style="{StaticResource whiteButton}">
                 Delete Record
             </Button>
-            <Button x:Name="ClearItemsButton" Grid.Row="2" Grid.Column="2"  Command="{Binding DataContext.MapPointVM.ClearItemsCommand,RelativeSource={RelativeSource AncestorType={x:Type viewmodels:MainViewModel}}}" Style="{StaticResource whiteButton}">
+            <Button x:Name="ClearItemsButton" Grid.Row="2" Grid.Column="2"  Command="{Binding ClearItemsCommand}" Style="{StaticResource whiteButton}">
                 Clear Table
             </Button>
         </Grid>
