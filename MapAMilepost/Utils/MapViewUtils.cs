@@ -23,11 +23,11 @@ namespace MapAMilepost.Utils
             {
                 if (LayoutView.Active != null)
                 {
-                    MessageBox.Show("Map view is not active.");
+                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Map view is not active.");
                 }
                 else
                 {
-                    MessageBox.Show("Please wait for map to finish loading.");
+                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please wait for map to finish loading.");
                 }
             }
             return MapViewActive;

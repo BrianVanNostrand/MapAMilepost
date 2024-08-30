@@ -13,7 +13,7 @@ namespace MapAMilepost.Models
     /// -   SOE Response properties that are deserialized from the HTTP response, and 
     ///     used by the viewmodels.
     /// </summary>
-    public class SoeResponseModel : ObservableObject
+    public class PointResponseModel : ObservableObject
     {
 
         private double? _angle;
@@ -157,6 +157,34 @@ namespace MapAMilepost.Models
         }
     }
 
+    public class LineResponseModel : ObservableObject
+    {
+        private PointResponseModel _startResponse;
+        private PointResponseModel _endResponse;
+        public PointResponseModel StartResponse
+        {
+            get { return _startResponse; }
+            set
+            {
+                _startResponse = value;
+                OnPropertyChanged(nameof(StartResponse));
+            }
+        }
+        public PointResponseModel EndResponse {
+            get { return _endResponse; }
+            set
+            {
+                _endResponse = value;
+                OnPropertyChanged(nameof(EndResponse));
+            }
+        }
+        public LineResponseModel()
+        {
+            StartResponse = new PointResponseModel();
+            EndResponse = new PointResponseModel();
+        }
+    }
+
     /// <summary>
     /// The subset of properties returned by the "Find Nearest Route Location" API endpoint,
     /// that are used in the "Find Route Locations" API Endpoint. 
@@ -186,7 +214,7 @@ namespace MapAMilepost.Models
         ///     URL parameters of the "Find Route Locations" request.
         /// </summary>
         /// <param name="FNRL"></param>
-        public FRLRequestObject(SoeResponseModel FNRL)
+        public FRLRequestObject(PointResponseModel FNRL)
         {
             Route = FNRL.Route;
             Decrease = FNRL.Decrease;

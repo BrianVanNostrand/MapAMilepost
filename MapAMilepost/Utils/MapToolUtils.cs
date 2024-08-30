@@ -22,11 +22,11 @@ namespace MapAMilepost.Utils
         /// -   Update the private _sessionActive property to change the behavior of the method.
         /// </summary>
         /// <param name="VM">the target viewmodel</param>
-        public static void InitializeSession(Utils.ViewModelBase VM, string startEnd = null)
+        public static void InitializeSession(Utils.ViewModelBase VM, string sessionType)
         {
             if (MapViewUtils.CheckMapView())
             {
-                if (startEnd == null||startEnd=="start")//if point mapping
+                if (sessionType == "point"|| sessionType == "start")//if point mapping
                 {
                     VM.MapToolInfos.SessionActive = true;
                     VM.MapToolInfos.MapButtonLabel = "Stop Mapping";
@@ -38,7 +38,7 @@ namespace MapAMilepost.Utils
                     VM.MapToolInfos.MapButtonEndLabel = "Stop Mapping";
                     VM.MapToolInfos.MapButtonEndToolTip = "End mapping session.";
                 }
-                VM.MappingTool.StartSession(VM, startEnd);
+                VM.MappingTool.StartSession(VM, sessionType);
             }
         }
 
@@ -49,125 +49,82 @@ namespace MapAMilepost.Utils
         /// -   Update the private _setSession property to change the behavior of the method.
         /// </summary>
         /// <param name="VM">the target viewmodel</param>
-        public static void DeactivateSession(Utils.ViewModelBase VM, string startEnd = null)
+        public static void DeactivateSession(Utils.ViewModelBase VM, string sessionType = null)
         {
-            if (startEnd == null||startEnd=="start")//if start session or point session
+            if (sessionType == "point")//if start session or point session
             {
                 VM.MapToolInfos.SessionActive = false;
                 VM.MapToolInfos.MapButtonLabel = "Start Mapping";
                 VM.MapToolInfos.MapButtonToolTip = "Start mapping session.";
+                VM.SoeResponse = new PointResponseModel();
             }
-            else if (startEnd == "end")//if end session
+            else if (sessionType == "start")
+            {
+                VM.MapToolInfos.SessionActive = false;
+                VM.MapToolInfos.MapButtonLabel = "Map Start";
+                VM.MapToolInfos.MapButtonToolTip = "Start mapping session for start point.";
+                VM.SoeResponse = new PointResponseModel();
+            }
+            else if (sessionType == "end")//if end session
             {
                 VM.MapToolInfos.SessionEndActive = false;
-                VM.MapToolInfos.MapButtonEndLabel = "Start Mapping";
-                VM.MapToolInfos.MapButtonEndToolTip = "Start mapping session.";
+                VM.MapToolInfos.MapButtonEndLabel = "Map End";
+                VM.MapToolInfos.MapButtonEndToolTip = "Start mapping session for end point.";
+                VM.SoeEndResponse = new PointResponseModel();
             }
             //  Calls the EndSession method from the MapAMilepostMapTool viewmodel, setting the active tool
             //  to whatever was selected before the mapping session was initialized.
             VM.MappingTool.EndSession();
-            if(startEnd == null)//if point session
+            if(sessionType == null)//tab switched
             {
-                Commands.GraphicsCommands.DeleteUnsavedGraphics(startEnd);
+                Commands.GraphicsCommands.DeleteUnsavedGraphics(sessionType);
+                DeactivateSession(VM, "point");
+                DeactivateSession(VM, "start");
+                DeactivateSession(VM, "end");
             }
             
         }
 
-        /// <summary>
-        /// -   Update the SoeArgs that will be passed
-        ///     to the HTTP query based on the clicked point on the map.
-        /// -   Query the SOE and if the query executes successfully, update the IsSaved public property to determine whether
-        ///     or not a dialog box will be displayed, confirming that the user wants to save a duplicate point.
-        ///     
-        /// ##TODO## 
-        /// look at using overlays to display these graphics rather than a graphics layer.
-        /// </summary>
-        /// <param name="mapPoint"></param>
-        public static async void MapPoint2RoutePoint(object mapPoint, Utils.ViewModelBase VM, string startEnd)
+        public static async Task<List<List<double>>> GetLine(PointResponseModel startPoint, PointResponseModel endPoint, long SR, string ReferenceDate)
         {
-            CustomGraphics customSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
-            //VM.SoeResponse = new SoeResponseModel();
-            SoeResponseModel response = new SoeResponseModel();
             List<List<double>> lineGeometryResponse = new();
-            if ((MapPoint)mapPoint != null)
+            if(endPoint != null && startPoint != null)
             {
-                if (startEnd == "end")
+                if (endPoint.Route == startPoint.Route)
                 {
-                    VM.SoeEndArgs.X = ((MapPoint)mapPoint).X;
-                    VM.SoeEndArgs.Y = ((MapPoint)mapPoint).Y;
-                    VM.SoeEndArgs.SR = ((MapPoint)mapPoint).SpatialReference.Wkid;
-                    response = (await Utils.HTTPRequest.QuerySOE(VM.SoeEndArgs) as SoeResponseModel);
-                    VM.SoeEndResponse = response;
+                    if (endPoint.Decrease == startPoint.Decrease)
+                    {
+                        lineGeometryResponse = (await Utils.HTTPRequest.FindLineLocation(startPoint, endPoint, SR, ReferenceDate));
+                    }
+                    else
+                    {
+                        Notification notification = new Notification()
+                        {
+                            Title = "Different Lanes",
+                            Severity = (Notification.SeverityLevel)2,
+                            Message = "Start and End points must be located on the same lane direction.",
+                            ImageSource = Utils.ImageUtils.ByteToImage(Properties.Resources.LaneDirectionError)
+                        };
+                        FrameworkApplication.AddNotification(notification);
+                    }
                 }
                 else
                 {
-                    VM.SoeArgs.X = ((MapPoint)mapPoint).X;
-                    VM.SoeArgs.Y = ((MapPoint)mapPoint).Y;
-                    VM.SoeArgs.SR = ((MapPoint)mapPoint).SpatialReference.Wkid;
-                    response = (await Utils.HTTPRequest.QuerySOE(VM.SoeArgs) as SoeResponseModel);
-                    VM.SoeResponse = response;
-                }
-                if(VM.SoeEndResponse != null && VM.SoeResponse != null)
-                {
-                    if(VM.SoeResponse.Route == VM.SoeEndResponse.Route) 
-                    {//if the start and end of a line exists
-                        if(VM.SoeResponse.Decrease == VM.SoeEndResponse.Decrease)
+                    if (endPoint.Route != null && startPoint.Route != null)
+                    {
+                        Notification notification = new Notification()
                         {
-                            lineGeometryResponse = (await Utils.HTTPRequest.FindLineLocation(VM.SoeResponse, VM.SoeEndResponse, VM.SoeArgs));
-                        }
-                        else
-                        {
-                            Notification notification = new Notification();
-                            notification.Title = FrameworkApplication.Title;
-                            notification.Message = "Start and End points must be located on the same lane direction.";
+                            Title = "Different Routes",
+                            Message = "Start and End points must be located on the same route.",
+                            Severity = (Notification.SeverityLevel)2,
+                            ImageSource = Utils.ImageUtils.ByteToImage(Properties.Resources.DifferentRoutesError)
+                        };
+                        FrameworkApplication.AddNotification(notification);
+                    }
 
-                            ArcGIS.Desktop.Framework.FrameworkApplication.AddNotification(notification);
-                            //MessageBox.Show("Start and End points must be located on the same lane direction.");
-                        }
-                    }
-                    else
-                    {
-                        //MessageBox.Show("Start and End points must be located on the same route.");
-                        if (VM.SoeResponse.Route != null && VM.SoeEndResponse.Route != null)
-                        {
-                            Notification notification = new Notification()
-                            {
-                                Title = "SOE Error",
-                                Message = "Start and End points must be located on the same route.",
-                                Severity = (Notification.SeverityLevel)1
-                            };
-                            FrameworkApplication.AddNotification(notification);
-                        }
-                    }
-                } 
+                }
             }
-            if (response != null)
-            {
-                await QueuedTask.Run(() =>
-                {
-                    Commands.GraphicsCommands.DeleteUnsavedGraphics(startEnd);//delete all unsaved graphics
-                    if (startEnd == "end")
-                    {
-                        Commands.GraphicsCommands.CreateClickRoutePointGraphics(VM.SoeEndArgs, VM.SoeEndResponse, customSymbols, startEnd);
-                    }
-                    else
-                    {
-                        Commands.GraphicsCommands.CreateClickRoutePointGraphics(VM.SoeArgs, VM.SoeResponse, customSymbols, startEnd);
-                    }
-                });
-            }
-            if (lineGeometryResponse != null && lineGeometryResponse.Count > 0 )
-            {
-                await QueuedTask.Run(() =>
-                {
-                    List<Coordinate2D> points = new List<Coordinate2D>();
-                    foreach (var item in lineGeometryResponse)
-                    {
-                        points.Add(new Coordinate2D(item[0], item[1]));
-                    }  
-                    Commands.GraphicsCommands.CreateRouteLineGraphics(VM.SoeResponse, VM.SoeEndResponse, customSymbols, points);
-                });
-            }
+            return lineGeometryResponse;
         }
     }
 

@@ -10,26 +10,26 @@ namespace MapAMilepost.ViewModels
 {
     public class MapLineViewModel:ViewModelBase
     {
-        private SoeResponseModel _SoeResponse;
-        private SoeResponseModel _soeEndResponse;
-        private SoeArgsModel _soeStartArgs;
-        private SoeArgsModel _soeEndArgs;
-        private ObservableCollection<SoeResponseModel> _soeLineResponses;
-        private bool _showResultsTable = false;
+        private PointResponseModel _SoeResponse;
+        private LineResponseModel _lineResponse;
+        private PointResponseModel _soeEndResponse;
+        private LineArgsModel _lineArgs;
+        private ObservableCollection<LineResponseModel> _lineResponses;
+        private bool _showResultsTable = true;
         private MapToolInfo _mapToolInfos;
         public MapLineViewModel()//constructor
         {
-            _SoeResponse = new SoeResponseModel();
-            _soeEndResponse = new SoeResponseModel();
-            _soeStartArgs = new SoeArgsModel();
-            _soeEndArgs = new SoeArgsModel();
-            _soeLineResponses = new ObservableCollection<SoeResponseModel>();
+            _SoeResponse = new PointResponseModel();
+            _soeEndResponse = new PointResponseModel();
+            _lineArgs = new LineArgsModel();
+            _lineResponses = new ObservableCollection<LineResponseModel>();
+            _lineResponse = new LineResponseModel();
             _mapToolInfos = new MapToolInfo
             {
                 SessionActive = false,
                 SessionEndActive = false,
-                MapButtonLabel = "Start Mapping",
-                MapButtonEndLabel = "Start Mapping",
+                MapButtonLabel = "Map Start",
+                MapButtonEndLabel = "Map End",
                 MapButtonToolTip = "Start 'start point' mapping session.",
                 MapButtonEndToolTip = "Start 'end point' mapping session."
             };
@@ -53,41 +53,33 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(ShowResultsTable));
             }
         }
-        public override SoeResponseModel SoeResponse
+
+        public override LineResponseModel LineResponse
         {
-            get { return _SoeResponse; }
-            set { _SoeResponse = value; OnPropertyChanged(nameof(SoeResponse)); }
+            get { return _lineResponse; }
+            set { 
+                _lineResponse = value; 
+                OnPropertyChanged(nameof(LineResponse)); 
+            }
         }
 
-        public override SoeResponseModel SoeEndResponse
+        public override LineArgsModel LineArgs 
         {
-            get { return _soeEndResponse; }
-            set { _soeEndResponse = value; OnPropertyChanged(nameof(SoeEndResponse)); }
+            get { return _lineArgs; }
+            set { _lineArgs = value; OnPropertyChanged(nameof(LineArgs)); }
         }
 
-        public override SoeArgsModel SoeArgs
+        public override ObservableCollection<LineResponseModel> LineResponses
         {
-            get { return _soeStartArgs; }
-            set { _soeStartArgs = value; }
-        }
-
-        public override SoeArgsModel SoeEndArgs
-        {
-            get { return _soeEndArgs; }
-            set { _soeEndArgs = value; }
-        }
-
-        public override ObservableCollection<SoeResponseModel> SoeResponses
-        {
-            get { return _soeLineResponses; }
-            set { _soeLineResponses = value; OnPropertyChanged(nameof(SoeResponses)); }
+            get { return _lineResponses; }
+            set { _lineResponses = value; OnPropertyChanged(nameof(SoeResponses)); }
         }
 
         /// <summary>
         /// -   Array of selected saved SOE response data objects in the DataGrid in ResultsView.xaml. Updated when a row is clicked in he DataGrid
         ///     via data binding.
         /// </summary>
-        public override List<SoeResponseModel> SelectedItems { get; set; } = new List<SoeResponseModel>();
+        public override List<PointResponseModel> SelectedItems { get; set; } = new List<PointResponseModel>();
 
         public Commands.RelayCommand<object> UpdateSelectionCommand => new Commands.RelayCommand<object>((grid) => Commands.DataGridCommands.UpdateSelection(grid as DataGrid, this));
 
@@ -95,7 +87,7 @@ namespace MapAMilepost.ViewModels
 
         public Commands.RelayCommand<object> ClearItemsCommand => new Commands.RelayCommand<object>((parms) => Commands.DataGridCommands.ClearItems(this));
 
-        public Commands.RelayCommand<object> SavePointResultCommand => new Commands.RelayCommand<object>((grid) => Commands.GraphicsCommands.SavePointResult(grid as DataGrid, this));
+        public Commands.RelayCommand<object> SaveLineResultCommand => new Commands.RelayCommand<object>((grid) => Commands.GraphicsCommands.SaveLineResult(grid as DataGrid, this));
 
         public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new Commands.RelayCommand<object>((startEnd) =>
         {

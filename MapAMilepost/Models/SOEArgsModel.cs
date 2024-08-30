@@ -10,7 +10,7 @@ namespace MapAMilepost.Models
     /// <summary>
     /// -   SOE Arguments passed to the SOE HTTP get request
     /// </summary>
-    public class SoeArgsModel : ObservableObject
+    public class PointArgsModel : ObservableObject
     {
         private string? _referenceDate;
 
@@ -84,10 +84,21 @@ namespace MapAMilepost.Models
             }
         }
 
-        public SoeArgsModel()//set default values in constructor
+        public PointArgsModel()//set default values in constructor
         {
             this._referenceDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
             this._searchRadius = "200";
+        }
+    }
+
+    public class LineArgsModel
+    {
+        public PointArgsModel StartArgs { get; set; }
+        public PointArgsModel EndArgs { get; set; }
+        public LineArgsModel()
+        {
+            StartArgs = new PointArgsModel();
+            EndArgs = new PointArgsModel();
         }
     }
 
@@ -96,7 +107,7 @@ namespace MapAMilepost.Models
     /// that are used in a subsequent "Find Route Locations" API call, to retrieve line
     /// geometry. 
     /// </summary>
-    class SOELineArgsModel
+    public class LineURLParamsModel
     {
         public string Route { get; set; }
         public bool? Decrease { get; set; }

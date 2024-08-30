@@ -14,17 +14,17 @@ namespace MapAMilepost.ViewModels
         /// <summary>
         /// Private variables with associated public variables, granting access to the INotifyPropertyChanged command via ViewModelBase.
         /// </summary>
-        private SoeResponseModel _SoeResponse;
-        private SoeArgsModel _SoeArgs;
-        private ObservableCollection<SoeResponseModel> _SoeResponses;
+        private PointResponseModel _SoeResponse;
+        private PointArgsModel _SoeArgs;
+        private ObservableCollection<PointResponseModel> _SoeResponses;
         private bool _showResultsTable = false;
         private MapToolInfo _mapToolInfos;
         private string _tabLabel = "TEST TAB LABEL";
         public MapPointViewModel()//constructor
         {
-            _SoeResponse = new SoeResponseModel();
-            _SoeArgs = new SoeArgsModel();
-            _SoeResponses = new ObservableCollection<SoeResponseModel>();
+            _SoeResponse = new PointResponseModel();
+            _SoeArgs = new PointArgsModel();
+            _SoeResponses = new ObservableCollection<PointResponseModel>();
             _mapToolInfos = new MapToolInfo {
                 SessionActive = false,
                 MapButtonLabel = "Start Mapping",
@@ -59,7 +59,7 @@ namespace MapAMilepost.ViewModels
         /// <summary>
         /// -   The SOE response of the currently mapped route point feature.
         /// </summary>
-        public override SoeResponseModel SoeResponse
+        public override PointResponseModel SoeResponse
         {
             get { return _SoeResponse; }
             set { _SoeResponse = value; OnPropertyChanged(nameof(SoeResponse));}
@@ -68,7 +68,7 @@ namespace MapAMilepost.ViewModels
         /// <summary>
         /// -   Arguments passed to the SOE HTTP query.
         /// </summary>
-        public override SoeArgsModel SoeArgs
+        public override PointArgsModel SoeArgs
         {
             get { return _SoeArgs; }
             set { _SoeArgs = value; OnPropertyChanged(nameof(SoeArgs)); }
@@ -77,7 +77,7 @@ namespace MapAMilepost.ViewModels
         /// <summary>
         /// -   Array of saved SoeResponse data objects.
         /// </summary>
-        public override ObservableCollection<SoeResponseModel> SoeResponses
+        public override ObservableCollection<PointResponseModel> SoeResponses
         {
             get { return _SoeResponses; }
             set { _SoeResponses = value; OnPropertyChanged(nameof(SoeResponses)); }
@@ -87,7 +87,7 @@ namespace MapAMilepost.ViewModels
         /// -   Array of selected saved SOE response data objects in the DataGrid in ResultsView.xaml. Updated when a row is clicked in he DataGrid
         ///     via data binding.
         /// </summary>
-        public override List<SoeResponseModel> SelectedItems { get; set; } = new List<SoeResponseModel>();
+        public override List<PointResponseModel> SelectedItems { get; set; } = new List<PointResponseModel>();
    
         public Commands.RelayCommand<object> UpdateSelectionCommand => new Commands.RelayCommand<object>((grid) => Commands.DataGridCommands.UpdateSelection(grid as DataGrid, this));
 
@@ -99,10 +99,10 @@ namespace MapAMilepost.ViewModels
 
         public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new Commands.RelayCommand<object>((p) => { 
             if (!this.MapToolInfos.SessionActive) {
-                Utils.MapToolUtils.InitializeSession(this);
+                Utils.MapToolUtils.InitializeSession(this,"point");
             }
             else{
-                Utils.MapToolUtils.DeactivateSession(this);
+                Utils.MapToolUtils.DeactivateSession(this,"point");
             }
         });
     }

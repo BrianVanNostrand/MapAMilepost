@@ -15,10 +15,10 @@ namespace MapAMilepost.Commands
 {
     class DataGridCommands
     {
-        public static List<SoeResponseModel> CastToList(List<SoeResponseModel> SelectedItems, object list)
+        public static List<PointResponseModel> CastToList(List<PointResponseModel> SelectedItems, object list)
         {
             System.Collections.IList items = (System.Collections.IList)list;
-            var collection = items.Cast<SoeResponseModel>();
+            var collection = items.Cast<PointResponseModel>();
             return collection.ToList();
         }
 
@@ -45,7 +45,7 @@ namespace MapAMilepost.Commands
             if (dataGridRowSelected == false)
             {
                 //clear the response
-                VM.SoeResponse = new SoeResponseModel();
+                VM.SoeResponse = new PointResponseModel();
                 //clear selected items
                 VM.SelectedItems.Clear();
                 //clear selected rows
@@ -73,7 +73,7 @@ namespace MapAMilepost.Commands
         {
             if (VM.SoeResponses.Count > 0 && VM.SelectedItems.Count > 0)
             {
-                if (MessageBox.Show(
+                if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
                     $"Are you sure you wish to delete these {VM.SelectedItems.Count} records?",
                     "Delete Rows",
                     MessageBoxButton.YesNo,
@@ -94,6 +94,7 @@ namespace MapAMilepost.Commands
                     {
                         VM.ShowResultsTable = false;
                     };
+                    VM.SoeResponse = new PointResponseModel();
                 }
             }
         }
@@ -105,7 +106,7 @@ namespace MapAMilepost.Commands
             VM.SoeArgs.Y = 0;
             if (VM.SoeResponses.Count > 0)
             {
-                if (MessageBox.Show(
+                if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
                     $"Are you sure you wish to clear all {VM.SoeResponses.Count} point records?",
                     "Clear Results",
                     MessageBoxButton.YesNo,
@@ -119,7 +120,7 @@ namespace MapAMilepost.Commands
                     }
                     Commands.GraphicsCommands.DeleteGraphics(deleteIndices, "point");
                     VM.SoeResponses.Clear();
-                    VM.SoeResponse = new SoeResponseModel();//clear the SOE response info panel
+                    VM.SoeResponse = new PointResponseModel();//clear the SOE response info panel
                 }
             }
             if (VM.SoeResponses.Count == 0)

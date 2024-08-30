@@ -59,5 +59,25 @@ namespace MapAMilepost.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] DifferentRoutesError {
+            get {
+                object obj = ResourceManager.GetObject("DifferentRoutesError", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] LaneDirectionError {
+            get {
+                object obj = ResourceManager.GetObject("LaneDirectionError", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

@@ -60,7 +60,7 @@ namespace MapAMilepost.Utils
         }
 
         /// <summary>
-        /// -   Checks whether or not the properties of the SoeResponseModel are all null, indicating that the viewmodel's SoeResponse
+        /// -   Checks whether or not the properties of the PointResponseModel are all null, indicating that the viewmodel's SoeResponse
         ///     hasn't been updated yet.
         /// </summary>
         /// <param name="myObject"></param>

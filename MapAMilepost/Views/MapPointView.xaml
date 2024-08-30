@@ -97,8 +97,9 @@
                 <ColumnDefinition />
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button Margin="5px 0px" x:Name="MapPointExecuteButton" Style="{StaticResource whiteButton}" Grid.Row="1" Grid.Column="0" CommandParameter="{Binding MapToolInfos.SessionActive}" Command="{Binding ToggleMapToolSessionCommand}" Content="{Binding MapToolInfos.MapButtonLabel}" ToolTip="{Binding MapToolInfos.MapButtonToolTip}"/>
-            <Button Margin="10px 0px" x:Name="MapPointSaveButton" Grid.Row="1" Grid.Column="1" CommandParameter="{Binding ElementName=PointsGrid}" Command="{Binding SavePointResultCommand}" ToolTip="Save selection to the results tab.">
+            <Button Margin="10px 0px" x:Name="MapPointExecuteButton" Style="{StaticResource whiteButton}" Grid.Row="1" Grid.Column="0" CommandParameter="{Binding MapToolInfos.SessionActive}" Command="{Binding ToggleMapToolSessionCommand}" Content="{Binding MapToolInfos.MapButtonLabel}" ToolTip="{Binding MapToolInfos.MapButtonToolTip}"/>
+            <Button x:Name="ClearResultsButton" Grid.Row="3" Grid.Column="1" Command="{Binding ClearSelection}" CommandParameter="end" Style="{StaticResource whiteButton}" ToolTip="Clear the selection in this tab.">Clear</Button>
+            <Button Margin="10px 0px" x:Name="MapPointSaveButton" Grid.Row="1" Grid.Column="2" CommandParameter="{Binding ElementName=PointsGrid}" Command="{Binding SavePointResultCommand}" ToolTip="Save selection to the results grid.">
                 <Button.Style>
                     <Style BasedOn="{StaticResource whiteButton}" TargetType="{x:Type Button}">
                         <Setter Property="Content" Value="Save Result" />
@@ -144,31 +145,33 @@
                 <TextBox Style="{StaticResource SelectableTextBox}" Grid.Row="0" Grid.Column="0">Saved Points:</TextBox>
                 <Label Grid.Row="0" Grid.Column="1" Content="{Binding SoeResponses.Count}"/>
             </Grid>
-            <DataGrid CanUserAddRows="False" Grid.ColumnSpan="3" Grid.Row="1" x:Name="PointsGrid" HorizontalAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding SoeResponses}" CellStyle="{DynamicResource DataGridCellStyle}">
-                <DataGrid.RowStyle>
-                    <Style TargetType="DataGridRow">
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="LightBlue" />
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </DataGrid.RowStyle>
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Route" Binding="{Binding Route}"/>
-                    <DataGridTextColumn Header="ARM" Binding="{Binding Arm}"/>
-                    <DataGridTextColumn Header="SRMP" Binding="{Binding Srmp}"/>
-                    <DataGridTextColumn Header="Decrease" Binding="{Binding Decrease}"/>
-                    <DataGridTextColumn Header="Back" Binding="{Binding Back}"/>
-                    <DataGridTextColumn Header="X" Binding="{Binding RouteGeometry.x}"/>
-                    <DataGridTextColumn Header="Y" Binding="{Binding RouteGeometry.y}"/>
-                </DataGrid.Columns>
-                <b:Interaction.Triggers>
-                    <b:EventTrigger EventName="MouseLeftButtonUp">
-                        <b:InvokeCommandAction CommandParameter="{Binding ElementName=PointsGrid}" Command="{Binding UpdateSelectionCommand}"/>
-                    </b:EventTrigger>
-                </b:Interaction.Triggers>
-            </DataGrid>
+            <ScrollViewer Grid.ColumnSpan="3" Grid.Row="1">
+                <DataGrid CanUserAddRows="False"  x:Name="PointsGrid" AutoGenerateColumns="False" ItemsSource="{Binding SoeResponses}" CellStyle="{DynamicResource DataGridCellStyle}">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="LightBlue" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Route" Binding="{Binding Route}"/>
+                        <DataGridTextColumn Header="ARM" Binding="{Binding Arm}"/>
+                        <DataGridTextColumn Header="SRMP" Binding="{Binding Srmp}"/>
+                        <DataGridTextColumn Header="Decrease" Binding="{Binding Decrease}"/>
+                        <DataGridTextColumn Header="Back" Binding="{Binding Back}"/>
+                        <DataGridTextColumn Header="X" Binding="{Binding RouteGeometry.x}"/>
+                        <DataGridTextColumn Header="Y" Binding="{Binding RouteGeometry.y}"/>
+                    </DataGrid.Columns>
+                    <b:Interaction.Triggers>
+                        <b:EventTrigger EventName="MouseLeftButtonUp">
+                            <b:InvokeCommandAction CommandParameter="{Binding ElementName=PointsGrid}" Command="{Binding UpdateSelectionCommand}"/>
+                        </b:EventTrigger>
+                    </b:Interaction.Triggers>
+                </DataGrid>
+            </ScrollViewer>
         </Grid>
         <Grid Height="30px" Grid.Row="4" x:Name="ResultsTableControls">
             <Grid.RowDefinitions>
@@ -198,7 +201,7 @@
                 Delete Record(s)
             </Button>
             <Button Margin="10px 0px" x:Name="ClearItemsButton" Grid.Row="2" Grid.Column="2"  Command="{Binding ClearItemsCommand}" Style="{StaticResource whiteButton}">
-                Clear
+                Clear Table
             </Button>
         </Grid>
     </Grid>

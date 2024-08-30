@@ -42,19 +42,19 @@
             <Label Grid.Row="0" Grid.Column="2">End Point</Label>
             <Label x:Name="MapPointSearchDistanceLabel" Grid.Row="1" Grid.Column="0">Search Distance</Label>
             <Label  Grid.Row="1" Grid.Column="3">Feet</Label>
-            <TextBox x:Name="MapStartPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="1" Text="{Binding SoeArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped start point."/>
-            <TextBox x:Name="MapEndPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="2" Text="{Binding SoeEndArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped end point."/>
+            <TextBox x:Name="MapStartPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="1" Text="{Binding LineArgs.StartArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped start point."/>
+            <TextBox x:Name="MapEndPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="2" Text="{Binding LineArgs.EndArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped end point."/>
             <Label Grid.Row="2" Grid.Column="0">Coordinates of Click</Label>
             <Label Grid.Row="2" Grid.Column="1">
                 <MultiBinding StringFormat="{}{0} , {1}">
-                    <Binding Path="SOEStartArgs.X" />
-                    <Binding Path="SOEStartArgs.Y" />
+                    <Binding Path="LineArgs.StartArgs.X" />
+                    <Binding Path="LineArgs.StartArgs.Y" />
                 </MultiBinding>
             </Label>
             <Label Grid.Row="2" Grid.Column="2">
                 <MultiBinding StringFormat="{}{0} , {1}">
-                    <Binding Path="SOEEndArgs.X" />
-                    <Binding Path="SOEEndArgs.Y" />
+                    <Binding Path="LineArgs.EndArgs.X" />
+                    <Binding Path="LineArgs.EndArgs.Y" />
                 </MultiBinding>
             </Label>
         </Grid>
@@ -90,25 +90,25 @@
             <Label Grid.Column="0" Grid.Row="8">Realignment Date</Label>
             <Label Grid.Column="0" Grid.Row="9">Response Date</Label>
             <!--Start Point Bindings-->
-            <Label Grid.Column="1" Grid.Row="1" Content="{Binding SoeResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="2" Content="{Binding SoeResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="3" Content="{Binding SoeResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="4" Content="{Binding SoeResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="5" Content="{Binding SoeResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="6" Content="{Binding SoeResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="7" Content="{Binding SoeResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="8" Content="{Binding SoeResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="1" Grid.Row="9" Content="{Binding SoeResponse.ResponseDate, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="1" Content="{Binding LineResponse.StartResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="2" Content="{Binding LineResponse.StartResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="3" Content="{Binding LineResponse.StartResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="4" Content="{Binding LineResponse.StartResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="5" Content="{Binding LineResponse.StartResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="6" Content="{Binding LineResponse.StartResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="7" Content="{Binding LineResponse.StartResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="8" Content="{Binding LineResponse.StartResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="1" Grid.Row="9" Content="{Binding LineResponse.StartResponse.ResponseDate, UpdateSourceTrigger=PropertyChanged}"/>
              <!--End Point Bindings-->
-            <Label Grid.Column="2" Grid.Row="1" Content="{Binding SoeEndResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="2" Content="{Binding SoeEndResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="3" Content="{Binding SoeEndResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="4" Content="{Binding SoeEndResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="5" Content="{Binding SoeEndResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="6" Content="{Binding SoeEndResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="7" Content="{Binding SoeEndResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="8" Content="{Binding SoeEndResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}"/>
-            <Label Grid.Column="2" Grid.Row="9" Content="{Binding SoeEndResponse.ResponseDate, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="1" Content="{Binding LineResponse.EndResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="2" Content="{Binding LineResponse.EndResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="3" Content="{Binding LineResponse.EndResponse.Arm, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="4" Content="{Binding LineResponse.EndResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="5" Content="{Binding LineResponse.EndResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="6" Content="{Binding LineResponse.EndResponse.Decrease, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="7" Content="{Binding LineResponse.EndResponse.Back, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="8" Content="{Binding LineResponse.EndResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Grid.Row="9" Content="{Binding LineResponse.EndResponse.ResponseDate, UpdateSourceTrigger=PropertyChanged}"/>
             
             <Border Grid.ColumnSpan="3" Grid.Row="2" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="3" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
@@ -131,10 +131,36 @@
             </Grid.ColumnDefinitions>
             <Button x:Name="MapStartPointExecuteButton" Grid.Row="3" Grid.Column="0" Command="{Binding ToggleMapToolSessionCommand}" CommandParameter="start" ToolTip="{Binding MapToolInfos.MapButtonToolTip}" Style="{StaticResource whiteButton}" Content="{Binding MapToolInfos.MapButtonLabel}"/>
             <Button x:Name="MapEndPointExecuteButton" Grid.Row="3" Grid.Column="1" Command="{Binding ToggleMapToolSessionCommand}" CommandParameter="end" ToolTip="{Binding MapToolInfos.MapButtonEndToolTip}" Style="{StaticResource whiteButton}" Content="{Binding MapToolInfos.MapButtonEndLabel}"/>
-            <Button x:Name="ClearReultsButton" Grid.Row="3" Grid.Column="2" Command="{Binding UpdateSOEStartEndResponse}" CommandParameter="end" ToolTip="Clear the selection in this tab." Style="{StaticResource whiteButton}">Clear</Button>
-            <Button x:Name="SaveResultsButton" Grid.Row="3" Grid.Column="3" Command="{Binding SaveLineResultCommand}" CommandParameter="end" Style="{StaticResource whiteButton}">Save Results</Button>
+            <Button x:Name="ClearResultsButton" Grid.Row="3" Grid.Column="2" Command="{Binding ClearSelection}" CommandParameter="end" Style="{StaticResource whiteButton}" ToolTip="Clear the selection in this tab.">Clear</Button>
+            <Button x:Name="SaveResultsButton" Grid.Row="3" Grid.Column="3" CommandParameter="{Binding ElementName=LinesGrid}" Command="{Binding SaveLineResultCommand}" ToolTip="Save selection to the results grid.">
+                <Button.Style>
+                    <Style BasedOn="{StaticResource whiteButton}" TargetType="{x:Type Button}">
+                        <Setter Property="Content" Value="Save Result" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=IsSaved}" Value="True">
+                                <Setter Property="Content" Value="Saved" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=IsSaved}" Value="False">
+                                <Setter Property="Content" Value="Save Result" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </Grid>
-        <Grid Grid.Row="3" x:Name="ResultsTableGrid" >
+        <Grid Height="200px" Grid.Row="3" x:Name="ResultsTableGrid" >
+            <Grid.Resources>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ShowResultsTable}" Value="true">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ShowResultsTable}" Value="false">
+                            <Setter Property="Visibility" Value="Hidden" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Resources>
             <Grid.RowDefinitions>
                 <RowDefinition Height="30px"/>
                 <RowDefinition/>
@@ -184,7 +210,6 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </ScrollViewer>
-            
         </Grid>
         <Grid Grid.Row="4" x:Name="ResultsTableControls">
             <Grid.RowDefinitions>
@@ -199,7 +224,7 @@
                 Export Data
             </Button>
             <Button x:Name="DeleteItemsButton" Grid.Row="2" Grid.Column="1" Command="{Binding DeleteItemsCommand}" Style="{StaticResource whiteButton}">
-                Delete Record
+                Delete Record(s)
             </Button>
             <Button x:Name="ClearItemsButton" Grid.Row="2" Grid.Column="2"  Command="{Binding ClearItemsCommand}" Style="{StaticResource whiteButton}">
                 Clear Table

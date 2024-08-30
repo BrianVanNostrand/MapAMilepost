@@ -10,6 +10,7 @@ using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Contracts;
 using ArcGIS.Desktop.Framework.Dialogs;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
+using ArcGIS.Desktop.Internal.Mapping;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
 using MapAMilepost.Commands;
@@ -28,7 +29,7 @@ namespace MapAMilepost
     public class MapAMilepostMaptool : ArcGIS.Desktop.Mapping.MapTool
     {
         private static Utils.ViewModelBase CurrentViewModel {  get; set; }
-        private static string StartEnd {  get; set; } 
+        private static string MapToolSessionType {  get; set; } 
         public MapAMilepostMaptool()
         {
             IsSketchTool = true;
@@ -62,14 +63,39 @@ namespace MapAMilepost
         /// <param name="e"></param>
         protected override async void OnToolMouseDown(MapViewMouseButtonEventArgs e)
         {
-            
             if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
             {
                 MapPoint mapPoint = await QueuedTask.Run(() =>
                 {
                     return MapView.Active.ClientToMap(e.ClientPoint);
                 });
-                MapToolUtils.MapPoint2RoutePoint(mapPoint, CurrentViewModel, StartEnd);
+                if(mapPoint != null)
+                {
+                    Commands.GraphicsCommands.DeleteUnsavedGraphics(MapToolSessionType);//delete all unsaved graphics
+                    List<List<double>> lineGeometryResponse = new();
+                    if (MapToolSessionType == "start")
+                    {
+                        CurrentViewModel.LineResponse.StartResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint,CurrentViewModel.LineArgs.StartArgs) as PointResponseModel);
+                        lineGeometryResponse = await Utils.MapToolUtils.GetLine(CurrentViewModel.LineResponse.StartResponse, CurrentViewModel.LineResponse.EndResponse, CurrentViewModel.LineArgs.StartArgs.SR, CurrentViewModel.LineArgs.StartArgs.ReferenceDate);
+                        await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.StartArgs, CurrentViewModel.LineResponse.StartResponse, MapToolSessionType);
+                    }
+                    else if (MapToolSessionType == "end")
+                    {
+                        CurrentViewModel.LineResponse.EndResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.EndArgs) as PointResponseModel);
+                        lineGeometryResponse = await Utils.MapToolUtils.GetLine(CurrentViewModel.LineResponse.StartResponse, CurrentViewModel.LineResponse.EndResponse, CurrentViewModel.LineArgs.StartArgs.SR, CurrentViewModel.LineArgs.StartArgs.ReferenceDate);
+                        await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.EndArgs, CurrentViewModel.LineResponse.EndResponse, MapToolSessionType);
+                    }
+                    else
+                    {
+                        CurrentViewModel.SoeResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.SoeArgs) as PointResponseModel);
+                        await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.SoeArgs, CurrentViewModel.SoeResponse, MapToolSessionType);
+                    }
+                    if (lineGeometryResponse.Count > 0)
+                    {
+                        await Commands.GraphicsCommands.CreateLineGraphics(CurrentViewModel.LineResponse.StartResponse, CurrentViewModel.LineResponse.EndResponse, lineGeometryResponse);
+                    }
+                }
+                
             }
         }
         //e.Handled = true; //Handle the event args to get the call to the corresponding async method
@@ -82,10 +108,10 @@ namespace MapAMilepost
         /// -   If the graphics layer doesn't exist yet, create it.
         /// -   Set the active tool in ArcGIS Pro to this map tool.
         /// </summary>
-        public async void StartSession(Utils.ViewModelBase currentVM, string startEnd)
+        public async void StartSession(Utils.ViewModelBase currentVM, string sessionType)
         {
             CurrentViewModel = currentVM;
-            StartEnd = startEnd;
+            MapToolSessionType = sessionType;
             Map map = MapView.Active.Map;
             var graphicsLayer = map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
             if (graphicsLayer != null)//if layer exists

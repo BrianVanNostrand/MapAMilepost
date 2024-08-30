@@ -75,6 +75,7 @@ namespace MapAMilepost.ViewModels
 
             public MainViewModel()
         {
+            ArcGIS.Desktop.Framework.FrameworkApplication.NotificationInterval = 0;//allow toast messages to appear immediately after another is displayed
             MapPointVM = new MapPointViewModel();
             MapLineVM = new MapLineViewModel();
             SelectedViewModel = MapPointVM;

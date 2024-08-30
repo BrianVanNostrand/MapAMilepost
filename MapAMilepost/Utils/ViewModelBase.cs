@@ -21,12 +21,15 @@ namespace MapAMilepost.Utils
         public MapAMilepostMaptool MappingTool { get; set; }
         public virtual MapToolInfo MapToolInfos { get; set; }
         public virtual bool ShowResultsTable { get; set; }
-        public virtual SoeResponseModel SoeResponse { get; set; } //used for both points and lines
-        public virtual SoeResponseModel SoeEndResponse { get; set; } //used for lines
-        public virtual SoeArgsModel SoeArgs { get; set; } //used for both points and lines
-        public virtual SoeArgsModel SoeEndArgs { get; set; } //used for lines
-        public virtual ObservableCollection<SoeResponseModel> SoeResponses { get; set; }
-        public virtual List<SoeResponseModel> SelectedItems { get; set; }
+        public virtual PointResponseModel SoeResponse { get; set; } //used for both points and lines
+        public virtual PointResponseModel SoeEndResponse { get; set; } //used for lines
+        public virtual LineResponseModel LineResponse { get; set; } // used for lines
+        public virtual PointArgsModel SoeArgs { get; set; } //used for both points and lines
+        public virtual PointArgsModel SoeEndArgs { get; set; } //used for lines
+        public virtual LineArgsModel LineArgs { get; set; }
+        public virtual ObservableCollection<PointResponseModel> SoeResponses { get; set; }
+        public virtual ObservableCollection<LineResponseModel> LineResponses { get; set; }
+        public virtual List<PointResponseModel> SelectedItems { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
