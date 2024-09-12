@@ -10,17 +10,13 @@ namespace MapAMilepost.ViewModels
 {
     public class MapLineViewModel:ViewModelBase
     {
-        private PointResponseModel _SoeResponse;
         private LineResponseModel _lineResponse;
-        private PointResponseModel _soeEndResponse;
         private LineArgsModel _lineArgs;
         private ObservableCollection<LineResponseModel> _lineResponses;
         private bool _showResultsTable = true;
         private MapToolInfo _mapToolInfos;
         public MapLineViewModel()//constructor
         {
-            _SoeResponse = new PointResponseModel();
-            _soeEndResponse = new PointResponseModel();
             _lineArgs = new LineArgsModel();
             _lineResponses = new ObservableCollection<LineResponseModel>();
             _lineResponse = new LineResponseModel();
@@ -79,11 +75,11 @@ namespace MapAMilepost.ViewModels
         /// -   Array of selected saved SOE response data objects in the DataGrid in ResultsView.xaml. Updated when a row is clicked in he DataGrid
         ///     via data binding.
         /// </summary>
-        public override List<PointResponseModel> SelectedItems { get; set; } = new List<PointResponseModel>();
+        public override List<LineResponseModel> SelectedLines { get; set; } = new List<LineResponseModel>();
 
-        public Commands.RelayCommand<object> UpdateSelectionCommand => new Commands.RelayCommand<object>((grid) => Commands.DataGridCommands.UpdateSelection(grid as DataGrid, this));
+        public Commands.RelayCommand<object> UpdateSelectionCommand => new Commands.RelayCommand<object>((grid) => Commands.DataGridCommands.UpdateLineSelection(grid as DataGrid, this));
 
-        public Commands.RelayCommand<object> DeleteItemsCommand => new Commands.RelayCommand<object>((parms) => Commands.DataGridCommands.DeleteItems(this));
+        public Commands.RelayCommand<object> DeleteItemsCommand => new Commands.RelayCommand<object>(async(parms) => await Commands.DataGridCommands.DeleteLineItems(this));
 
         public Commands.RelayCommand<object> ClearItemsCommand => new Commands.RelayCommand<object>((parms) => Commands.DataGridCommands.ClearItems(this));
 

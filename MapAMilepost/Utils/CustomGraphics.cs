@@ -1,5 +1,6 @@
 ﻿using ArcGIS.Core.CIM;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
+using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
 using System;
 using System.Collections;
@@ -14,15 +15,13 @@ namespace MapAMilepost.Utils
 {
     public class CustomGraphics
     {
-        public Dictionary<string, Dictionary<string, object>> SymbolsLibrary { get; set; }
+        public Dictionary<string, object> SymbolsLibrary { get; set; }
 
         public async static Task<CustomGraphics> CreateCustomGraphicSymbolsAsync()
         {
-            Dictionary<string, Dictionary<string, object>> tempSymbolsLibrary = new();
             //selected graphics
             //var SelectedSymbolsDictionary = new Dictionary<string, CIMPointSymbol>();
-            //deselected graphics 
-            var DeselectedSymbolsDictionary = new Dictionary<string, object>{
+            var SymbolsDictionary = new Dictionary<string, object>{
                 { "ClickPoint", await CreatePointSymbolAsync("yellow","cross") },
                 { "RoutePoint", await CreatePointSymbolAsync("darkblue", "circle") },
                 { "SavedRoutePoint", await CreatePointSymbolAsync("blue", "circle") },
@@ -32,13 +31,12 @@ namespace MapAMilepost.Utils
                 { "SavedEndRoutePoint", await CreatePointSymbolAsync("red", "circle") },
                 { "SelectedRoutePoint", await CreatePointSymbolAsync("selected", "circle") },
                 { "RouteLine", await CreateLineSymbolAsync("blue", "dash") },
-                { "SavedRouteLine", await CreateLineSymbolAsync("blue", "solid") },
+                { "SavedRouteLine", await CreateLineSymbolAsync("lightblue", "solid") },
                 { "SelectedRouteLine", await CreateLineSymbolAsync("selected", "solid") }
             };
-            tempSymbolsLibrary.Add("DeselectedSymbols", DeselectedSymbolsDictionary);
-            return new CustomGraphics(tempSymbolsLibrary);
+            return new CustomGraphics(SymbolsDictionary);
         }
-        private CustomGraphics(Dictionary<string, Dictionary<string, object>> Data)
+        private CustomGraphics(Dictionary<string, object> Data)
         {
             this.SymbolsLibrary = Data;
         }
@@ -108,9 +106,31 @@ namespace MapAMilepost.Utils
                         Style = SimpleLineStyle.Solid;
                         break;
                 }
-                CIMLineSymbol lineSymbol = SymbolFactory.Instance.ConstructLineSymbol(ColorFactory.Instance.GreenRGB, 4, Style);
+                CIMLineSymbol lineSymbol = new CIMLineSymbol();
+                switch (fillColor){
+                    case "blue":
+                        lineSymbol = SymbolFactory.Instance.ConstructLineSymbol(ColorFactory.Instance.CreateRGBColor(52, 101, 217), 4, Style);
+                        break;
+                    case "lightblue":
+                        lineSymbol = SymbolFactory.Instance.ConstructLineSymbol(ColorFactory.Instance.CreateRGBColor(52, 146, 217), 4, Style);
+                        break;
+                    case "selected":
+                        lineSymbol = SymbolFactory.Instance.ConstructLineSymbol(ColorFactory.Instance.CreateRGBColor(0, 0, 255, 50), 6, Style);
+                        break;
+                }
                 return lineSymbol;
             });
+        }
+
+        public static CIMGraphic GetSelectedPointGraphicSymbol(GraphicElement targetGraphic)
+        {
+            var newCIMGraphic = targetGraphic.GetGraphic();
+            var polyFill = SymbolFactory.Instance.ConstructSolidFill(ColorFactory.Instance.CreateRGBColor(0, 0, 255, 50));
+            var polyStroke = SymbolFactory.Instance.ConstructStroke(ColorFactory.Instance.BlackRGB, 0);
+            var haloPoly = SymbolFactory.Instance.ConstructPolygonSymbol(polyFill, polyStroke);
+            (newCIMGraphic.Symbol.Symbol as CIMPointSymbol).HaloSize = 3;
+            (newCIMGraphic.Symbol.Symbol as CIMPointSymbol).HaloSymbol = haloPoly;
+            return newCIMGraphic;
         }
     }
 }

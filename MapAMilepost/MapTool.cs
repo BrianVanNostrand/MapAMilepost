@@ -29,7 +29,8 @@ namespace MapAMilepost
     public class MapAMilepostMaptool : ArcGIS.Desktop.Mapping.MapTool
     {
         private static Utils.ViewModelBase CurrentViewModel {  get; set; }
-        private static string MapToolSessionType {  get; set; } 
+        private static string MapToolSessionType {  get; set; } //"point", "start", or "end"
+        
         public MapAMilepostMaptool()
         {
             IsSketchTool = true;
@@ -108,6 +109,10 @@ namespace MapAMilepost
         /// -   If the graphics layer doesn't exist yet, create it.
         /// -   Set the active tool in ArcGIS Pro to this map tool.
         /// </summary>
+        /// <param name="currentVM"></param>
+        /// <param name="sessionType">
+        /// The type of point mapping session that should be used.
+        /// Options: point, start, or end</param>
         public async void StartSession(Utils.ViewModelBase currentVM, string sessionType)
         {
             CurrentViewModel = currentVM;

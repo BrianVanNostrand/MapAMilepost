@@ -6,6 +6,7 @@
              xmlns:viewmodels="clr-namespace:MapAMilepost.ViewModels" 
              mc:Ignorable="d" 
              xmlns:theme ="../Themes/ButtonTheme.xaml"
+             xmlns:b ="http://schemas.microsoft.com/xaml/behaviors"
              d:DesignHeight="600" d:DesignWidth="364"
              Width="300">
     <UserControl.Resources>
@@ -180,10 +181,10 @@
                     <RowDefinition/>
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0" Grid.Column="0">Lines:</Label>
-                <Label Grid.Row="0" Grid.Column="1" Content="{Binding SoeLineResponses.Count}"/>
+                <Label Grid.Row="0" Grid.Column="1" Content="{Binding LineResponses.Count}"/>
             </Grid>
             <ScrollViewer  Grid.ColumnSpan="3" Grid.Row="3">
-                <DataGrid CanUserAddRows="False" x:Name="LinesGrid" HorizontalAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding SoeLineResponses}">
+                <DataGrid CanUserAddRows="False" x:Name="LinesGrid" HorizontalAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding LineResponses}">
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow">
                             <Style.Triggers>
@@ -195,19 +196,24 @@
                     </DataGrid.RowStyle>
                     <DataGrid.Columns>
                         <!--Start Info-->
-                        <DataGridTextColumn Header="Route" Binding="{Binding [0].Route}"/>
-                        <DataGridTextColumn Header="ARM" Binding="{Binding [0].Arm}"/>
-                        <DataGridTextColumn Header="EndARM" Binding="{Binding [1].Arm}"/>
-                        <DataGridTextColumn Header="SRMP" Binding="{Binding [0].Srmp}"/>
-                        <DataGridTextColumn Header="EndSRMP" Binding="{Binding [1].Srmp}"/>
-                        <DataGridTextColumn Header="Decrease" Binding="{Binding [0].Decrease}"/>
-                        <DataGridTextColumn Header="Back" Binding="{Binding [0].Back}"/>
-                        <DataGridTextColumn Header="EndBack" Binding="{Binding [1].Back}"/>
-                        <DataGridTextColumn Header="X" Binding="{Binding [0].RouteGeometry.x}"/>
-                        <DataGridTextColumn Header="Y" Binding="{Binding [0].RouteGeometry.y}"/>
-                        <DataGridTextColumn Header="EndX" Binding="{Binding [1].RouteGeometry.x}"/>
-                        <DataGridTextColumn Header="EndY" Binding="{Binding [1].RouteGeometry.y}"/>
+                        <DataGridTextColumn Header="Route" Binding="{Binding StartResponse.Route}"/>
+                        <DataGridTextColumn Header="ARM" Binding="{Binding StartResponse.Arm}"/>
+                        <DataGridTextColumn Header="EndARM" Binding="{Binding EndResponse.Arm}"/>
+                        <DataGridTextColumn Header="SRMP" Binding="{Binding StartResponse.Srmp}"/>
+                        <DataGridTextColumn Header="EndSRMP" Binding="{Binding EndResponse.Srmp}"/>
+                        <DataGridTextColumn Header="Decrease" Binding="{Binding StartResponse.Decrease}"/>
+                        <DataGridTextColumn Header="Back" Binding="{Binding StartResponse.Back}"/>
+                        <DataGridTextColumn Header="EndBack" Binding="{Binding EndResponse.Back}"/>
+                        <DataGridTextColumn Header="X" Binding="{Binding StartResponse.RouteGeometry.x}"/>
+                        <DataGridTextColumn Header="Y" Binding="{Binding StartResponse.RouteGeometry.y}"/>
+                        <DataGridTextColumn Header="EndX" Binding="{Binding EndResponse.RouteGeometry.x}"/>
+                        <DataGridTextColumn Header="EndY" Binding="{Binding EndResponse.RouteGeometry.y}"/>
                     </DataGrid.Columns>
+                    <b:Interaction.Triggers>
+                        <b:EventTrigger EventName="MouseLeftButtonUp">
+                            <b:InvokeCommandAction CommandParameter="{Binding ElementName=LinesGrid}" Command="{Binding UpdateSelectionCommand}"/>
+                        </b:EventTrigger>
+                    </b:Interaction.Triggers>
                 </DataGrid>
             </ScrollViewer>
         </Grid>

@@ -84,10 +84,14 @@ namespace MapAMilepost.Models
             }
         }
 
-        public PointArgsModel()//set default values in constructor
+        public PointArgsModel(string searchRadius = null)//set default values in constructor
         {
             this._referenceDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
-            this._searchRadius = "200";
+            this._searchRadius = "2000";
+            if (searchRadius!= null)
+            {
+                this._searchRadius = searchRadius;
+            }
         }
     }
 
@@ -95,10 +99,10 @@ namespace MapAMilepost.Models
     {
         public PointArgsModel StartArgs { get; set; }
         public PointArgsModel EndArgs { get; set; }
-        public LineArgsModel()
+        public LineArgsModel(string startSearchRadius = null, string endSearchRadius = null)
         {
-            StartArgs = new PointArgsModel();
-            EndArgs = new PointArgsModel();
+            StartArgs = new PointArgsModel(startSearchRadius);
+            EndArgs = new PointArgsModel(endSearchRadius);
         }
     }
 

@@ -87,11 +87,11 @@ namespace MapAMilepost.ViewModels
         /// -   Array of selected saved SOE response data objects in the DataGrid in ResultsView.xaml. Updated when a row is clicked in he DataGrid
         ///     via data binding.
         /// </summary>
-        public override List<PointResponseModel> SelectedItems { get; set; } = new List<PointResponseModel>();
+        public override List<PointResponseModel> SelectedPoints { get; set; } = new List<PointResponseModel>();
    
-        public Commands.RelayCommand<object> UpdateSelectionCommand => new Commands.RelayCommand<object>((grid) => Commands.DataGridCommands.UpdateSelection(grid as DataGrid, this));
+        public Commands.RelayCommand<object> UpdateSelectionCommand => new Commands.RelayCommand<object>((grid) => Commands.DataGridCommands.UpdatePointSelection(grid as DataGrid, this));
 
-        public Commands.RelayCommand<object> DeleteItemsCommand => new Commands.RelayCommand<object>((p) => Commands.DataGridCommands.DeleteItems(this));
+        public Commands.RelayCommand<object> DeleteItemsCommand => new Commands.RelayCommand<object>((p) => Commands.DataGridCommands.DeletePointItems(this));
         
         public Commands.RelayCommand<object> ClearItemsCommand => new Commands.RelayCommand<object>((p) => Commands.DataGridCommands.ClearItems(this));
 

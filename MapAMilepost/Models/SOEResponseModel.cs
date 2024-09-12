@@ -161,6 +161,7 @@ namespace MapAMilepost.Models
     {
         private PointResponseModel _startResponse;
         private PointResponseModel _endResponse;
+        private string _featureID;
         public PointResponseModel StartResponse
         {
             get { return _startResponse; }
@@ -176,6 +177,15 @@ namespace MapAMilepost.Models
             {
                 _endResponse = value;
                 OnPropertyChanged(nameof(EndResponse));
+            }
+        }
+        public string featureID
+        {
+            get { return _featureID; }
+            set
+            {
+                _featureID = value;
+                OnPropertyChanged(nameof(featureID));
             }
         }
         public LineResponseModel()

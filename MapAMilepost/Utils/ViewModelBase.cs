@@ -29,8 +29,8 @@ namespace MapAMilepost.Utils
         public virtual LineArgsModel LineArgs { get; set; }
         public virtual ObservableCollection<PointResponseModel> SoeResponses { get; set; }
         public virtual ObservableCollection<LineResponseModel> LineResponses { get; set; }
-        public virtual List<PointResponseModel> SelectedItems { get; set; }
-
+        public virtual List<PointResponseModel> SelectedPoints { get; set; }
+        public virtual List<LineResponseModel> SelectedLines { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {

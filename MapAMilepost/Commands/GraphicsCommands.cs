@@ -24,6 +24,7 @@ using System.Windows.Controls;
 using System.Windows;
 using ArcGIS.Desktop.Internal.Catalog.DistributedGeodatabase.ManageReplicas;
 using System.Windows.Media;
+using ArcGIS.Core.Internal.CIM;
 namespace MapAMilepost.Commands
 {
     class GraphicsCommands
@@ -34,26 +35,51 @@ namespace MapAMilepost.Commands
         ///     saved graphic (a green point).
         /// -   Delete the click point.
         /// </summary>
-        public static async void UpdateSaveGraphicInfos(CustomGraphics CustomPointSymbols)
+        public static async void UpdateSaveGraphicInfos(CustomGraphics CustomSymbols, string featureID = null)
         {
             GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
-            CIMPointSymbol savedRoutePointSymbol = CustomPointSymbols.SymbolsLibrary["DeselectedSymbols"]["SavedRoutePoint"] as CIMPointSymbol;
+            CIMPointSymbol savedRoutePointSymbol = CustomSymbols.SymbolsLibrary["SavedRoutePoint"] as CIMPointSymbol;
+            CIMPointSymbol savedRouteStartSymbol = CustomSymbols.SymbolsLibrary["SavedStartRoutePoint"] as CIMPointSymbol;
+            CIMPointSymbol savedRouteEndSymbol = CustomSymbols.SymbolsLibrary["SavedEndRoutePoint"] as CIMPointSymbol;
+            CIMLineSymbol savedRouteLineSymbol = CustomSymbols.SymbolsLibrary["SavedRouteLine"] as CIMLineSymbol;
             //var graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
             IEnumerable<GraphicElement> graphicItems = graphicsLayer.GetElementsAsFlattenedList();
             await QueuedTask.Run(() =>
             {
                 foreach (GraphicElement item in graphicItems)
                 {
-                    var cimPointGraphic = item.GetGraphic() as CIMPointGraphic;
                     //set route graphic saved property to true
-                    if(item.GetCustomProperty("eventType")== "route")
+                    if(item.GetCustomProperty("eventType")== "route"&& item.GetCustomProperty("saved") != "true")
                     {
                         item.SetCustomProperty("saved", "true");
-                    }
-                    if (item.GetCustomProperty("eventType") == "route" && item.GetCustomProperty("sessionType") == "point")
-                    {
-                        cimPointGraphic.Symbol = savedRoutePointSymbol.MakeSymbolReference();
-                        item.SetGraphic(cimPointGraphic);
+                        if (item.GetCustomProperty("sessionType") == "point")
+                        {
+                            var cimGraphic = item.GetGraphic() as CIMPointGraphic;
+                            cimGraphic.Symbol = savedRoutePointSymbol.MakeSymbolReference();
+                            item.SetGraphic(cimGraphic);
+                        }
+                        else if (item.GetCustomProperty("sessionType") == "line")
+                        {
+                            item.SetCustomProperty("featureID", featureID);
+                            if (item.GetCustomProperty("startEnd") == "end")//the end point graphic
+                            {
+                                var cimGraphic = item.GetGraphic() as CIMPointGraphic;
+                                cimGraphic.Symbol = savedRouteEndSymbol.MakeSymbolReference();
+                                item.SetGraphic(cimGraphic);
+                            }
+                            else if (item.GetCustomProperty("startEnd") == "start")//the start point graphic
+                            {
+                                var cimGraphic = item.GetGraphic() as CIMPointGraphic;
+                                cimGraphic.Symbol = savedRouteStartSymbol.MakeSymbolReference();
+                                item.SetGraphic(cimGraphic);
+                            }
+                            else if (item.Name.Contains("Line"))//the line graphic
+                            {
+                                var cimGraphic = item.GetGraphic() as CIMLineGraphic;
+                                cimGraphic.Symbol = savedRouteLineSymbol.MakeSymbolReference();
+                                item.SetGraphic(cimGraphic);
+                            }
+                        }
                     }
                 }
             });
@@ -81,7 +107,7 @@ namespace MapAMilepost.Commands
                     #region create and add click point graphic
             
                     var clickedPtGraphic = new CIMPointGraphic() { 
-                        Symbol = (CustomSymbols.SymbolsLibrary["DeselectedSymbols"]["ClickPoint"] as CIMPointSymbol).MakeSymbolReference(),
+                        Symbol = (CustomSymbols.SymbolsLibrary["ClickPoint"] as CIMPointSymbol).MakeSymbolReference(),
                         Location = (MapPointBuilderEx.CreateMapPoint(SoeArgs.X, SoeArgs.Y))
                     };
                     //create custom click point props
@@ -91,7 +117,7 @@ namespace MapAMilepost.Commands
                         {
                             new() { Key = "saved", Value = "false" },
                             new() { Key = "eventType", Value = "click" },
-                            new() { Key = "sessionType", Value = sessionType=="point"?"point":"line"},
+                            new() { Key = "sessionType", Value = sessionType== "point" ? "point" : "line"},
                             new() { Key = "startEnd", Value = sessionType }
                         }
                     };
@@ -100,9 +126,9 @@ namespace MapAMilepost.Commands
 
                     #region create and add route point graphic
                     CIMSymbolReference routePointSymbol = (
-                        sessionType == "start" ? (CustomSymbols.SymbolsLibrary["DeselectedSymbols"]["StartRoutePoint"] as CIMPointSymbol).MakeSymbolReference() :
-                        sessionType == "end" ? (CustomSymbols.SymbolsLibrary["DeselectedSymbols"]["EndRoutePoint"] as CIMPointSymbol).MakeSymbolReference() :
-                        (CustomSymbols.SymbolsLibrary["DeselectedSymbols"]["RoutePoint"] as CIMPointSymbol).MakeSymbolReference()
+                        sessionType == "start" ? (CustomSymbols.SymbolsLibrary["StartRoutePoint"] as CIMPointSymbol).MakeSymbolReference() :
+                        sessionType == "end" ? (CustomSymbols.SymbolsLibrary["EndRoutePoint"] as CIMPointSymbol).MakeSymbolReference() :
+                        (CustomSymbols.SymbolsLibrary["RoutePoint"] as CIMPointSymbol).MakeSymbolReference()
                     );
                     var soePtGraphic = new CIMPointGraphic() { 
                         Symbol = routePointSymbol,
@@ -137,6 +163,13 @@ namespace MapAMilepost.Commands
             }
         }
 
+        /// <summary>
+        /// Create graphics for lines.
+        /// </summary>
+        /// <param name="startPoint"></param>
+        /// <param name="endPoint"></param>
+        /// <param name="LineGeometry"></param>
+        /// <returns></returns>
         public static async Task CreateLineGraphics(PointResponseModel startPoint, PointResponseModel endPoint, List<List<double>> LineGeometry)
         {
             CustomGraphics CustomSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
@@ -150,25 +183,26 @@ namespace MapAMilepost.Commands
                 }
                 var lineGraphic = new CIMLineGraphic()
                 {
-                    Symbol = (CustomSymbols.SymbolsLibrary["DeselectedSymbols"]["RouteLine"] as CIMLineSymbol).MakeSymbolReference(),
+                    Symbol = (CustomSymbols.SymbolsLibrary["RouteLine"] as CIMLineSymbol).MakeSymbolReference(),
                     Line = (PolylineBuilderEx.CreatePolyline(points))
                 };
-                var routePtElemInfo = new ElementInfo()
+                var routePtElemInfo = new ArcGIS.Desktop.Layouts.ElementInfo()
                 {
                     CustomProperties = new List<CIMStringMap>()
-                {
-                    new() { Key = "Route",Value = startPoint.Route},
-                    new() { Key = "Decrease",Value = startPoint.Decrease.ToString()},
-                    new() { Key = "Arm",Value = startPoint.Arm.ToString()},
-                    new() { Key = "EndArm",Value = endPoint.Arm.ToString()},
-                    new() { Key = "Srmp",Value = startPoint.Srmp.ToString()},
-                    new() { Key = "EndSRMP",Value = endPoint.Srmp.ToString()},
-                    new() { Key = "Back",Value = startPoint.Back.ToString()},
-                    new() { Key = "ResponseDate",Value = startPoint.ResponseDate.ToString()},
-                    new() { Key = "EndBack",Value = endPoint.EndBack.ToString()},
-                    new() { Key = "saved", Value="false"},
-                    new() { Key = "sessionType", Value = "line"}
-                }
+                    {
+                        new() { Key = "Route",Value = startPoint.Route},
+                        new() { Key = "Decrease",Value = startPoint.Decrease.ToString()},
+                        new() { Key = "Arm",Value = startPoint.Arm.ToString()},
+                        new() { Key = "EndArm",Value = endPoint.Arm.ToString()},
+                        new() { Key = "Srmp",Value = startPoint.Srmp.ToString()},
+                        new() { Key = "EndSRMP",Value = endPoint.Srmp.ToString()},
+                        new() { Key = "Back",Value = startPoint.Back.ToString()},
+                        new() { Key = "ResponseDate",Value = startPoint.ResponseDate.ToString()},
+                        new() { Key = "EndBack",Value = endPoint.EndBack.ToString()},
+                        new() { Key = "saved", Value="false"},
+                        new() { Key = "eventType", Value="route"},
+                        new() { Key = "sessionType", Value = "line"}
+                    }
                 };
                 graphicsLayer.AddElement(cimGraphic: lineGraphic, elementInfo: routePtElemInfo, select: false);
                 await OrganizeGraphics(graphicsLayer);
@@ -221,6 +255,25 @@ namespace MapAMilepost.Commands
         }
 
         /// <summary>
+        /// -   Create reference to graphics layer and the 
+        /// </summary>
+        /// <param name="deleteIndices"></param>
+        public static async Task DeleteLineGraphics(string[] FeatureIDs)
+        {
+            await QueuedTask.Run(() => {
+                GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+                var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetCustomProperty("sessionType") == "line");
+                foreach (GraphicElement graphic in graphics.ToList())
+                {
+                    if (FeatureIDs.Contains(graphic.GetCustomProperty("featureID")))
+                    {
+                        graphicsLayer.RemoveElement(graphic);
+                    }
+                }
+            });
+        }
+
+        /// <summary>
         /// -   Delete unsaved graphics, such as click point graphics and unsaved route graphics
         /// </summary>
         public static async void DeleteUnsavedGraphics(string startEnd = null)
@@ -258,6 +311,11 @@ namespace MapAMilepost.Commands
                 #endregion
             });
         }
+
+        /// <summary>
+        /// Remove all halos from graphics in the map.
+        /// </summary>
+        /// <returns></returns>
         public static async Task DeselectAllGraphics()
         {
             GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
@@ -268,7 +326,7 @@ namespace MapAMilepost.Commands
                     var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic);
                     for (int i = graphics.Count() - 1; i >= 0; i--)
                     {
-                        setGraphicDelesected(graphics.ElementAt(i));
+                        SetGraphicDelesected(graphics.ElementAt(i));
                     }
                 });
             }
@@ -276,7 +334,8 @@ namespace MapAMilepost.Commands
         }
 
         /// <summary>
-        /// 
+        /// Add halos to selected items if items are selected in the data grid,
+        /// otherwise remove halos.
         /// </summary>
         /// <param name="SelectedItems">List of selected rows in data grid</param>
         /// <param name="SoeResponses">List of saved route points</param>
@@ -301,40 +360,105 @@ namespace MapAMilepost.Commands
                     {
                         if (SelectedIndices.Contains(i))
                         {
-                            setGraphicSelected(graphics.ElementAt(i));
+                            SetGraphicSelected(graphics.ElementAt(i));
                         }
                     }
                 }
                 else //if no items are selected
                 {
-                    if (sessionType == "point")
+                    for (int i = graphics.Count() - 1; i >= 0; i--)
                     {
-                        for (int i = graphics.Count() - 1; i >= 0; i--)
-                        {
-                            setGraphicDelesected(graphics.ElementAt(i));
-                        }
+                        SetGraphicDelesected(graphics.ElementAt(i));
                     }
-
                 }
             });
         }
 
-        private static void setGraphicSelected(GraphicElement pointGraphic)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="SelectedItems">List of selected rows in data grid</param>
+        /// <param name="SoeResponses">List of saved route points</param>
+        /// <param name="sessionType">Type of session (point or line) </param>
+        public static async void SetLineGraphicsSelected(List<LineResponseModel> SelectedItems)
         {
-            var newCimDefiition = pointGraphic.GetGraphic();
-            var polyFill = SymbolFactory.Instance.ConstructSolidFill(ColorFactory.Instance.CreateRGBColor(0, 0, 255, 50));
-            var polyStroke = SymbolFactory.Instance.ConstructStroke(ColorFactory.Instance.BlackRGB, 0);
-            var haloPoly = SymbolFactory.Instance.ConstructPolygonSymbol(polyFill, polyStroke);
-            (newCimDefiition.Symbol.Symbol as CIMPointSymbol).HaloSize = 3;
-            (newCimDefiition.Symbol.Symbol as CIMPointSymbol).HaloSymbol = haloPoly;
-            pointGraphic.SetGraphic(newCimDefiition);
+            CustomGraphics CustomSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
+            GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+            var lineGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMLineGraphic && elem.GetCustomProperty("sessionType") == "line");
+            var pointGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == "line");
+            await QueuedTask.Run(() =>
+            {
+                if (SelectedItems.Count > 0) //if items are selected
+                {
+                    var ItemIDs = SelectedItems.Select(Item => Item.featureID).ToArray();//Selected item IDs
+                    foreach (GraphicElement graphic in lineGraphics)
+                    {
+                        var newCimDefinition = graphic.GetGraphic();
+                        newCimDefinition.Symbol.Symbol = (CustomSymbols.SymbolsLibrary["SelectedRouteLine"] as CIMLineSymbol);
+                        if (ItemIDs.Contains(graphic.GetCustomProperty("featureID")))
+                        {
+                            graphic.SetGraphic(newCimDefinition);
+                        }
+                    }
+                    foreach (GraphicElement graphic in pointGraphics)
+                    {
+                       if (ItemIDs.Contains(graphic.GetCustomProperty("featureID")))
+                        {
+                            CIMGraphic newCimGraphic = Utils.CustomGraphics.GetSelectedPointGraphicSymbol(graphic);
+                            graphic.SetGraphic(newCimGraphic);
+                        }
+                    }
+                }
+                else //if no items are selected
+                {
+                    foreach (GraphicElement graphic in lineGraphics)
+                    {
+                        var newCimDefiition = graphic.GetGraphic();
+                        newCimDefiition.Symbol.Symbol = (CustomSymbols.SymbolsLibrary["SavedRouteLine"] as CIMLineSymbol);
+                        graphic.SetGraphic(newCimDefiition);
+                    }
+                    foreach (GraphicElement graphic in pointGraphics)
+                    {
+                        if (graphic.GetCustomProperty("startEnd") == "start")
+                        {
+                            var graphicSymbol = graphic.GetGraphic();
+                            graphicSymbol.Symbol.Symbol = (CustomSymbols.SymbolsLibrary["SavedStartRoutePoint"] as CIMPointSymbol);   
+                            graphic.SetGraphic(graphicSymbol);
+                        }
+                        else
+                        {
+                            var graphicSymbol = graphic.GetGraphic();
+                            graphicSymbol.Symbol.Symbol = (CustomSymbols.SymbolsLibrary["SavedEndRoutePoint"] as CIMPointSymbol);
+                            graphic.SetGraphic(graphicSymbol);
+                        }
+                    }
+                }
+            });
         }
-        private static void setGraphicDelesected(GraphicElement pointGraphic)
+
+        /// <summary>
+        /// Add halo to graphic symbols.
+        /// </summary>
+        /// <param name="targetGraphic"></param>
+        private static void SetGraphicSelected(GraphicElement targetGraphic)
         {
-            var newCimDefiition = pointGraphic.GetGraphic();
-            (newCimDefiition.Symbol.Symbol as CIMPointSymbol).HaloSize = 1;
-            (newCimDefiition.Symbol.Symbol as CIMPointSymbol).HaloSymbol = null;
-            pointGraphic.SetGraphic(newCimDefiition);
+            CIMGraphic newCimGraphic = Utils.CustomGraphics.GetSelectedPointGraphicSymbol(targetGraphic);
+            targetGraphic.SetGraphic(newCimGraphic);
+        }
+
+        /// <summary>
+        /// Remove halo from graphic symbols.
+        /// </summary>
+        /// <param name="targetGraphic"></param>
+        private static void SetGraphicDelesected(GraphicElement targetGraphic)
+        {
+            var newCimDefinition = targetGraphic.GetGraphic();
+            if (targetGraphic.Name.Contains("Point"))
+            {
+                (newCimDefinition.Symbol.Symbol as CIMPointSymbol).HaloSize = 1;
+                (newCimDefinition.Symbol.Symbol as CIMPointSymbol).HaloSymbol = null;
+            }
+            targetGraphic.SetGraphic(newCimDefinition);
         }
 
         /// <summary>
@@ -359,7 +483,7 @@ namespace MapAMilepost.Commands
                 //create a duplicate responsemodel object and add it to the array of response models that will persist
                 { 
                     //clear selected items
-                    VM.SelectedItems.Clear();
+                    VM.SelectedPoints.Clear();
                     //clear selected rows
                     myGrid.SelectedItems.Clear();
                     VM.SoeResponses.Add(new PointResponseModel()
@@ -447,21 +571,22 @@ namespace MapAMilepost.Commands
                     //create a duplicate responsemodel object and add it to the array of response models that will persist
                     {
                         //clear selected items
-                        VM.SelectedItems.Clear();
+                        VM.SelectedLines.Clear();
                         //clear selected rows
                         myGrid.SelectedItems.Clear();
+                        string featureID = $"{VM.LineResponse.StartResponse.Route}s{VM.LineResponse.StartResponse.Srmp}e{VM.LineResponse.EndResponse.Srmp}";
                         VM.LineResponses.Add(new LineResponseModel()
                         {
                             StartResponse = VM.LineResponse.StartResponse,
-                            EndResponse = VM.LineResponse.EndResponse
+                            EndResponse = VM.LineResponse.EndResponse,
+                            featureID = featureID
                         });
                         CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
-                        UpdateSaveGraphicInfos(customPointSymbols);
+                        UpdateSaveGraphicInfos(customPointSymbols, featureID);
                         DeleteUnsavedGraphics();
-                        VM.SoeArgs.X = 0;
-                        VM.SoeArgs.Y = 0;
-                        VM.SoeResponse = new PointResponseModel();//clear the SOE response info panel
-                        if (VM.SoeResponses.Count > 0)
+                        VM.LineArgs = new LineArgsModel(VM.LineArgs.StartArgs.SearchRadius, VM.LineArgs.EndArgs.SearchRadius);
+                        VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
+                        if (VM.LineResponses.Count > 0)
                         {
                             VM.ShowResultsTable = true;
                         };
@@ -470,6 +595,11 @@ namespace MapAMilepost.Commands
             }
         }
 
+        /// <summary>
+        /// Retrieves the content of the add in's graphic layer and adds it to the "saved features" table in the add in.
+        /// </summary>
+        /// <param name="VM">The main viewmodel</param>
+        /// <returns></returns>
         public async static Task<ObservableCollection<PointResponseModel>> TrySyncAddIn(MainViewModel VM)
         {
             ObservableCollection<PointResponseModel> responses = new ObservableCollection<PointResponseModel>();
@@ -480,7 +610,7 @@ namespace MapAMilepost.Commands
                 {
                     var pointGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == "point");
                     var lineGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == "line");
-                    ObservableCollection<PointResponseModel> pointSoeResponses = parseResponses(pointGraphics);
+                    ObservableCollection<PointResponseModel> pointSoeResponses = ParseResponses(pointGraphics);
                     VM.MapPointVM.SoeResponses = pointSoeResponses;
                     if(pointSoeResponses.Count > 0)
                     {
@@ -491,7 +621,12 @@ namespace MapAMilepost.Commands
             return responses;
         }
 
-        private static ObservableCollection<PointResponseModel> parseResponses(IEnumerable<GraphicElement> Graphics)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Graphics"></param>
+        /// <returns></returns>
+        private static ObservableCollection<PointResponseModel> ParseResponses(IEnumerable<GraphicElement> Graphics)
         {
             ObservableCollection<PointResponseModel> Responses = new ObservableCollection<PointResponseModel>();
             foreach (GraphicElement item in Graphics)
@@ -516,6 +651,12 @@ namespace MapAMilepost.Commands
             return Responses;
         }
 
+        /// <summary>
+        /// Push the line features in the graphics layer to the bottom,
+        /// ensuring the points are displayed on top of the lines.
+        /// </summary>
+        /// <param name="graphicsLayer"></param>
+        /// <returns></returns>
         private static async Task OrganizeGraphics(GraphicsLayer graphicsLayer)
         {
             await QueuedTask.Run(() =>
