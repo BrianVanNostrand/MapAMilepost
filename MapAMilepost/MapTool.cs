@@ -17,6 +17,7 @@ using MapAMilepost.Commands;
 using MapAMilepost.Models;
 using MapAMilepost.Utils;
 using MapAMilepost.ViewModels;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -86,10 +87,10 @@ namespace MapAMilepost
                         lineGeometryResponse = await Utils.MapToolUtils.GetLine(CurrentViewModel.LineResponse.StartResponse, CurrentViewModel.LineResponse.EndResponse, CurrentViewModel.LineArgs.StartArgs.SR, CurrentViewModel.LineArgs.StartArgs.ReferenceDate);
                         await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.EndArgs, CurrentViewModel.LineResponse.EndResponse, MapToolSessionType);
                     }
-                    else
+                    else//point session
                     {
-                        CurrentViewModel.SoeResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.SoeArgs) as PointResponseModel);
-                        await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.SoeArgs, CurrentViewModel.SoeResponse, MapToolSessionType);
+                        CurrentViewModel.PointResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.PointArgs) as PointResponseModel);
+                        await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.PointArgs, CurrentViewModel.PointResponse, MapToolSessionType);
                     }
                     if (lineGeometryResponse.Count > 0)
                     {
@@ -117,25 +118,37 @@ namespace MapAMilepost
         {
             CurrentViewModel = currentVM;
             MapToolSessionType = sessionType;
-            Map map = MapView.Active.Map;
-            var graphicsLayer = map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+            //var graphicsLayer = map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
             if (graphicsLayer != null)//if layer exists
             {
-                map.TargetGraphicsLayer = graphicsLayer;
+                MapView.Active.Map.TargetGraphicsLayer = graphicsLayer;
+                await FrameworkApplication.SetCurrentToolAsync("MapAMilepost_MapTool");
             }
             else // else create layer
             {
-                CreateLayer(map);
-            };
-            await FrameworkApplication.SetCurrentToolAsync("MapAMilepost_MapTool");
+                string title = Interaction.InputBox("Please enter a title for your milepost graphics layer.", "Create Milepost Layer", "My Milepost Layer");
+                if (title != "")
+                {
+                    CreateLayer(title, MapView.Active.Map);
+                    await FrameworkApplication.SetCurrentToolAsync("MapAMilepost_MapTool");
+                }
                 
+            };
         }
-        private void CreateLayer(Map map)
+        private void CreateLayer(string title, Map map)
         {
-            GraphicsLayerCreationParams gl_param = new() { Name = "MilepostMappingLayer" };
+            GraphicsLayerCreationParams gl_param = new() { Name = title };
             QueuedTask.Run(() =>
             {
                 GraphicsLayer graphicsLayer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(gl_param, map);
+                CIMBaseLayer newDefinition = graphicsLayer.GetDefinition();
+                CIMStringMap[] CustomLayerProps = new CIMStringMap[]//hidden ID for map layer
+                {
+                    new() { Key = "MilepostMappingLayer", Value = "true" },
+                };
+                newDefinition.CustomProperties = CustomLayerProps;
+                graphicsLayer.SetDefinition(newDefinition);//add custom prop to layer
             });
         }
 

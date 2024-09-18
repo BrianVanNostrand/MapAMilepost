@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace MapAMilepost.Utils
 {
-    public static class SoeResponseUtils
+    public static class SOEResponseUtils
     {
         /// <summary>
-        /// -   Used to copy the properties of the SoeResponse object returned from the SOE response to the static SoeResponse
+        /// -   Used to copy the properties of the PointResponse object returned from the SOE response to the static PointResponse
         ///     instance in the viewmodel.
         /// </summary>
         /// <param name="source">The source.</param>
@@ -60,7 +60,7 @@ namespace MapAMilepost.Utils
         }
 
         /// <summary>
-        /// -   Checks whether or not the properties of the PointResponseModel are all null, indicating that the viewmodel's SoeResponse
+        /// -   Checks whether or not the properties of the PointResponseModel are all null, indicating that the viewmodel's PointResponse
         ///     hasn't been updated yet.
         /// </summary>
         /// <param name="myObject"></param>
@@ -73,7 +73,7 @@ namespace MapAMilepost.Utils
                 {
                     string value = (string)pi.GetValue(myObject);
                     Console.WriteLine(pi.Name);
-                    List<string> excludeList = new List<string> {"ReferenceDate"};//list of keys present in the Find Nearest Route Locations response but not present in the Find Route Locations response.
+                    List<string> excludeList = new List<string> {"ReferenceDate", "PointFeatureID"};//list of keys not expected to be present in the Find Route Locations response.
                     if (string.IsNullOrEmpty(value)&&!excludeList.Contains(pi.Name))
                     {
                         return false;

@@ -68,7 +68,7 @@ namespace MapAMilepost.ViewModels
         public override ObservableCollection<LineResponseModel> LineResponses
         {
             get { return _lineResponses; }
-            set { _lineResponses = value; OnPropertyChanged(nameof(SoeResponses)); }
+            set { _lineResponses = value; OnPropertyChanged(nameof(LineResponses)); }
         }
 
         /// <summary>
@@ -77,15 +77,15 @@ namespace MapAMilepost.ViewModels
         /// </summary>
         public override List<LineResponseModel> SelectedLines { get; set; } = new List<LineResponseModel>();
 
-        public Commands.RelayCommand<object> UpdateSelectionCommand => new Commands.RelayCommand<object>((grid) => Commands.DataGridCommands.UpdateLineSelection(grid as DataGrid, this));
+        public Commands.RelayCommand<object> UpdateSelectionCommand => new ((grid) => Commands.DataGridCommands.UpdateLineSelection(grid as DataGrid, this));
 
-        public Commands.RelayCommand<object> DeleteItemsCommand => new Commands.RelayCommand<object>(async(parms) => await Commands.DataGridCommands.DeleteLineItems(this));
+        public Commands.RelayCommand<object> DeleteItemsCommand => new (async(parms) => await Commands.DataGridCommands.DeleteLineItems(this));
 
-        public Commands.RelayCommand<object> ClearItemsCommand => new Commands.RelayCommand<object>((parms) => Commands.DataGridCommands.ClearItems(this));
+        public Commands.RelayCommand<object> ClearItemsCommand => new (async(parms) => await Commands.DataGridCommands.ClearDataGridItems(this));
 
-        public Commands.RelayCommand<object> SaveLineResultCommand => new Commands.RelayCommand<object>((grid) => Commands.GraphicsCommands.SaveLineResult(grid as DataGrid, this));
+        public Commands.RelayCommand<object> SaveLineResultCommand => new ((grid) => Commands.GraphicsCommands.SaveLineResult(grid as DataGrid, this));
 
-        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new Commands.RelayCommand<object>((startEnd) =>
+        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new ((startEnd) =>
         {
             if((string)startEnd=="start")//if start button is clicked
             {

@@ -56,21 +56,19 @@ namespace MapAMilepost.Utils
                 VM.MapToolInfos.SessionActive = false;
                 VM.MapToolInfos.MapButtonLabel = "Start Mapping";
                 VM.MapToolInfos.MapButtonToolTip = "Start mapping session.";
-                VM.SoeResponse = new PointResponseModel();
+                VM.PointResponse = new PointResponseModel();
             }
             else if (sessionType == "start")
             {
                 VM.MapToolInfos.SessionActive = false;
                 VM.MapToolInfos.MapButtonLabel = "Map Start";
                 VM.MapToolInfos.MapButtonToolTip = "Start mapping session for start point.";
-                VM.SoeResponse = new PointResponseModel();
             }
             else if (sessionType == "end")//if end session
             {
                 VM.MapToolInfos.SessionEndActive = false;
                 VM.MapToolInfos.MapButtonEndLabel = "Map End";
                 VM.MapToolInfos.MapButtonEndToolTip = "Start mapping session for end point.";
-                VM.SoeEndResponse = new PointResponseModel();
             }
             //  Calls the EndSession method from the MapAMilepostMapTool viewmodel, setting the active tool
             //  to whatever was selected before the mapping session was initialized.
@@ -78,11 +76,18 @@ namespace MapAMilepost.Utils
             if(sessionType == null)//tab switched
             {
                 Commands.GraphicsCommands.DeleteUnsavedGraphics(sessionType);
-                DeactivateSession(VM, "point");
-                DeactivateSession(VM, "start");
-                DeactivateSession(VM, "end");
+                if (VM.GetType() == typeof(MapPointViewModel))
+                {
+                    DeactivateSession(VM, "point");
+                }
+                else
+                {
+                    DeactivateSession(VM, "start");
+                    DeactivateSession(VM, "end");
+                    VM.LineResponse.EndResponse = new PointResponseModel();
+                    VM.LineResponse.StartResponse = new PointResponseModel();
+                }
             }
-            
         }
 
         public static async Task<List<List<double>>> GetLine(PointResponseModel startPoint, PointResponseModel endPoint, long SR, string ReferenceDate)

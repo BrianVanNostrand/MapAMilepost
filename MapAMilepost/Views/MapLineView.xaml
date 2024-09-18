@@ -7,12 +7,14 @@
              mc:Ignorable="d" 
              xmlns:theme ="../Themes/ButtonTheme.xaml"
              xmlns:b ="http://schemas.microsoft.com/xaml/behaviors"
-             d:DesignHeight="600" d:DesignWidth="364"
+             d:DesignWidth="364"
              Width="300">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Themes/ButtonTheme.xaml" />
+                <ResourceDictionary Source="../Themes/DataGridRowTheme.xaml" />
+                <ResourceDictionary Source="../Themes/SelectableTextStyle.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -21,7 +23,7 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="80px"/>
+            <RowDefinition x:Name="SearchDistanceRow" Height="55px"/>
             <RowDefinition/>
             <RowDefinition Height="30px"/>
             <RowDefinition Height="200px"/>
@@ -37,27 +39,14 @@
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition/>
-                <RowDefinition/>
             </Grid.RowDefinitions>
-            <Label Grid.Row="0" Grid.Column="1">Start Point</Label>
-            <Label Grid.Row="0" Grid.Column="2">End Point</Label>
-            <Label x:Name="MapPointSearchDistanceLabel" Grid.Row="1" Grid.Column="0">Search Distance</Label>
-            <Label  Grid.Row="1" Grid.Column="3">Feet</Label>
+            <TextBox Grid.Row="0" Grid.Column="1" Style="{StaticResource SelectableTextBox}">Start Point</TextBox>
+            <TextBox Grid.Row="0" Grid.Column="2" Style="{StaticResource SelectableTextBox}">End Point</TextBox>
+            <TextBox x:Name="MapPointSearchDistanceLabel" Grid.Row="1" Grid.Column="0" Style="{StaticResource SelectableTextBox}">Search Distance</TextBox>
+            <TextBox x:Name="FeetLabel" Grid.Row="1" Grid.Column="3" Style="{StaticResource SelectableTextBox}">Feet</TextBox>
             <TextBox x:Name="MapStartPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="1" Text="{Binding LineArgs.StartArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped start point."/>
             <TextBox x:Name="MapEndPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="2" Text="{Binding LineArgs.EndArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped end point."/>
-            <Label Grid.Row="2" Grid.Column="0">Coordinates of Click</Label>
-            <Label Grid.Row="2" Grid.Column="1">
-                <MultiBinding StringFormat="{}{0} , {1}">
-                    <Binding Path="LineArgs.StartArgs.X" />
-                    <Binding Path="LineArgs.StartArgs.Y" />
-                </MultiBinding>
-            </Label>
-            <Label Grid.Row="2" Grid.Column="2">
-                <MultiBinding StringFormat="{}{0} , {1}">
-                    <Binding Path="LineArgs.EndArgs.X" />
-                    <Binding Path="LineArgs.EndArgs.Y" />
-                </MultiBinding>
-            </Label>
+            
         </Grid>
         <Grid Grid.Row="1" x:Name="SOEResultsGrid">
             <Grid.ColumnDefinitions>
@@ -78,18 +67,18 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <!--Labels-->
-            <Label Grid.Column="0" Grid.Row="0" Background="#cfd8ff" >Results</Label>
-            <Label Background="#cfd8ff" Grid.Column="1" Grid.Row="0">Start</Label>
-            <Label Background="#cfd8ff" Grid.Column="2" Grid.Row="0">End</Label>
-            <Label Grid.Column="0" Grid.Row="1">Route</Label>
-            <Label Grid.Column="0" Grid.Row="2">SRMP</Label>
-            <Label Grid.Column="0" Grid.Row="3">ARM</Label>
-            <Label Grid.Column="0" Grid.Row="4">X</Label>
-            <Label Grid.Column="0" Grid.Row="5">Y</Label>
-            <Label Grid.Column="0" Grid.Row="6">Decrease</Label>
-            <Label Grid.Column="0" Grid.Row="7">Back</Label>
-            <Label Grid.Column="0" Grid.Row="8">Realignment Date</Label>
-            <Label Grid.Column="0" Grid.Row="9">Response Date</Label>
+            <TextBox Grid.Column="0" Grid.Row="0" Background="#cfd8ff" Style="{StaticResource SelectableTextBox}">Results</TextBox>
+            <TextBox Background="#cfd8ff" Grid.Column="1" Grid.Row="0" Style="{StaticResource SelectableTextBox}">Start</TextBox>
+            <TextBox Background="#cfd8ff" Grid.Column="2" Grid.Row="0" Style="{StaticResource SelectableTextBox}">End</TextBox>
+            <TextBox Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Center" ToolTip="The route that the location belongs to." Style="{StaticResource SelectableTextBox}">Route</TextBox>
+            <TextBox Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Center" ToolTip="SRMP measure of the route location found." Style="{StaticResource SelectableTextBox}">SRMP</TextBox>
+            <TextBox Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Center" ToolTip="ARM measure of the route location found." Style="{StaticResource SelectableTextBox}">ARM</TextBox>
+            <TextBox Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Center" ToolTip="X-coordinate of the route location found." Style="{StaticResource SelectableTextBox}">X</TextBox>
+            <TextBox Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Center" ToolTip="Y-coordinate of the route location found." Style="{StaticResource SelectableTextBox}">Y</TextBox>
+            <TextBox Grid.Column="0" Grid.Row="6" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location is in the decreasing direction of the roadway (Southbound or Westbound)." Style="{StaticResource SelectableTextBox}">Decrease</TextBox>
+            <TextBox Grid.Column="0" Grid.Row="7" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location represent back mileage." Style="{StaticResource SelectableTextBox}">Back</TextBox>
+            <TextBox Grid.Column="0" Grid.Row="8" HorizontalContentAlignment="Center" ToolTip="Realignment date of the route location." Style="{StaticResource SelectableTextBox}">Realignment Date</TextBox>
+            <TextBox Grid.Column="0" Grid.Row="9" HorizontalContentAlignment="Center" ToolTip="Response date of the route location found." Style="{StaticResource SelectableTextBox}">Response Date</TextBox>
             <!--Start Point Bindings-->
             <Label Grid.Column="1" Grid.Row="1" Content="{Binding LineResponse.StartResponse.Route, UpdateSourceTrigger=PropertyChanged}"/>
             <Label Grid.Column="1" Grid.Row="2" Content="{Binding LineResponse.StartResponse.Srmp, UpdateSourceTrigger=PropertyChanged}"/>
@@ -180,7 +169,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
-                <Label Grid.Row="0" Grid.Column="0">Lines:</Label>
+                <TextBox Grid.Row="0" Grid.Column="0" Style="{StaticResource SelectableTextBox}">Lines:</TextBox>
                 <Label Grid.Row="0" Grid.Column="1" Content="{Binding LineResponses.Count}"/>
             </Grid>
             <ScrollViewer  Grid.ColumnSpan="3" Grid.Row="3">
@@ -226,6 +215,18 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
+            <Grid.Resources>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ShowResultsTable}" Value="true">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ShowResultsTable}" Value="false">
+                            <Setter Property="Visibility" Value="Hidden" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Resources>
             <Button Grid.Row="2" Grid.Column="0" Style="{StaticResource whiteButton}">
                 Export Data
             </Button>

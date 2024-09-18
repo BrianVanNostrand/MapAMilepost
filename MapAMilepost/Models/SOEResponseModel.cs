@@ -15,9 +15,29 @@ namespace MapAMilepost.Models
     /// </summary>
     public class PointResponseModel : ObservableObject
     {
-
+        private string _pointFeatureID;
         private double? _angle;
-        public double? Angle
+        private double? _arm;
+        private bool? _back;
+        private bool? _endback;
+        private bool? _decrease;
+        private double? _distance;
+        private string? _route;
+        private double? _srmp;
+        private string? _referenceDate;
+        private string? _responseDate;
+        private string? _realignmentDate;
+        private coordinatePair? _routeGeometry;
+        public  string PointFeatureID
+        {
+            get { return _pointFeatureID; }
+            set
+            {
+                _pointFeatureID = value;
+                OnPropertyChanged(nameof(PointFeatureID));
+            }
+        }
+        public  double? Angle
         {
             get { return _angle; }
             set
@@ -26,9 +46,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Angle));
             }
         }
-
-        private double? _arm;
-        public double? Arm
+        public  double? Arm
         {
             get { return _arm; }
             set
@@ -37,9 +55,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Arm));
             }
         }
-
-        private bool? _back;
-        public bool? Back
+        public  bool? Back
         {
             get { return _back; }
             set
@@ -48,10 +64,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Back));
             }
         }
-
-        private bool? _endback;
-        public bool? EndBack
-        {
+        public  bool? EndBack {
             get { return _endback; }
             set
             {
@@ -59,10 +72,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(EndBack));
             }
         }
-
-        private bool? _decrease;
-
-        public bool? Decrease
+        public  bool? Decrease
         {
             get { return _decrease; }
             set
@@ -71,10 +81,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Decrease));
             }
         }
-
-        private double? _distance;
-
-        public double? Distance
+        public  double? Distance
         {
             get { return _distance; }
             set
@@ -83,10 +90,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Distance));
             }
         }
-
-        private string? _route;
-
-        public string? Route
+        public  string? Route
         {
             get { return _route; }
             set
@@ -95,10 +99,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Route));
             }
         }
-
-        private double? _srmp;
-
-        public double? Srmp
+        public  double? Srmp
         {
             get { return _srmp; }
             set
@@ -107,9 +108,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Srmp));
             }
         }
-
-        private string? _referenceDate;
-        public string? ReferenceDate
+        public  string? ReferenceDate
         {
             get { return _referenceDate; }
             set
@@ -119,8 +118,7 @@ namespace MapAMilepost.Models
             }
         }
 
-        private string? _responseDate;
-        public string? ResponseDate
+        public  string? ResponseDate
         {
             get { return _responseDate; }
             set
@@ -129,9 +127,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(ResponseDate));
             }
         }
-
-        private string? _realignmentDate;
-        public string? RealignmentDate
+        public  string? RealignmentDate
         {
             get { return _realignmentDate; }
             set
@@ -140,8 +136,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(RealignmentDate));
             }
         }
-        private coordinatePair? _routeGeometry;
-        public coordinatePair? RouteGeometry
+        public  coordinatePair? RouteGeometry
         {
             get { return _routeGeometry; }
             set
@@ -161,8 +156,8 @@ namespace MapAMilepost.Models
     {
         private PointResponseModel _startResponse;
         private PointResponseModel _endResponse;
-        private string _featureID;
-        public PointResponseModel StartResponse
+        private string _FeatureID;
+        public  PointResponseModel StartResponse
         {
             get { return _startResponse; }
             set
@@ -171,7 +166,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(StartResponse));
             }
         }
-        public PointResponseModel EndResponse {
+        public  PointResponseModel EndResponse {
             get { return _endResponse; }
             set
             {
@@ -179,13 +174,13 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(EndResponse));
             }
         }
-        public string featureID
+        public  string LineFeatureID
         {
-            get { return _featureID; }
+            get { return _FeatureID; }
             set
             {
-                _featureID = value;
-                OnPropertyChanged(nameof(featureID));
+                _FeatureID = value;
+                OnPropertyChanged(nameof(LineFeatureID));
             }
         }
         public LineResponseModel()

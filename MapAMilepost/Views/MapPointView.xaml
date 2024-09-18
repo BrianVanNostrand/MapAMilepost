@@ -5,9 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-             d:DesignHeight="600" d:DesignWidth="364"
+             d:DesignWidth="364"
              xmlns:viewmodels="clr-namespace:MapAMilepost.ViewModels"
              xmlns:b ="http://schemas.microsoft.com/xaml/behaviors"
+             Width="300"
              >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -23,11 +24,11 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="80px"/>
-            <RowDefinition/>
+            <RowDefinition x:Name="SearchDistanceRow" Height="40px"/>
+            <RowDefinition x:Name="PointResponseRow" />
+            <RowDefinition x:Name="PointResponseControlsRow" Height="30px"/>
+            <RowDefinition x:Name="DataGridRow"/>
             <RowDefinition Height="30px"/>
-            <RowDefinition/>
-            <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" x:Name="SoeArgsGrid">
             <Grid.ColumnDefinitions>
@@ -37,14 +38,10 @@
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition/>
-                <RowDefinition/>
             </Grid.RowDefinitions>
-            <TextBox Style="{StaticResource SelectableTextBox}" x:Name="MapPointSearchDistanceLabel" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0">Search Distance</TextBox>
+            <TextBox x:Name="MapPointSearchDistanceLabel" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0" Style="{StaticResource SelectableTextBox}">Search Distance</TextBox>
             <Label  Grid.Row="0" Grid.Column="2" VerticalAlignment="Center">Feet</Label>
-            <TextBox BorderBrush="#b3c1fc" BorderThickness="1" x:Name="MapPointSearcDistanceTextBox" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.Column="1" Text="{Binding SoeArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the nearest route location"></TextBox>
-            <TextBox Style="{StaticResource SelectableTextBox}" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">Coordinates of Click</TextBox>
-            <TextBox Style="{StaticResource SelectableTextBox}" Margin="5px 0px" Grid.Row="2" Grid.Column="1" Text="{Binding MapPointVM.SoeArgs.X}"  VerticalAlignment="Center" ToolTip="The X coordinate of the click event"/>
-            <TextBox Style="{StaticResource SelectableTextBox}" Margin="5px 0px" Grid.Row="2" Grid.Column="2" Text="{Binding MapPointVM.SoeArgs.Y}" VerticalAlignment="Center" ToolTip="The Y coordinate of the click event"/>
+            <TextBox BorderBrush="#b3c1fc" BorderThickness="1" x:Name="MapPointSearcDistanceTextBox" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.Column="1" Text="{Binding PointArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the nearest route location"></TextBox>
         </Grid>
         <Grid Grid.Row="1" x:Name="SOEResultsGrid" >
             <Grid.ColumnDefinitions>
@@ -73,15 +70,15 @@
             <TextBox Grid.Column="0" Grid.Row="7" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location represent back mileage." Style="{StaticResource SelectableTextBox}">Back</TextBox>
             <TextBox Grid.Column="0" Grid.Row="8" HorizontalContentAlignment="Center" ToolTip="Realignment date of the route location." Style="{StaticResource SelectableTextBox}">Realignment Date</TextBox>
             <TextBox Grid.Column="0" Grid.Row="9" HorizontalContentAlignment="Center" ToolTip="Response date of the route location found." Style="{StaticResource SelectableTextBox}">Response Date</TextBox>
-            <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding SoeResponse.Route, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding SoeResponse.Srmp, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding SoeResponse.Arm, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding SoeResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="5" Text="{Binding SoeResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="6" Text="{Binding SoeResponse.Decrease, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="7" Text="{Binding SoeResponse.Back, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="8" Text="{Binding SoeResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="9" Text="{Binding SoeResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding PointResponse.Route, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding PointResponse.Srmp, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding PointResponse.Arm, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding PointResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="5" Text="{Binding PointResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="6" Text="{Binding PointResponse.Decrease, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="7" Text="{Binding PointResponse.Back, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="8" Text="{Binding PointResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="9" Text="{Binding PointResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <Border Grid.ColumnSpan="3" Grid.Row="2" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="3" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="4" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
@@ -97,9 +94,9 @@
                 <ColumnDefinition />
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button Margin="10px 0px" x:Name="MapPointExecuteButton" Style="{StaticResource whiteButton}" Grid.Row="1" Grid.Column="0" CommandParameter="{Binding MapToolInfos.SessionActive}" Command="{Binding ToggleMapToolSessionCommand}" Content="{Binding MapToolInfos.MapButtonLabel}" ToolTip="{Binding MapToolInfos.MapButtonToolTip}"/>
+            <Button x:Name="MapPointExecuteButton" Style="{StaticResource whiteButton}" Grid.Row="1" Grid.Column="0" CommandParameter="{Binding MapToolInfos.SessionActive}" Command="{Binding ToggleMapToolSessionCommand}" Content="{Binding MapToolInfos.MapButtonLabel}" ToolTip="{Binding MapToolInfos.MapButtonToolTip}"/>
             <Button x:Name="ClearResultsButton" Grid.Row="3" Grid.Column="1" Command="{Binding ClearSelection}" CommandParameter="end" Style="{StaticResource whiteButton}" ToolTip="Clear the selection in this tab.">Clear</Button>
-            <Button Margin="10px 0px" x:Name="MapPointSaveButton" Grid.Row="1" Grid.Column="2" CommandParameter="{Binding ElementName=PointsGrid}" Command="{Binding SavePointResultCommand}" ToolTip="Save selection to the results grid.">
+            <Button x:Name="MapPointSaveButton" Grid.Row="1" Grid.Column="2" CommandParameter="{Binding ElementName=PointsGrid}" Command="{Binding SavePointResultCommand}" ToolTip="Save selection to the results grid.">
                 <Button.Style>
                     <Style BasedOn="{StaticResource whiteButton}" TargetType="{x:Type Button}">
                         <Setter Property="Content" Value="Save Result" />
@@ -142,11 +139,11 @@
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <TextBox Style="{StaticResource SelectableTextBox}" Grid.Row="0" Grid.Column="0">Saved Points:</TextBox>
-                <Label Grid.Row="0" Grid.Column="1" Content="{Binding SoeResponses.Count}"/>
+                <TextBox Grid.Row="0" Grid.Column="0" Style="{StaticResource SelectableTextBox}">Saved Points:</TextBox>
+                <Label Grid.Row="0" Grid.Column="1" Content="{Binding PointResponses.Count}"/>
             </Grid>
             <ScrollViewer Grid.ColumnSpan="3" Grid.Row="1">
-                <DataGrid CanUserAddRows="False"  x:Name="PointsGrid" AutoGenerateColumns="False" ItemsSource="{Binding SoeResponses}" CellStyle="{DynamicResource DataGridCellStyle}">
+                <DataGrid CanUserAddRows="False" x:Name="PointsGrid" AutoGenerateColumns="False" ItemsSource="{Binding PointResponses}" CellStyle="{DynamicResource DataGridCellStyle}">
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow">
                             <Style.Triggers>
@@ -173,7 +170,7 @@
                 </DataGrid>
             </ScrollViewer>
         </Grid>
-        <Grid Height="30px" Grid.Row="4" x:Name="ResultsTableControls">
+        <Grid Grid.Row="4" x:Name="ResultsTableControls">
             <Grid.RowDefinitions>
                 <RowDefinition/>
             </Grid.RowDefinitions>
@@ -194,13 +191,13 @@
                     </Style.Triggers>
                 </Style>
             </Grid.Resources>
-            <Button Margin="10px 0px" Grid.Row="2" Grid.Column="0" Style="{StaticResource whiteButton}">
+            <Button Grid.Row="2" Grid.Column="0" Style="{StaticResource whiteButton}">
                 Export Data
             </Button>
-            <Button Margin="10px 0px" x:Name="DeleteItemsButton" Grid.Row="2" Grid.Column="1" Command="{Binding DeleteItemsCommand}" Style="{StaticResource whiteButton}">
+            <Button  x:Name="DeleteItemsButton" Grid.Row="2" Grid.Column="1" Command="{Binding DeleteItemsCommand}" Style="{StaticResource whiteButton}">
                 Delete Record(s)
             </Button>
-            <Button Margin="10px 0px" x:Name="ClearItemsButton" Grid.Row="2" Grid.Column="2"  Command="{Binding ClearItemsCommand}" Style="{StaticResource whiteButton}">
+            <Button  x:Name="ClearItemsButton" Grid.Row="2" Grid.Column="2"  Command="{Binding ClearItemsCommand}" Style="{StaticResource whiteButton}">
                 Clear Table
             </Button>
         </Grid>

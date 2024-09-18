@@ -1,13 +1,6 @@
 ﻿using ArcGIS.Core.CIM;
-using ArcGIS.Core.Data;
 using ArcGIS.Core.Geometry;
-using ArcGIS.Desktop.Catalog;
-using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Editing;
-using ArcGIS.Desktop.Extensions;
-using ArcGIS.Desktop.Framework;
-using ArcGIS.Desktop.Framework.Contracts;
-using ArcGIS.Desktop.Framework.Dialogs;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
@@ -18,13 +11,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows;
-using ArcGIS.Desktop.Internal.Catalog.DistributedGeodatabase.ManageReplicas;
-using System.Windows.Media;
-using ArcGIS.Core.Internal.CIM;
+using ArcGIS.Core.Data.UtilityNetwork.Trace;
 namespace MapAMilepost.Commands
 {
     class GraphicsCommands
@@ -35,9 +25,10 @@ namespace MapAMilepost.Commands
         ///     saved graphic (a green point).
         /// -   Delete the click point.
         /// </summary>
-        public static async void UpdateSaveGraphicInfos(CustomGraphics CustomSymbols, string featureID = null)
+        public static async void UpdateSaveGraphicInfos(CustomGraphics CustomSymbols, string FeatureID = null)
         {
-            GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+            //GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
             CIMPointSymbol savedRoutePointSymbol = CustomSymbols.SymbolsLibrary["SavedRoutePoint"] as CIMPointSymbol;
             CIMPointSymbol savedRouteStartSymbol = CustomSymbols.SymbolsLibrary["SavedStartRoutePoint"] as CIMPointSymbol;
             CIMPointSymbol savedRouteEndSymbol = CustomSymbols.SymbolsLibrary["SavedEndRoutePoint"] as CIMPointSymbol;
@@ -52,6 +43,7 @@ namespace MapAMilepost.Commands
                     if(item.GetCustomProperty("eventType")== "route"&& item.GetCustomProperty("saved") != "true")
                     {
                         item.SetCustomProperty("saved", "true");
+                        item.SetCustomProperty("FeatureID", FeatureID);
                         if (item.GetCustomProperty("sessionType") == "point")
                         {
                             var cimGraphic = item.GetGraphic() as CIMPointGraphic;
@@ -60,7 +52,6 @@ namespace MapAMilepost.Commands
                         }
                         else if (item.GetCustomProperty("sessionType") == "line")
                         {
-                            item.SetCustomProperty("featureID", featureID);
                             if (item.GetCustomProperty("startEnd") == "end")//the end point graphic
                             {
                                 var cimGraphic = item.GetGraphic() as CIMPointGraphic;
@@ -95,17 +86,17 @@ namespace MapAMilepost.Commands
         ///     to the graphics layer in a "selected" state, displaying editing guide marks.
         /// </summary>
         /// <param name="SoeArgs"></param>
-        /// <param name="SoeResponse"></param>
-        public static async Task CreatePointGraphics(PointArgsModel SoeArgs, PointResponseModel SoeResponse, string sessionType)
+        /// <param name="PointResponse"></param>
+        public static async Task CreatePointGraphics(PointArgsModel SoeArgs, PointResponseModel PointResponse, string sessionType)
         {
-            if (SoeResponse != null)
+            if (PointResponse != null)
             {
                 CustomGraphics CustomSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
+                GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);//look for layer
                 await QueuedTask.Run(() =>
                 {
-                    GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+                    //GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
                     #region create and add click point graphic
-            
                     var clickedPtGraphic = new CIMPointGraphic() { 
                         Symbol = (CustomSymbols.SymbolsLibrary["ClickPoint"] as CIMPointSymbol).MakeSymbolReference(),
                         Location = (MapPointBuilderEx.CreateMapPoint(SoeArgs.X, SoeArgs.Y))
@@ -132,7 +123,7 @@ namespace MapAMilepost.Commands
                     );
                     var soePtGraphic = new CIMPointGraphic() { 
                         Symbol = routePointSymbol,
-                        Location = MapPointBuilderEx.CreateMapPoint(SoeResponse.RouteGeometry.x, SoeResponse.RouteGeometry.y)
+                        Location = MapPointBuilderEx.CreateMapPoint(PointResponse.RouteGeometry.x, PointResponse.RouteGeometry.y)
                     };
 
                     //create custom route point props
@@ -140,17 +131,17 @@ namespace MapAMilepost.Commands
                     {
                         CustomProperties = new List<CIMStringMap>()
                         {
-                            new() { Key = "Route",Value = SoeResponse.Route},
-                            new() { Key = "Decrease",Value = SoeResponse.Decrease.ToString()},
-                            new() { Key = "Arm",Value = SoeResponse.Arm.ToString()},
-                            new() { Key = "Srmp",Value = SoeResponse.Srmp.ToString()},
-                            new() { Key = "Back",Value = SoeResponse.Back.ToString()},
-                            new() { Key = "ResponseDate",Value = SoeResponse.ResponseDate.ToString()},
-                            new() { Key = "EndBack",Value = SoeResponse.EndBack.ToString()},
-                            new() { Key = "x",Value = SoeResponse.RouteGeometry.x.ToString()},
-                            new() { Key = "y",Value = SoeResponse.RouteGeometry.y.ToString()},
-                            new() { Key = "RealignmentDate",Value = SoeResponse.RealignmentDate},
-                            new() { Key = "ResponseDate",Value = SoeResponse.ResponseDate},
+                            new() { Key = "Route",Value = PointResponse.Route},
+                            new() { Key = "Decrease",Value = PointResponse.Decrease.ToString()},
+                            new() { Key = "Arm",Value = PointResponse.Arm.ToString()},
+                            new() { Key = "Srmp",Value = PointResponse.Srmp.ToString()},
+                            new() { Key = "Back",Value = PointResponse.Back.ToString()},
+                            new() { Key = "ResponseDate",Value = PointResponse.ResponseDate.ToString()},
+                            new() { Key = "EndBack",Value = PointResponse.EndBack.ToString()},
+                            new() { Key = "x",Value = PointResponse.RouteGeometry.x.ToString()},
+                            new() { Key = "y",Value = PointResponse.RouteGeometry.y.ToString()},
+                            new() { Key = "RealignmentDate",Value = PointResponse.RealignmentDate},
+                            new() { Key = "ResponseDate",Value = PointResponse.ResponseDate},
                             new() { Key = "saved", Value="false"},
                             new() { Key = "eventType", Value="route"},
                             new() { Key = "sessionType", Value = sessionType == "point" ? "point" : "line"},
@@ -173,7 +164,7 @@ namespace MapAMilepost.Commands
         public static async Task CreateLineGraphics(PointResponseModel startPoint, PointResponseModel endPoint, List<List<double>> LineGeometry)
         {
             CustomGraphics CustomSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
-            GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
             await QueuedTask.Run(async () =>
             {
                 List<Coordinate2D> points = new List<Coordinate2D>();
@@ -213,21 +204,21 @@ namespace MapAMilepost.Commands
         /// -   Use the geometry of the route point from the SOE response to generate a label that is displayed
         ///     in an overlay on the map.
         /// </summary>
-        /// <param name="SoeResponse"></param>
-        public static async void CreateLabel(PointResponseModel SoeResponse, PointArgsModel SoeArgs)
+        /// <param name="PointResponse"></param>
+        public static async void CreateLabel(PointResponseModel PointResponse, PointArgsModel SoeArgs)
         {
             var textSymbol = new CIMTextSymbol();
             //define the text graphic
             var textGraphic = new CIMTextGraphic();
             await QueuedTask.Run(() =>
             {
-                var labelGeometry = (MapPointBuilderEx.CreateMapPoint(SoeResponse.RouteGeometry.x, SoeResponse.RouteGeometry.y, SoeArgs.SR));
+                var labelGeometry = (MapPointBuilderEx.CreateMapPoint(PointResponse.RouteGeometry.x, PointResponse.RouteGeometry.y, SoeArgs.SR));
                 //Create a simple text symbol
                 textSymbol = SymbolFactory.Instance.ConstructTextSymbol(ColorFactory.Instance.BlackRGB, 10, "Arial", "Bold");
                 //Sets the geometry of the text graphic
                 textGraphic.Shape = labelGeometry;
                 //Sets the text string to use in the text graphic
-                textGraphic.Text = $"    {SoeResponse.Srmp}";
+                textGraphic.Text = $"    {PointResponse.Srmp}";
                 //Sets symbol to use to draw the text graphic
                 textGraphic.Symbol = textSymbol.MakeSymbolReference();
                 //Draw the overlay text graphic
@@ -235,37 +226,23 @@ namespace MapAMilepost.Commands
             });
         }
 
-        /// <summary>
-        /// -   Create reference to graphics layer and the 
-        /// </summary>
-        /// <param name="deleteIndices"></param>
-        public static async void DeleteGraphics(List<int> deleteIndices, string sessionType)
+        
+        public static async Task DeleteGraphics(string SessionType, string[] FeatureIDs = null)
         {
-            await QueuedTask.Run(() => {
-                GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
-                var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == sessionType);
-                for (int i = graphics.Count() - 1; i >= 0; i--)
-                {
-                    if (deleteIndices.Contains(i))
-                    {
-                        graphicsLayer.RemoveElement(graphics.ElementAt(i));
-                    }
-                }
-            });
-        }
-
-        /// <summary>
-        /// -   Create reference to graphics layer and the 
-        /// </summary>
-        /// <param name="deleteIndices"></param>
-        public static async Task DeleteLineGraphics(string[] FeatureIDs)
-        {
-            await QueuedTask.Run(() => {
-                GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
-                var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetCustomProperty("sessionType") == "line");
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);//look for layer
+            await QueuedTask.Run(() =>
+            {
+                var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetCustomProperty("sessionType") == SessionType);
                 foreach (GraphicElement graphic in graphics.ToList())
                 {
-                    if (FeatureIDs.Contains(graphic.GetCustomProperty("featureID")))
+                    if (FeatureIDs!=null)//if individual points are being deleted
+                    {
+                        if (FeatureIDs.Contains(graphic.GetCustomProperty("FeatureID")))
+                        {
+                            graphicsLayer.RemoveElement(graphic);
+                        }
+                    }
+                    else//if all points are being cleared
                     {
                         graphicsLayer.RemoveElement(graphic);
                     }
@@ -273,15 +250,37 @@ namespace MapAMilepost.Commands
             });
         }
 
+        //public static async Task DeleteLineGraphics(string[] FeatureIDs = null)
+        //{
+        //    GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);//look for layer
+        //    await QueuedTask.Run(() => {
+        //        var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetCustomProperty("sessionType") == "line");
+        //        foreach (GraphicElement graphic in graphics.ToList())
+        //        {
+        //            if (FeatureIDs != null)//if individual lines are being deleted
+        //            {
+        //                if (FeatureIDs.Contains(graphic.GetCustomProperty("FeatureID")))
+        //                {
+        //                    graphicsLayer.RemoveElement(graphic);
+        //                }
+        //            }
+        //            else
+        //            {
+        //                graphicsLayer.RemoveElement(graphic);
+        //            }
+        //        }
+        //    });
+        //}
+
         /// <summary>
         /// -   Delete unsaved graphics, such as click point graphics and unsaved route graphics
         /// </summary>
         public static async void DeleteUnsavedGraphics(string startEnd = null)
         {
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
             await QueuedTask.Run(() =>
             {
-                GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
-                if (graphicsLayer != null)
+               if (graphicsLayer != null)
                 {
                     var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic);
                     #region remove previous element if it isn't saved
@@ -318,7 +317,7 @@ namespace MapAMilepost.Commands
         /// <returns></returns>
         public static async Task DeselectAllGraphics()
         {
-            GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
             if (graphicsLayer != null)
             {
                 await QueuedTask.Run(() =>
@@ -338,19 +337,19 @@ namespace MapAMilepost.Commands
         /// otherwise remove halos.
         /// </summary>
         /// <param name="SelectedItems">List of selected rows in data grid</param>
-        /// <param name="SoeResponses">List of saved route points</param>
+        /// <param name="PointResponses">List of saved route points</param>
         /// <param name="sessionType">Type of session (point or line) </param>
-        public static async void SetPointGraphicsSelected(List<PointResponseModel> SelectedItems, ObservableCollection<PointResponseModel> SoeResponses, string sessionType)
+        public static async void SetPointGraphicsSelected(List<PointResponseModel> SelectedItems, ObservableCollection<PointResponseModel> PointResponses, string sessionType)
         {
             List<int> SelectedIndices = new List<int>();
-            for (int i = SoeResponses.Count - 1; i >= 0; i--)
+            for (int i = PointResponses.Count - 1; i >= 0; i--)
             {
-                if (SelectedItems.Contains(SoeResponses[i]))
+                if (SelectedItems.Contains(PointResponses[i]))
                 {
                     SelectedIndices.Add(i);
                 }
             }
-            GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
             await QueuedTask.Run(() =>
             {
                 var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == sessionType);
@@ -378,31 +377,31 @@ namespace MapAMilepost.Commands
         /// 
         /// </summary>
         /// <param name="SelectedItems">List of selected rows in data grid</param>
-        /// <param name="SoeResponses">List of saved route points</param>
+        /// <param name="PointResponses">List of saved route points</param>
         /// <param name="sessionType">Type of session (point or line) </param>
         public static async void SetLineGraphicsSelected(List<LineResponseModel> SelectedItems)
         {
             CustomGraphics CustomSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
-            GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
             var lineGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMLineGraphic && elem.GetCustomProperty("sessionType") == "line");
             var pointGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == "line");
             await QueuedTask.Run(() =>
             {
                 if (SelectedItems.Count > 0) //if items are selected
                 {
-                    var ItemIDs = SelectedItems.Select(Item => Item.featureID).ToArray();//Selected item IDs
+                    var ItemIDs = SelectedItems.Select(Item => Item.LineFeatureID).ToArray();//Selected item IDs
                     foreach (GraphicElement graphic in lineGraphics)
                     {
                         var newCimDefinition = graphic.GetGraphic();
                         newCimDefinition.Symbol.Symbol = (CustomSymbols.SymbolsLibrary["SelectedRouteLine"] as CIMLineSymbol);
-                        if (ItemIDs.Contains(graphic.GetCustomProperty("featureID")))
+                        if (ItemIDs.Contains(graphic.GetCustomProperty("FeatureID")))
                         {
                             graphic.SetGraphic(newCimDefinition);
                         }
                     }
                     foreach (GraphicElement graphic in pointGraphics)
                     {
-                       if (ItemIDs.Contains(graphic.GetCustomProperty("featureID")))
+                       if (ItemIDs.Contains(graphic.GetCustomProperty("FeatureID")))
                         {
                             CIMGraphic newCimGraphic = Utils.CustomGraphics.GetSelectedPointGraphicSymbol(graphic);
                             graphic.SetGraphic(newCimGraphic);
@@ -473,9 +472,9 @@ namespace MapAMilepost.Commands
         public static async void SavePointResult(DataGrid myGrid, Utils.ViewModelBase VM)
         {
             //if a point has been mapped
-            if (Utils.SoeResponseUtils.HasBeenUpdated(VM.SoeResponse))
+            if (Utils.SOEResponseUtils.HasBeenUpdated(VM.PointResponse))
             {
-                if (VM.SoeResponses.Contains(VM.SoeResponse))
+                if (VM.PointResponses.Contains(VM.PointResponse))
                 {
                     ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("This route location has already been saved.");
                 }
@@ -486,26 +485,28 @@ namespace MapAMilepost.Commands
                     VM.SelectedPoints.Clear();
                     //clear selected rows
                     myGrid.SelectedItems.Clear();
-                    VM.SoeResponses.Add(new PointResponseModel()
+                    string FeatureID = $"{VM.PointResponse.Route}{(VM.PointResponse.Decrease == true ? "Decrease" : "Increase")}{VM.PointResponse.Srmp}";
+                    VM.PointResponses.Add(new PointResponseModel()
                     {
-                        Angle = VM.SoeResponse.Angle,
-                        Arm = VM.SoeResponse.Arm,
-                        Back = VM.SoeResponse.Back,
-                        Decrease = VM.SoeResponse.Decrease,
-                        Distance = VM.SoeResponse.Distance,
-                        Route = VM.SoeResponse.Route,
-                        RouteGeometry = VM.SoeResponse.RouteGeometry,
-                        Srmp = VM.SoeResponse.Srmp,
-                        RealignmentDate = VM.SoeResponse.RealignmentDate,
-                        ResponseDate = VM.SoeResponse.ResponseDate
+                        Angle = VM.PointResponse.Angle,
+                        Arm = VM.PointResponse.Arm,
+                        Back = VM.PointResponse.Back,
+                        Decrease = VM.PointResponse.Decrease,
+                        Distance = VM.PointResponse.Distance,
+                        Route = VM.PointResponse.Route,
+                        RouteGeometry = VM.PointResponse.RouteGeometry,
+                        Srmp = VM.PointResponse.Srmp,
+                        RealignmentDate = VM.PointResponse.RealignmentDate,
+                        ResponseDate = VM.PointResponse.ResponseDate,
+                        PointFeatureID = FeatureID
                     });
                     CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
-                    UpdateSaveGraphicInfos(customPointSymbols);
+                    UpdateSaveGraphicInfos(customPointSymbols, FeatureID);
                     DeleteUnsavedGraphics();
-                    VM.SoeArgs.X = 0;
-                    VM.SoeArgs.Y = 0;
-                    VM.SoeResponse = new PointResponseModel();//clear the SOE response info panel
-                    if (VM.SoeResponses.Count > 0)
+                    VM.PointArgs.X = 0;
+                    VM.PointArgs.Y = 0;
+                    VM.PointResponse = new PointResponseModel();//clear the SOE response info panel
+                    if (VM.PointResponses.Count > 0)
                     {
                         VM.ShowResultsTable = true;
                     };
@@ -528,107 +529,122 @@ namespace MapAMilepost.Commands
         /// </summary>
         public static async void SaveLineResult(DataGrid myGrid, Utils.ViewModelBase VM)
         {
-            if (!Utils.SoeResponseUtils.HasBeenUpdated(VM.LineResponse.StartResponse))
+            if(VM.LineResponse.StartResponse==null || VM.LineResponse.EndResponse == null)
             {
-                if (Utils.SoeResponseUtils.HasBeenUpdated(VM.LineResponse.EndResponse))
-                {
-                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Create a start point to generate a line before saving.", "Save error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-                else
-                {
-                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Create a start point and an end point to generate a line before saving.", "Save error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-
-            }
-            else if (!Utils.SoeResponseUtils.HasBeenUpdated(VM.LineResponse.EndResponse))
-            {
-                if (Utils.SoeResponseUtils.HasBeenUpdated(VM.LineResponse.StartResponse))
-                {
-                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Create an end point to generate a line before saving.", "Save error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-                else
-                {
-                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Create a start point and an end point to generate a line before saving.", "Save error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
+                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Create a start and an end point to generate a line before saving.", "Save error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             else
             {
-                if (!(VM.LineResponse.StartResponse.Route == VM.LineResponse.EndResponse.Route))
+                if (!Utils.SOEResponseUtils.HasBeenUpdated(VM.LineResponse.StartResponse))
                 {
-                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Start and points must be on the same route.");
+                    if (Utils.SOEResponseUtils.HasBeenUpdated(VM.LineResponse.EndResponse))
+                    {
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Create a start point to generate a line before saving.", "Save error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    else
+                    {
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Create a start point and an end point to generate a line before saving.", "Save error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+
                 }
-                else if (!(VM.LineResponse.StartResponse.Decrease == VM.LineResponse.EndResponse.Decrease))
+                else if (!Utils.SOEResponseUtils.HasBeenUpdated(VM.LineResponse.EndResponse))
                 {
-                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Start and points must be on the same lane direction.");
+                    if (Utils.SOEResponseUtils.HasBeenUpdated(VM.LineResponse.StartResponse))
+                    {
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Create an end point to generate a line before saving.", "Save error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    else
+                    {
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Create a start point and an end point to generate a line before saving.", "Save error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
                 }
                 else
                 {
-                    if (VM.LineResponses.Contains(VM.LineResponse))
+                    if (!(VM.LineResponse.StartResponse.Route == VM.LineResponse.EndResponse.Route))
                     {
-                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("This route location has already been saved.");
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Start and points must be on the same route.");
+                    }
+                    else if (!(VM.LineResponse.StartResponse.Decrease == VM.LineResponse.EndResponse.Decrease))
+                    {
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Start and points must be on the same lane direction.");
                     }
                     else
-                    //create a duplicate responsemodel object and add it to the array of response models that will persist
                     {
-                        //clear selected items
-                        VM.SelectedLines.Clear();
-                        //clear selected rows
-                        myGrid.SelectedItems.Clear();
-                        string featureID = $"{VM.LineResponse.StartResponse.Route}s{VM.LineResponse.StartResponse.Srmp}e{VM.LineResponse.EndResponse.Srmp}";
-                        VM.LineResponses.Add(new LineResponseModel()
+                        if (VM.LineResponses.Contains(VM.LineResponse))
                         {
-                            StartResponse = VM.LineResponse.StartResponse,
-                            EndResponse = VM.LineResponse.EndResponse,
-                            featureID = featureID
-                        });
-                        CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
-                        UpdateSaveGraphicInfos(customPointSymbols, featureID);
-                        DeleteUnsavedGraphics();
-                        VM.LineArgs = new LineArgsModel(VM.LineArgs.StartArgs.SearchRadius, VM.LineArgs.EndArgs.SearchRadius);
-                        VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
-                        if (VM.LineResponses.Count > 0)
+                            ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("This route location has already been saved.");
+                        }
+                        else
+                        //create a duplicate responsemodel object and add it to the array of response models that will persist
                         {
-                            VM.ShowResultsTable = true;
-                        };
+                            //clear selected items
+                            VM.SelectedLines.Clear();
+                            //clear selected rows
+                            myGrid.SelectedItems.Clear();
+                            string FeatureID = $"{VM.LineResponse.StartResponse.Route}s{VM.LineResponse.StartResponse.Srmp}e{VM.LineResponse.EndResponse.Srmp}";
+                            VM.LineResponses.Add(new LineResponseModel()
+                            {
+                                StartResponse = VM.LineResponse.StartResponse,
+                                EndResponse = VM.LineResponse.EndResponse,
+                                LineFeatureID = FeatureID
+                            });
+                            CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
+                            UpdateSaveGraphicInfos(customPointSymbols, FeatureID);
+                            DeleteUnsavedGraphics();
+                            VM.LineArgs = new LineArgsModel(VM.LineArgs.StartArgs.SearchRadius, VM.LineArgs.EndArgs.SearchRadius);
+                            VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
+                            VM.MappingTool.EndSession();
+                            if (VM.LineResponses.Count > 0)
+                            {
+                                VM.ShowResultsTable = true;
+                            };
+                        }
                     }
                 }
-            }
+            } 
         }
 
         /// <summary>
-        /// Retrieves the content of the add in's graphic layer and adds it to the "saved features" table in the add in.
+        /// Triggered when the active map view changes in the document.
+        /// Retrieves the content of the add in's graphic layer and 
+        /// uses the custom properties of each graphic to reconstruct the
+        /// saved features array of a given viewmodel.
         /// </summary>
         /// <param name="VM">The main viewmodel</param>
         /// <returns></returns>
-        public async static Task<ObservableCollection<PointResponseModel>> TrySyncAddIn(MainViewModel VM)
+        public async static Task SynchronizeGraphicsToAddIn(MainViewModel VM)
         {
             ObservableCollection<PointResponseModel> responses = new ObservableCollection<PointResponseModel>();
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
             await QueuedTask.Run(() =>
             {
-                GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
                 if(graphicsLayer != null)
                 {
                     var pointGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == "point");
                     var lineGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == "line");
-                    ObservableCollection<PointResponseModel> pointSoeResponses = ParseResponses(pointGraphics);
-                    VM.MapPointVM.SoeResponses = pointSoeResponses;
-                    if(pointSoeResponses.Count > 0)
+                    ObservableCollection<PointResponseModel> pointResponses = ParseResponses(pointGraphics);
+                    VM.MapPointVM.PointResponses = pointResponses;
+                    if(pointResponses.Count > 0)
                     {
                         VM.MapPointVM.ShowResultsTable = true;
                     }
                 }
+                else
+                {
+                    //error logic
+                }
             });
-            return responses;
         }
+
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="Graphics"></param>
         /// <returns></returns>
-        private static ObservableCollection<PointResponseModel> ParseResponses(IEnumerable<GraphicElement> Graphics)
+        private static ParsedResponse ParseResponses(IEnumerable<GraphicElement> Graphics)
         {
-            ObservableCollection<PointResponseModel> Responses = new ObservableCollection<PointResponseModel>();
+            ParsedResponse Responses = new ParsedResponse();
             foreach (GraphicElement item in Graphics)
             {//if saved TODO
                 PointResponseModel response = new()
@@ -646,9 +662,20 @@ namespace MapAMilepost.Commands
                         x= Convert.ToDouble(item.GetCustomProperty("x")), y= Convert.ToDouble(item.GetCustomProperty("y"))
                     }
                 };
-                Responses.Add(response);
+                Responses.PointGraphicInfos.Add(response);
             }
             return Responses;
+        }
+
+        private class ParsedResponse
+        {
+            public ObservableCollection<PointResponseModel> PointGraphicInfos { get; set; }
+            public ObservableCollection<LineResponseModel> LineGraphicInfos { get; set; }
+            public ParsedResponse()
+            {
+                PointGraphicInfos = new ObservableCollection<PointResponseModel>();
+                LineGraphicInfos = new ObservableCollection<LineResponseModel>();
+            }
         }
 
         /// <summary>

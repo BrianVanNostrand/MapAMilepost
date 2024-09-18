@@ -33,8 +33,8 @@ namespace MapAMilepost.Commands
         public static void UpdatePointSelection(DataGrid grid, Utils.ViewModelBase VM)
         {
             Commands.GraphicsCommands.DeleteUnsavedGraphics();
-            VM.SoeArgs.X = 0;
-            VM.SoeArgs.Y = 0;
+            VM.PointArgs.X = 0;
+            VM.PointArgs.Y = 0;
             DataGrid myGrid = grid as DataGrid;
             var selItems = myGrid.SelectedItems;
             bool dataGridRowSelected = false;
@@ -50,27 +50,27 @@ namespace MapAMilepost.Commands
             if (dataGridRowSelected == false)
             {
                 //clear the response
-                VM.SoeResponse = new PointResponseModel();
+                VM.PointResponse = new PointResponseModel();
                 //clear selected items
                 VM.SelectedPoints.Clear();
                 //clear selected rows
                 myGrid.SelectedItems.Clear();
                 //clear selected graphics
-                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.SoeResponses, "point");
+                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
             }
             //if a row is clicked, select the row and graphic
             else
             {
                 VM.SelectedPoints.Clear();
                 //clear selected graphics
-                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.SoeResponses, "point");
+                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
                 //update selected items
                 VM.SelectedPoints = CastPointsToList(myGrid.SelectedItems);
                 //update selected graphics
-                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.SoeResponses, "point");
+                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
                 if (VM.SelectedPoints.Count == 1)
                 {
-                    VM.SoeResponse = VM.SelectedPoints[0];
+                    VM.PointResponse = VM.SelectedPoints[0];
                 }
             }
         }
@@ -121,9 +121,10 @@ namespace MapAMilepost.Commands
                 }
             }
         }
-        public static void DeletePointItems(Utils.ViewModelBase VM)
+        public static async Task DeletePointItems(Utils.ViewModelBase VM = null)
         {
-            if (VM.SoeResponses.Count > 0 && VM.SelectedPoints.Count > 0)
+
+            if (VM.PointResponses.Count > 0 && VM.SelectedPoints.Count > 0)
             {
                 if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
                     $"Are you sure you wish to delete these {VM.SelectedPoints.Count} records?",
@@ -132,26 +133,33 @@ namespace MapAMilepost.Commands
                     MessageBoxImage.Question) == MessageBoxResult.Yes
                 )
                 {
-                    List<int> deleteIndices = new List<int>();
-                    for (int i = VM.SoeResponses.Count - 1; i >= 0; i--)
+                    if (VM != null)//if individual points are being deleted
                     {
-                        if (VM.SelectedPoints.Contains(VM.SoeResponses[i]))
+                        string[] FeatureIDs = VM.SelectedPoints.Select(Item => Item.PointFeatureID).ToArray();//Selected item IDs
+                        foreach (var PointResponse in VM.PointResponses.ToList())
                         {
-                            VM.SoeResponses.Remove(VM.SoeResponses[i]);
-                            deleteIndices.Add(i);
+                            if (FeatureIDs.Contains(PointResponse.PointFeatureID))
+                            {
+                                VM.PointResponses.Remove(PointResponse);
+                            }
                         }
+                        await GraphicsCommands.DeleteGraphics("point",FeatureIDs);
                     }
-                    Commands.GraphicsCommands.DeleteGraphics(deleteIndices, "point");
-                    if (VM.SoeResponses.Count == 0)
+                    else//if all points are being cleared
+                    {
+                        VM.PointResponses.Clear();
+                        await GraphicsCommands.DeleteGraphics("point");
+                    }
+                    if (VM.PointResponses.Count == 0)
                     {
                         VM.ShowResultsTable = false;
                     };
-                    VM.SoeResponse = new PointResponseModel();
+                    VM.LineResponse = new LineResponseModel();
                 }
             }
         }
 
-        public static async Task DeleteLineItems(Utils.ViewModelBase VM)
+        public static async Task DeleteLineItems(Utils.ViewModelBase VM = null)
         {
             if (VM.LineResponses.Count > 0 && VM.SelectedLines.Count > 0)
             {
@@ -162,15 +170,23 @@ namespace MapAMilepost.Commands
                     MessageBoxImage.Question) == MessageBoxResult.Yes
                 )
                 {
-                    string[] FeatureIDs = VM.SelectedLines.Select(Item => Item.featureID).ToArray();//Selected item IDs
-                    foreach (var LineResponse in VM.LineResponses.ToList())
+                    if (VM != null)//if individual lines are being deleted
                     {
-                        if (FeatureIDs.Contains(LineResponse.featureID))
+                        string[] FeatureIDs = VM.SelectedLines.Select(Item => Item.LineFeatureID).ToArray();//Selected item IDs
+                        foreach (var LineResponse in VM.LineResponses.ToList())
                         {
-                            VM.LineResponses.Remove(LineResponse);
+                            if (FeatureIDs.Contains(LineResponse.LineFeatureID))
+                            {
+                                VM.LineResponses.Remove(LineResponse);
+                            }
                         }
+                        await GraphicsCommands.DeleteGraphics("line",FeatureIDs);
                     }
-                    await Commands.GraphicsCommands.DeleteLineGraphics(FeatureIDs);
+                    else//if all lines are being cleared
+                    {
+                        VM.LineResponses.Clear();
+                        await Commands.GraphicsCommands.DeleteGraphics("line");
+                    }
                     if (VM.LineResponses.Count == 0)
                     {
                         VM.ShowResultsTable = false;
@@ -180,34 +196,89 @@ namespace MapAMilepost.Commands
             }
         }
 
-        public static void ClearItems(Utils.ViewModelBase VM)
+        public static async Task ClearDataGridItems(Utils.ViewModelBase VM, bool IgnorePrompt=false)
         {
-            Commands.GraphicsCommands.DeleteUnsavedGraphics();
-            VM.SoeArgs.X = 0;
-            VM.SoeArgs.Y = 0;
-            if (VM.SoeResponses.Count > 0)
+            if(VM.GetType() == typeof(MapPointViewModel))
             {
-                if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
-                    $"Are you sure you wish to clear all {VM.SoeResponses.Count} point records?",
-                    "Clear Results",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question) == MessageBoxResult.Yes
-                )
+                if (VM.PointResponses.Count > 0)
                 {
-                    List<int> deleteIndices = new List<int>();
-                    for (int i = VM.SoeResponses.Count - 1; i >= 0; i--)
+                    ResetClickPointArgs("point", VM);
+                    if (IgnorePrompt == false)//if this method was invoked from clicking the clear button
                     {
-                        deleteIndices.Add(i);
+                        if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
+                            $"Are you sure you wish to clear all {VM.PointResponses.Count} point records?",
+                            "Clear Results",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question) == MessageBoxResult.Yes
+                        )
+                        {
+                            await Commands.GraphicsCommands.DeleteGraphics("point");
+                            VM.PointResponses.Clear();
+                            VM.PointResponse = new PointResponseModel();//clear the SOE response info panel
+                        }
                     }
-                    Commands.GraphicsCommands.DeleteGraphics(deleteIndices, "point");
-                    VM.SoeResponses.Clear();
-                    VM.SoeResponse = new PointResponseModel();//clear the SOE response info panel
+                    else//if this map was invoked by a map change event
+                    {
+                        VM.PointResponses.Clear();
+                        VM.PointResponse = new PointResponseModel();//clear the SOE response info panel
+                    }
+                   
+                }
+                if (VM.PointResponses.Count == 0)
+                {
+                    VM.ShowResultsTable = false;
+                };
+            }
+            else
+            {
+                if (VM.LineResponses.Count > 0)
+                {
+                    ResetClickPointArgs("line", VM);
+                    if(IgnorePrompt == false)//if this method was invoked from clicking the clear button
+                    {
+                        if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
+                            $"Are you sure you wish to clear all {VM.LineResponses.Count} line records?",
+                            "Clear Results",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question) == MessageBoxResult.Yes
+                        )
+                        {
+                            await Commands.GraphicsCommands.DeleteGraphics("line");
+                            VM.LineResponses.Clear();
+                            VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
+                        }
+                    }
+                    else//if this map was invoked by a map change event
+                    {
+                        VM.LineResponses.Clear();
+                        VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
+                    }
+                }
+                if (VM.LineResponses.Count == 0)
+                {
+                    VM.ShowResultsTable = false;
+                };
+            }
+            Commands.GraphicsCommands.DeleteUnsavedGraphics();
+        }
+        
+        private static void ResetClickPointArgs(string sessionType, Utils.ViewModelBase VM)
+        {
+            if (!string.IsNullOrEmpty(sessionType))
+            {
+                if(sessionType=="line") 
+                {
+                    VM.LineArgs.StartArgs.X = 0;
+                    VM.LineArgs.StartArgs.Y = 0;
+                    VM.LineArgs.EndArgs.X = 0;
+                    VM.LineArgs.EndArgs.Y = 0;
+                }
+                else
+                {
+                    VM.PointArgs.X = 0;
+                    VM.PointArgs.Y = 0;
                 }
             }
-            if (VM.SoeResponses.Count == 0)
-            {
-                VM.ShowResultsTable = false;
-            };
         }
     }
 }

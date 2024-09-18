@@ -1,9 +1,11 @@
 ﻿using ArcGIS.Desktop.Mapping;
+using ArcGIS.Desktop.Mapping.Events;
 using MapAMilepost.Commands;
 using MapAMilepost.Models;
 using MapAMilepost.Utils;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Windows;
@@ -65,20 +67,21 @@ namespace MapAMilepost.ViewModels
             }   
         });
 
-        public Commands.RelayCommand<object> TrySync => new Commands.RelayCommand<object>(async (button) =>
+        private async void OnMapChanged(ActiveMapViewChangedEventArgs obj)
         {
-            if (MapViewUtils.CheckMapView())
-            {
-                await GraphicsCommands.TrySyncAddIn(this);
-            }
-        });
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(obj.IncomingView.Map);
+            await Commands.DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
 
-            public MainViewModel()
+        }
+
+
+        public MainViewModel()
         {
             ArcGIS.Desktop.Framework.FrameworkApplication.NotificationInterval = 0;//allow toast messages to appear immediately after another is displayed
             MapPointVM = new MapPointViewModel();
             MapLineVM = new MapLineViewModel();
             SelectedViewModel = MapPointVM;
+            ActiveMapViewChangedEvent.Subscribe(OnMapChanged);
         }
     }
 }

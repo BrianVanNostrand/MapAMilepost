@@ -26,10 +26,10 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="50"/>
-      <RowDefinition Height="*"/>
-    </Grid.RowDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         <DockPanel DataContext="{DynamicResource MainViewModel}"  Background="white" Grid.Row="0" LastChildFill="true" KeyboardNavigation.TabNavigation="Local" Height="50">
             <TabControl Height="50" x:Name="controlsGrid">
                 <TabItem x:Name="MapPointTab" Height="50" Width="80" Header="Map a Point">
@@ -47,13 +47,6 @@
                     </i:Interaction.Triggers>
                 </TabItem>
             </TabControl>
-            <Button x:Name="SynchronizeButton" Width="80" Content="Synchronize">
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="PreviewMouseDown">
-                        <i:InvokeCommandAction Command="{Binding TrySync}" CommandParameter="{Binding ElementName=SynchronizeButton}"/>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </Button>
         </DockPanel>
         <ScrollViewer Background="white" VerticalScrollBarVisibility="Auto" Grid.Row="1">
             <ContentControl DataContext="{DynamicResource MainViewModel}" Background="white" ClipToBounds="True" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Row="1" Content="{Binding SelectedViewModel}">

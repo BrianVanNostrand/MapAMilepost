@@ -1,4 +1,5 @@
-﻿using MapAMilepost.Models;
+﻿using MapAMilepost.Commands;
+using MapAMilepost.Models;
 using MapAMilepost.Utils;
 using System;
 using System.Collections.Generic;
@@ -14,17 +15,17 @@ namespace MapAMilepost.ViewModels
         /// <summary>
         /// Private variables with associated public variables, granting access to the INotifyPropertyChanged command via ViewModelBase.
         /// </summary>
-        private PointResponseModel _SoeResponse;
-        private PointArgsModel _SoeArgs;
-        private ObservableCollection<PointResponseModel> _SoeResponses;
+        private PointResponseModel _pointResponse;
+        private PointArgsModel _pointArgs;
+        private ObservableCollection<PointResponseModel> _pointResponses;
         private bool _showResultsTable = false;
         private MapToolInfo _mapToolInfos;
         private string _tabLabel = "TEST TAB LABEL";
         public MapPointViewModel()//constructor
         {
-            _SoeResponse = new PointResponseModel();
-            _SoeArgs = new PointArgsModel();
-            _SoeResponses = new ObservableCollection<PointResponseModel>();
+            _pointResponse = new PointResponseModel();
+            _pointArgs = new PointArgsModel();
+            _pointResponses = new ObservableCollection<PointResponseModel>();
             _mapToolInfos = new MapToolInfo {
                 SessionActive = false,
                 MapButtonLabel = "Start Mapping",
@@ -59,28 +60,28 @@ namespace MapAMilepost.ViewModels
         /// <summary>
         /// -   The SOE response of the currently mapped route point feature.
         /// </summary>
-        public override PointResponseModel SoeResponse
+        public override PointResponseModel PointResponse
         {
-            get { return _SoeResponse; }
-            set { _SoeResponse = value; OnPropertyChanged(nameof(SoeResponse));}
+            get { return _pointResponse; }
+            set { _pointResponse = value; OnPropertyChanged(nameof(PointResponse));}
         }
 
         /// <summary>
         /// -   Arguments passed to the SOE HTTP query.
         /// </summary>
-        public override PointArgsModel SoeArgs
+        public override PointArgsModel PointArgs
         {
-            get { return _SoeArgs; }
-            set { _SoeArgs = value; OnPropertyChanged(nameof(SoeArgs)); }
+            get { return _pointArgs; }
+            set { _pointArgs = value; OnPropertyChanged(nameof(PointArgs)); }
         }
 
         /// <summary>
-        /// -   Array of saved SoeResponse data objects.
+        /// -   Array of saved PointResponse data objects.
         /// </summary>
-        public override ObservableCollection<PointResponseModel> SoeResponses
+        public override ObservableCollection<PointResponseModel> PointResponses
         {
-            get { return _SoeResponses; }
-            set { _SoeResponses = value; OnPropertyChanged(nameof(SoeResponses)); }
+            get { return _pointResponses; }
+            set { _pointResponses = value; OnPropertyChanged(nameof(PointResponses)); }
         }
 
         /// <summary>
@@ -89,15 +90,15 @@ namespace MapAMilepost.ViewModels
         /// </summary>
         public override List<PointResponseModel> SelectedPoints { get; set; } = new List<PointResponseModel>();
    
-        public Commands.RelayCommand<object> UpdateSelectionCommand => new Commands.RelayCommand<object>((grid) => Commands.DataGridCommands.UpdatePointSelection(grid as DataGrid, this));
+        public Commands.RelayCommand<object> UpdateSelectionCommand => new ((grid) => Commands.DataGridCommands.UpdatePointSelection(grid as DataGrid, this));
 
-        public Commands.RelayCommand<object> DeleteItemsCommand => new Commands.RelayCommand<object>((p) => Commands.DataGridCommands.DeletePointItems(this));
+        public Commands.RelayCommand<object> DeleteItemsCommand => new (async(p) => await Commands.DataGridCommands.DeletePointItems(this));
         
-        public Commands.RelayCommand<object> ClearItemsCommand => new Commands.RelayCommand<object>((p) => Commands.DataGridCommands.ClearItems(this));
+        public Commands.RelayCommand<object> ClearItemsCommand => new (async(p) => await Commands.DataGridCommands.ClearDataGridItems(this));
 
-        public Commands.RelayCommand<object> SavePointResultCommand => new Commands.RelayCommand<object>((grid) => Commands.GraphicsCommands.SavePointResult(grid as DataGrid, this));       
+        public Commands.RelayCommand<object> SavePointResultCommand => new ((grid) => Commands.GraphicsCommands.SavePointResult(grid as DataGrid, this));       
 
-        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new Commands.RelayCommand<object>((p) => { 
+        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new ((p) => { 
             if (!this.MapToolInfos.SessionActive) {
                 Utils.MapToolUtils.InitializeSession(this,"point");
             }

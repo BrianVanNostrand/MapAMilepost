@@ -72,10 +72,10 @@ namespace MapAMilepost.Utils
                 if (FNRLresponse.StatusCode == 200)
                 {
                     string responseString = await FNRLresponse.ResponseMessage.Content.ReadAsStringAsync();
-                    var SoeResponses = JsonSerializer.Deserialize<List<PointResponseModel?>>(responseString);
-                    if (SoeResponses.Count > 0)
+                    var PointResponses = JsonSerializer.Deserialize<List<PointResponseModel?>>(responseString);
+                    if (PointResponses.Count > 0)
                     {
-                        responseObject = SoeResponses.First();
+                        responseObject = PointResponses.First();
                     }
                     else
                     {
@@ -110,16 +110,16 @@ namespace MapAMilepost.Utils
                 if (FRLresponse.StatusCode == 200)
                 {
                     string responseString = await FRLresponse.ResponseMessage.Content.ReadAsStringAsync();
-                    var SoeResponses = JsonSerializer.Deserialize<List<PointResponseModel?>>(responseString);
-                    if (SoeResponses.Count > 0)
+                    var PointResponses = JsonSerializer.Deserialize<List<PointResponseModel?>>(responseString);
+                    if (PointResponses.Count > 0)
                     {
-                        if(SoeResponses.First().RouteGeometry.x != 0 && SoeResponses.First().RouteGeometry.y != 0) { 
-                            responseObject = SoeResponses.First();
+                        if(PointResponses.First().RouteGeometry.x != 0 && PointResponses.First().RouteGeometry.y != 0) { 
+                            responseObject = PointResponses.First();
                         }
                         else
                         {
                             ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
-                                messageText:$"The nearest route, {SoeResponses.First().Route}, did not return a route location."
+                                messageText:$"The nearest route, {PointResponses.First().Route}, did not return a route location."
                             );
                         }
                     }
@@ -165,10 +165,10 @@ namespace MapAMilepost.Utils
                 if (FRLresponse.StatusCode == 200)
                 {
                     string responseString = await FRLresponse.ResponseMessage.Content.ReadAsStringAsync();
-                    var SoeResponses = JsonSerializer.Deserialize<List<FRLLineGeometryModel>>(responseString);
-                    if (SoeResponses.Count > 0)
+                    var PointResponses = JsonSerializer.Deserialize<List<FRLLineGeometryModel>>(responseString);
+                    if (PointResponses.Count > 0)
                     {
-                         responseObject = (SoeResponses.First().RouteGeometry.paths).First();
+                         responseObject = (PointResponses.First().RouteGeometry.paths).First();
                     }
                     else
                     {
