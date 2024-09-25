@@ -1,4 +1,5 @@
 ﻿using ArcGIS.Desktop.Framework.Contracts;
+using ArcGIS.Desktop.Mapping;
 using MapAMilepost.Models;
 using MapAMilepost.ViewModels;
 using System;
@@ -30,9 +31,9 @@ namespace MapAMilepost.Commands
         ///// <summary>
         ///// -   Update the selected items array based on the rows selected in the DataGrid in ResultsView.xaml via data binding.
         ///// </summary>
-        public static void UpdatePointSelection(DataGrid grid, Utils.ViewModelBase VM)
+        public static async Task UpdatePointSelection(DataGrid grid, Utils.ViewModelBase VM)
         {
-            Commands.GraphicsCommands.DeleteUnsavedGraphics();
+            await GraphicsCommands.DeleteUnsavedGraphics();
             VM.PointArgs.X = 0;
             VM.PointArgs.Y = 0;
             DataGrid myGrid = grid as DataGrid;
@@ -78,9 +79,9 @@ namespace MapAMilepost.Commands
         ///// <summary>
         ///// -   Update the selected items array based on the rows selected in the DataGrid in ResultsView.xaml via data binding.
         ///// </summary>
-        public static void UpdateLineSelection(DataGrid grid, Utils.ViewModelBase VM)
+        public static async Task UpdateLineSelection(DataGrid grid, Utils.ViewModelBase VM)
         {
-            Commands.GraphicsCommands.DeleteUnsavedGraphics();
+            await Commands.GraphicsCommands.DeleteUnsavedGraphics();
             VM.LineArgs = new LineArgsModel(VM.LineArgs.StartArgs.SearchRadius, VM.LineArgs.EndArgs.SearchRadius);
             DataGrid myGrid = grid as DataGrid;
             var selItems = myGrid.SelectedItems;
@@ -259,7 +260,10 @@ namespace MapAMilepost.Commands
                     VM.ShowResultsTable = false;
                 };
             }
-            Commands.GraphicsCommands.DeleteUnsavedGraphics();
+            if (MapView.Active != null)
+            {
+                await Commands.GraphicsCommands.DeleteUnsavedGraphics();
+            }
         }
         
         private static void ResetClickPointArgs(string sessionType, Utils.ViewModelBase VM)

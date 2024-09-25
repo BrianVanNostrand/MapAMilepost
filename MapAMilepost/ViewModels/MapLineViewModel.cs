@@ -77,7 +77,7 @@ namespace MapAMilepost.ViewModels
         /// </summary>
         public override List<LineResponseModel> SelectedLines { get; set; } = new List<LineResponseModel>();
 
-        public Commands.RelayCommand<object> UpdateSelectionCommand => new ((grid) => Commands.DataGridCommands.UpdateLineSelection(grid as DataGrid, this));
+        public Commands.RelayCommand<object> UpdateSelectionCommand => new (async(grid) => await Commands.DataGridCommands.UpdateLineSelection(grid as DataGrid, this));
 
         public Commands.RelayCommand<object> DeleteItemsCommand => new (async(parms) => await Commands.DataGridCommands.DeleteLineItems(this));
 

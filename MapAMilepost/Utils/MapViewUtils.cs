@@ -46,20 +46,21 @@ namespace MapAMilepost.Utils
                 foreach (var item in map.Layers)
                 {
                     CIMBaseLayer baseLayer = item.GetDefinition();
-                    if (baseLayer.CustomProperties!=null&&baseLayer.CustomProperties.Length > 0)
+                    if (baseLayer.CustomProperties != null && baseLayer.CustomProperties.Length > 0)
                     {
                         foreach (var prop in baseLayer.CustomProperties)
                         {
-                            if(prop.Key== "MilepostMappingLayer" && prop.Value == "true")
+                            if (prop.Key == "MilepostMappingLayer" && prop.Value == "true")
                             {
                                 targetLayer = item as GraphicsLayer;
                             }
                         };
                     }
-                    
+
                 };
             });
             return targetLayer;
         }
+
     }
 }

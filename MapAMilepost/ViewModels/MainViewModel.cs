@@ -58,30 +58,42 @@ namespace MapAMilepost.ViewModels
         /// <summary>
         /// Command used to change the selected viewmodel.
         /// </summary>
-        public Commands.RelayCommand<object> SelectPageCommand => new Commands.RelayCommand<object>(async (button) => {
+        public RelayCommand<object> SelectPageCommand => new Commands.RelayCommand<object>(async (button) => {
             if (MapViewUtils.CheckMapView())
             {
-                await Commands.GraphicsCommands.DeselectAllGraphics();//remove all graphic selections
+                await GraphicsCommands.DeselectAllGraphics();//remove all graphic selections
                 MapToolUtils.DeactivateSession(this.SelectedViewModel);//deactivate any active map tool sessions
-                Commands.TabCommands.SwitchTab(button, this);//switch the selected viewmodel
+                TabCommands.SwitchTab(button, this);//switch the selected viewmodel
             }   
         });
 
         private async void OnMapChanged(ActiveMapViewChangedEventArgs obj)
         {
-            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(obj.IncomingView.Map);
-            await Commands.DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
-
+            if (obj.IncomingView != null)//if a map is selected
+            {
+                GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(obj.IncomingView.Map);
+                await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
+                await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
+                await GraphicsCommands.DeselectAllGraphics();
+                if (graphicsLayer != null)
+                {
+                    await GraphicsCommands.SynchronizeGraphicsToAddIn(this, graphicsLayer);
+                }
+            }
+            else//if no map is incoming
+            {
+                await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
+                await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
+            }
+                
         }
-
-
         public MainViewModel()
         {
             ArcGIS.Desktop.Framework.FrameworkApplication.NotificationInterval = 0;//allow toast messages to appear immediately after another is displayed
             MapPointVM = new MapPointViewModel();
             MapLineVM = new MapLineViewModel();
             SelectedViewModel = MapPointVM;
-            ActiveMapViewChangedEvent.Subscribe(OnMapChanged);
+            ActiveMapViewChangedEvent.Subscribe(OnMapChanged);//subscribe to ArcGIS Pro active map changed event
         }
     }
 }

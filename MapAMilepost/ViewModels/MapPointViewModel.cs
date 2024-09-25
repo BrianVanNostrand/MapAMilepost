@@ -89,8 +89,8 @@ namespace MapAMilepost.ViewModels
         ///     via data binding.
         /// </summary>
         public override List<PointResponseModel> SelectedPoints { get; set; } = new List<PointResponseModel>();
-   
-        public Commands.RelayCommand<object> UpdateSelectionCommand => new ((grid) => Commands.DataGridCommands.UpdatePointSelection(grid as DataGrid, this));
+
+        public Commands.RelayCommand<object> UpdateSelectionCommand => new (async(grid) => await Commands.DataGridCommands.UpdatePointSelection(grid as DataGrid, this));
 
         public Commands.RelayCommand<object> DeleteItemsCommand => new (async(p) => await Commands.DataGridCommands.DeletePointItems(this));
         

@@ -95,7 +95,7 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <Button x:Name="MapPointExecuteButton" Style="{StaticResource whiteButton}" Grid.Row="1" Grid.Column="0" CommandParameter="{Binding MapToolInfos.SessionActive}" Command="{Binding ToggleMapToolSessionCommand}" Content="{Binding MapToolInfos.MapButtonLabel}" ToolTip="{Binding MapToolInfos.MapButtonToolTip}"/>
-            <Button x:Name="ClearResultsButton" Grid.Row="3" Grid.Column="1" Command="{Binding ClearSelection}" CommandParameter="end" Style="{StaticResource whiteButton}" ToolTip="Clear the selection in this tab.">Clear</Button>
+            <Button x:Name="ClearResultsButton" Grid.Row="3" Grid.Column="1" CommandParameter="{Binding ElementName=PointsGrid}"  Command="{Binding UpdateSelectionCommand}" Style="{StaticResource whiteButton}" ToolTip="Clear the selection in this tab.">Clear</Button>
             <Button x:Name="MapPointSaveButton" Grid.Row="1" Grid.Column="2" CommandParameter="{Binding ElementName=PointsGrid}" Command="{Binding SavePointResultCommand}" ToolTip="Save selection to the results grid.">
                 <Button.Style>
                     <Style BasedOn="{StaticResource whiteButton}" TargetType="{x:Type Button}">

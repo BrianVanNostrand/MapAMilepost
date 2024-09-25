@@ -108,7 +108,7 @@ namespace MapAMilepost.Commands
                         {
                             new() { Key = "saved", Value = "false" },
                             new() { Key = "eventType", Value = "click" },
-                            new() { Key = "sessionType", Value = sessionType== "point" ? "point" : "line"},
+                            new() { Key = "sessionType", Value = sessionType == "point" ? "point" : "line"},
                             new() { Key = "startEnd", Value = sessionType }
                         }
                     };
@@ -250,32 +250,10 @@ namespace MapAMilepost.Commands
             });
         }
 
-        //public static async Task DeleteLineGraphics(string[] FeatureIDs = null)
-        //{
-        //    GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);//look for layer
-        //    await QueuedTask.Run(() => {
-        //        var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetCustomProperty("sessionType") == "line");
-        //        foreach (GraphicElement graphic in graphics.ToList())
-        //        {
-        //            if (FeatureIDs != null)//if individual lines are being deleted
-        //            {
-        //                if (FeatureIDs.Contains(graphic.GetCustomProperty("FeatureID")))
-        //                {
-        //                    graphicsLayer.RemoveElement(graphic);
-        //                }
-        //            }
-        //            else
-        //            {
-        //                graphicsLayer.RemoveElement(graphic);
-        //            }
-        //        }
-        //    });
-        //}
-
         /// <summary>
         /// -   Delete unsaved graphics, such as click point graphics and unsaved route graphics
         /// </summary>
-        public static async void DeleteUnsavedGraphics(string startEnd = null)
+        public static async Task DeleteUnsavedGraphics(string startEnd = null)
         {
             GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
             await QueuedTask.Run(() =>
@@ -502,7 +480,7 @@ namespace MapAMilepost.Commands
                     });
                     CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
                     UpdateSaveGraphicInfos(customPointSymbols, FeatureID);
-                    DeleteUnsavedGraphics();
+                    await DeleteUnsavedGraphics();
                     VM.PointArgs.X = 0;
                     VM.PointArgs.Y = 0;
                     VM.PointResponse = new PointResponseModel();//clear the SOE response info panel
@@ -590,7 +568,7 @@ namespace MapAMilepost.Commands
                             });
                             CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
                             UpdateSaveGraphicInfos(customPointSymbols, FeatureID);
-                            DeleteUnsavedGraphics();
+                            await DeleteUnsavedGraphics();
                             VM.LineArgs = new LineArgsModel(VM.LineArgs.StartArgs.SearchRadius, VM.LineArgs.EndArgs.SearchRadius);
                             VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
                             VM.MappingTool.EndSession();
@@ -612,26 +590,34 @@ namespace MapAMilepost.Commands
         /// </summary>
         /// <param name="VM">The main viewmodel</param>
         /// <returns></returns>
-        public async static Task SynchronizeGraphicsToAddIn(MainViewModel VM)
+        public async static Task SynchronizeGraphicsToAddIn(MainViewModel VM, GraphicsLayer graphicsLayer)
         {
-            ObservableCollection<PointResponseModel> responses = new ObservableCollection<PointResponseModel>();
-            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
+            ObservableCollection<PointResponseModel> graphicPoints = new ObservableCollection<PointResponseModel>();
+            ObservableCollection<LineResponseModel> graphicLines = new ObservableCollection<LineResponseModel>();
             await QueuedTask.Run(() =>
             {
                 if(graphicsLayer != null)
                 {
-                    var pointGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == "point");
-                    var lineGraphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == "line");
-                    ObservableCollection<PointResponseModel> pointResponses = ParseResponses(pointGraphics);
-                    VM.MapPointVM.PointResponses = pointResponses;
-                    if(pointResponses.Count > 0)
+                    var Graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic);
+                    ParsedGraphicInfo ParsedGraphicInfos = ParseGraphicInfos(Graphics);
+                    if (ParsedGraphicInfos.PointGraphicInfos.Count > 0)
                     {
+                        VM.MapPointVM.PointResponses = ParsedGraphicInfos.PointGraphicInfos;
                         VM.MapPointVM.ShowResultsTable = true;
                     }
-                }
-                else
-                {
-                    //error logic
+                    else
+                    {
+                        VM.MapPointVM.ShowResultsTable = false;
+                    }
+                    if (ParsedGraphicInfos.LineGraphicInfos.Count > 0)
+                    {
+                        VM.MapLineVM.LineResponses = ParsedGraphicInfos.LineGraphicInfos;
+                        VM.MapLineVM.ShowResultsTable = true;
+                    }
+                    else
+                    {
+                        VM.MapLineVM.ShowResultsTable = false;
+                    }
                 }
             });
         }
@@ -642,36 +628,95 @@ namespace MapAMilepost.Commands
         /// </summary>
         /// <param name="Graphics"></param>
         /// <returns></returns>
-        private static ParsedResponse ParseResponses(IEnumerable<GraphicElement> Graphics)
+        private static ParsedGraphicInfo ParseGraphicInfos(IEnumerable<GraphicElement> Graphics)
         {
-            ParsedResponse Responses = new ParsedResponse();
+            ParsedGraphicInfo Infos = new ParsedGraphicInfo();
             foreach (GraphicElement item in Graphics)
-            {//if saved TODO
-                PointResponseModel response = new()
+            {
+                PointResponseModel pointInfo = new();
+                try
                 {
-                    Route = item.GetCustomProperty("Route"),
-                    Decrease = Convert.ToBoolean(item.GetCustomProperty("Decrease")),
-                    Arm = Convert.ToDouble(item.GetCustomProperty("Arm")),
-                    Srmp = Convert.ToDouble(item.GetCustomProperty("Srmp")),
-                    Back = Convert.ToBoolean(item.GetCustomProperty("Back")),
-                    EndBack = Convert.ToBoolean(item.GetCustomProperty("EndBack")),
-                    Angle = Convert.ToDouble(item.GetCustomProperty("Angle")),
-                    ResponseDate =item.GetCustomProperty("ResponseDate"),
-                    RealignmentDate = item.GetCustomProperty("RealignmentDate"),
-                    RouteGeometry = new PointResponseModel.coordinatePair { 
-                        x= Convert.ToDouble(item.GetCustomProperty("x")), y= Convert.ToDouble(item.GetCustomProperty("y"))
+                     pointInfo = new()
+                    {
+                        Route = item.GetCustomProperty("Route"),
+                        Decrease = Convert.ToBoolean(item.GetCustomProperty("Decrease")),
+                        Arm = Convert.ToDouble(item.GetCustomProperty("Arm")),
+                        Srmp = Convert.ToDouble(item.GetCustomProperty("Srmp")),
+                        Back = Convert.ToBoolean(item.GetCustomProperty("Back")),
+                        EndBack = Convert.ToBoolean(item.GetCustomProperty("EndBack")),
+                        Angle = Convert.ToDouble(item.GetCustomProperty("Angle")),
+                        ResponseDate = item.GetCustomProperty("ResponseDate"),
+                        RealignmentDate = item.GetCustomProperty("RealignmentDate"),
+                        PointFeatureID = item.GetCustomProperty("FeatureID"),
+                        RouteGeometry = new PointResponseModel.coordinatePair
+                        {
+                            x = Convert.ToDouble(item.GetCustomProperty("x")),
+                            y = Convert.ToDouble(item.GetCustomProperty("y"))
+                        }
+                    };
+                }
+                catch
+                {
+                    Console.WriteLine("bad item");
+                }
+                
+                if (item.GetCustomProperty("sessionType") == "point")
+                {
+                    Infos.PointGraphicInfos.Add(pointInfo);
+                }
+                else
+                {
+                    List<string> existingLineModels = Infos.LineGraphicInfos.Select(info => info.LineFeatureID).ToList();
+                    if (existingLineModels.Contains(item.GetCustomProperty("FeatureID")))
+                    {
+                        
+                        IEnumerable<LineResponseModel> targetLineInfo = Infos.LineGraphicInfos.Where(
+                            info => (info.LineFeatureID == item.GetCustomProperty("FeatureID")
+                        ));
+                        foreach (LineResponseModel lineModel in targetLineInfo)
+                        {
+                            if (item.GetCustomProperty("startEnd") == "start")
+                            {
+                                lineModel.StartResponse = pointInfo;
+                            }
+                            else
+                            {
+                                lineModel.EndResponse = pointInfo;
+                            }
+                        }
                     }
-                };
-                Responses.PointGraphicInfos.Add(response);
+                    else
+                    {
+                        if (item.GetCustomProperty("startEnd") == "start")
+                        {
+                            Infos.LineGraphicInfos.Add(new LineResponseModel
+                            {
+                                StartResponse = pointInfo,
+                                LineFeatureID = item.GetCustomProperty("FeatureID")
+                            });
+                        }
+                        else
+                        {
+                            if (item.GetCustomProperty("startEnd") == "end")
+                            {
+                                Infos.LineGraphicInfos.Add(new LineResponseModel
+                                {
+                                    EndResponse = pointInfo,
+                                    LineFeatureID = item.GetCustomProperty("FeatureID")
+                                });
+                            }
+                        }
+                    }
+                }
             }
-            return Responses;
+            return Infos;
         }
 
-        private class ParsedResponse
+        private class ParsedGraphicInfo
         {
             public ObservableCollection<PointResponseModel> PointGraphicInfos { get; set; }
             public ObservableCollection<LineResponseModel> LineGraphicInfos { get; set; }
-            public ParsedResponse()
+            public ParsedGraphicInfo()
             {
                 PointGraphicInfos = new ObservableCollection<PointResponseModel>();
                 LineGraphicInfos = new ObservableCollection<LineResponseModel>();
