@@ -98,12 +98,12 @@ namespace MapAMilepost.ViewModels
 
         public Commands.RelayCommand<object> SavePointResultCommand => new ((grid) => Commands.GraphicsCommands.SavePointResult(grid as DataGrid, this));       
 
-        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new ((p) => { 
+        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new (async(p) => { 
             if (!this.MapToolInfos.SessionActive) {
-                Utils.MapToolUtils.InitializeSession(this,"point");
+                await Utils.MapToolUtils.InitializeSession(this,"point");
             }
             else{
-                Utils.MapToolUtils.DeactivateSession(this,"point");
+                await Utils.MapToolUtils.DeactivateSession(this,"point");
             }
         });
     }

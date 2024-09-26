@@ -73,7 +73,7 @@ namespace MapAMilepost
                 });
                 if(mapPoint != null)
                 {
-                    Commands.GraphicsCommands.DeleteUnsavedGraphics(MapToolSessionType);//delete all unsaved graphics
+                    await Commands.GraphicsCommands.DeleteUnsavedGraphics(MapToolSessionType);//delete all unsaved graphics
                     List<List<double>> lineGeometryResponse = new();
                     if (MapToolSessionType == "start")
                     {
@@ -114,7 +114,7 @@ namespace MapAMilepost
         /// <param name="sessionType">
         /// The type of point mapping session that should be used.
         /// Options: point, start, or end</param>
-        public async void StartSession(Utils.ViewModelBase currentVM, string sessionType)
+        public async Task StartSession(Utils.ViewModelBase currentVM, string sessionType)
         {
             CurrentViewModel = currentVM;
             MapToolSessionType = sessionType;

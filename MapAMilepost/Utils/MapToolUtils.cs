@@ -22,7 +22,7 @@ namespace MapAMilepost.Utils
         /// -   Update the private _sessionActive property to change the behavior of the method.
         /// </summary>
         /// <param name="VM">the target viewmodel</param>
-        public static void InitializeSession(Utils.ViewModelBase VM, string sessionType)
+        public static async Task InitializeSession(Utils.ViewModelBase VM, string sessionType)
         {
             if (MapViewUtils.CheckMapView())
             {
@@ -38,7 +38,7 @@ namespace MapAMilepost.Utils
                     VM.MapToolInfos.MapButtonEndLabel = "Stop Mapping";
                     VM.MapToolInfos.MapButtonEndToolTip = "End mapping session.";
                 }
-                VM.MappingTool.StartSession(VM, sessionType);
+                await VM.MappingTool.StartSession(VM, sessionType);
             }
         }
 
@@ -49,7 +49,7 @@ namespace MapAMilepost.Utils
         /// -   Update the private _setSession property to change the behavior of the method.
         /// </summary>
         /// <param name="VM">the target viewmodel</param>
-        public static void DeactivateSession(Utils.ViewModelBase VM, string sessionType = null)
+        public static async Task DeactivateSession(Utils.ViewModelBase VM, string sessionType = null)
         {
             if (sessionType == "point")//if start session or point session
             {
@@ -75,15 +75,15 @@ namespace MapAMilepost.Utils
             VM.MappingTool.EndSession();
             if(sessionType == null)//tab switched
             {
-                Commands.GraphicsCommands.DeleteUnsavedGraphics(sessionType);
+                await Commands.GraphicsCommands.DeleteUnsavedGraphics(sessionType);
                 if (VM.GetType() == typeof(MapPointViewModel))
                 {
-                    DeactivateSession(VM, "point");
+                    await DeactivateSession(VM, "point");
                 }
                 else
                 {
-                    DeactivateSession(VM, "start");
-                    DeactivateSession(VM, "end");
+                    await DeactivateSession(VM, "start");
+                    await DeactivateSession(VM, "end");
                     VM.LineResponse.EndResponse = new PointResponseModel();
                     VM.LineResponse.StartResponse = new PointResponseModel();
                 }

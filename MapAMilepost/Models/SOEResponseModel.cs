@@ -16,18 +16,15 @@ namespace MapAMilepost.Models
     public class PointResponseModel : ObservableObject
     {
         private string _pointFeatureID;
-        private double? _angle;
         private double? _arm;
         private bool? _back;
-        private bool? _endback;
         private bool? _decrease;
-        private double? _distance;
-        private string? _route;
+        private string _route;
         private double? _srmp;
-        private string? _referenceDate;
-        private string? _responseDate;
-        private string? _realignmentDate;
-        private coordinatePair? _routeGeometry;
+        private string _referenceDate;
+        private string _responseDate;
+        private string _realignmentDate;
+        private coordinatePair _routeGeometry;
         public  string PointFeatureID
         {
             get { return _pointFeatureID; }
@@ -35,15 +32,6 @@ namespace MapAMilepost.Models
             {
                 _pointFeatureID = value;
                 OnPropertyChanged(nameof(PointFeatureID));
-            }
-        }
-        public  double? Angle
-        {
-            get { return _angle; }
-            set
-            {
-                _angle = value;
-                OnPropertyChanged(nameof(Angle));
             }
         }
         public  double? Arm
@@ -64,14 +52,6 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Back));
             }
         }
-        public  bool? EndBack {
-            get { return _endback; }
-            set
-            {
-                _endback = value;
-                OnPropertyChanged(nameof(EndBack));
-            }
-        }
         public  bool? Decrease
         {
             get { return _decrease; }
@@ -81,16 +61,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Decrease));
             }
         }
-        public  double? Distance
-        {
-            get { return _distance; }
-            set
-            {
-                _distance = value;
-                OnPropertyChanged(nameof(Distance));
-            }
-        }
-        public  string? Route
+        public  string Route
         {
             get { return _route; }
             set
@@ -108,7 +79,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Srmp));
             }
         }
-        public  string? ReferenceDate
+        public  string ReferenceDate
         {
             get { return _referenceDate; }
             set
@@ -118,7 +89,7 @@ namespace MapAMilepost.Models
             }
         }
 
-        public  string? ResponseDate
+        public  string ResponseDate
         {
             get { return _responseDate; }
             set
@@ -127,7 +98,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(ResponseDate));
             }
         }
-        public  string? RealignmentDate
+        public  string RealignmentDate
         {
             get { return _realignmentDate; }
             set
@@ -136,7 +107,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(RealignmentDate));
             }
         }
-        public  coordinatePair? RouteGeometry
+        public  coordinatePair RouteGeometry
         {
             get { return _routeGeometry; }
             set
@@ -204,14 +175,13 @@ namespace MapAMilepost.Models
         public bool? Back { get; set; }
         public string? ReferenceDate { get; set; }
         public string? ResponseDate { get; set; }
-        public bool? EndBack { get; set; }
+       // public bool? EndBack { get; set; }
         public coordinatePair? EventPoint { get; set; }
         public class coordinatePair
         {
             public double? x { get; set; }
             public double? y { get; set; }
         }
-        public double? Distance { get; set; }
 
         /// <summary>
         /// -   Constructor to automatically assign the properties of the response object returned by the
@@ -228,7 +198,7 @@ namespace MapAMilepost.Models
             Back = FNRL.Back;
             ReferenceDate = FNRL.ReferenceDate;
             ResponseDate = FNRL.ResponseDate;
-            EndBack = FNRL.EndBack;
+            //EndBack = FNRL.EndBack;
             EventPoint = new coordinatePair();
             EventPoint.x = FNRL.RouteGeometry.x;
             EventPoint.y = FNRL.RouteGeometry.y;

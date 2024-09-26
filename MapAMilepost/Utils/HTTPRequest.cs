@@ -72,7 +72,7 @@ namespace MapAMilepost.Utils
                 if (FNRLresponse.StatusCode == 200)
                 {
                     string responseString = await FNRLresponse.ResponseMessage.Content.ReadAsStringAsync();
-                    var PointResponses = JsonSerializer.Deserialize<List<PointResponseModel?>>(responseString);
+                    var PointResponses = JsonSerializer.Deserialize<List<PointResponseModel>>(responseString);
                     if (PointResponses.Count > 0)
                     {
                         responseObject = PointResponses.First();

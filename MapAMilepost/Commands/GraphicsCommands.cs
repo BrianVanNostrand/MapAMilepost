@@ -137,7 +137,6 @@ namespace MapAMilepost.Commands
                             new() { Key = "Srmp",Value = PointResponse.Srmp.ToString()},
                             new() { Key = "Back",Value = PointResponse.Back.ToString()},
                             new() { Key = "ResponseDate",Value = PointResponse.ResponseDate.ToString()},
-                            new() { Key = "EndBack",Value = PointResponse.EndBack.ToString()},
                             new() { Key = "x",Value = PointResponse.RouteGeometry.x.ToString()},
                             new() { Key = "y",Value = PointResponse.RouteGeometry.y.ToString()},
                             new() { Key = "RealignmentDate",Value = PointResponse.RealignmentDate},
@@ -189,7 +188,6 @@ namespace MapAMilepost.Commands
                         new() { Key = "EndSRMP",Value = endPoint.Srmp.ToString()},
                         new() { Key = "Back",Value = startPoint.Back.ToString()},
                         new() { Key = "ResponseDate",Value = startPoint.ResponseDate.ToString()},
-                        new() { Key = "EndBack",Value = endPoint.EndBack.ToString()},
                         new() { Key = "saved", Value="false"},
                         new() { Key = "eventType", Value="route"},
                         new() { Key = "sessionType", Value = "line"}
@@ -466,11 +464,9 @@ namespace MapAMilepost.Commands
                     string FeatureID = $"{VM.PointResponse.Route}{(VM.PointResponse.Decrease == true ? "Decrease" : "Increase")}{VM.PointResponse.Srmp}";
                     VM.PointResponses.Add(new PointResponseModel()
                     {
-                        Angle = VM.PointResponse.Angle,
                         Arm = VM.PointResponse.Arm,
                         Back = VM.PointResponse.Back,
                         Decrease = VM.PointResponse.Decrease,
-                        Distance = VM.PointResponse.Distance,
                         Route = VM.PointResponse.Route,
                         RouteGeometry = VM.PointResponse.RouteGeometry,
                         Srmp = VM.PointResponse.Srmp,
@@ -643,8 +639,6 @@ namespace MapAMilepost.Commands
                         Arm = Convert.ToDouble(item.GetCustomProperty("Arm")),
                         Srmp = Convert.ToDouble(item.GetCustomProperty("Srmp")),
                         Back = Convert.ToBoolean(item.GetCustomProperty("Back")),
-                        EndBack = Convert.ToBoolean(item.GetCustomProperty("EndBack")),
-                        Angle = Convert.ToDouble(item.GetCustomProperty("Angle")),
                         ResponseDate = item.GetCustomProperty("ResponseDate"),
                         RealignmentDate = item.GetCustomProperty("RealignmentDate"),
                         PointFeatureID = item.GetCustomProperty("FeatureID"),
@@ -655,9 +649,9 @@ namespace MapAMilepost.Commands
                         }
                     };
                 }
-                catch
+                catch(Exception e)
                 {
-                    Console.WriteLine("bad item");
+                    Console.WriteLine(e);
                 }
                 
                 if (item.GetCustomProperty("sessionType") == "point")

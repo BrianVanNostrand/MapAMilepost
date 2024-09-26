@@ -85,30 +85,30 @@ namespace MapAMilepost.ViewModels
 
         public Commands.RelayCommand<object> SaveLineResultCommand => new ((grid) => Commands.GraphicsCommands.SaveLineResult(grid as DataGrid, this));
 
-        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new ((startEnd) =>
+        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new (async(startEnd) =>
         {
             if((string)startEnd=="start")//if start button is clicked
             {
                 if (this.MapToolInfos.SessionEndActive == true || this.MapToolInfos.SessionActive == false)
                 {
-                    Utils.MapToolUtils.DeactivateSession(this, "end");
-                    Utils.MapToolUtils.InitializeSession(this, "start");
+                    await Utils.MapToolUtils.DeactivateSession(this, "end");
+                    await Utils.MapToolUtils.InitializeSession(this, "start");
                 }
                 else if(this.MapToolInfos.SessionActive == true)
                 {
-                    Utils.MapToolUtils.DeactivateSession(this, "start");
+                    await Utils.MapToolUtils.DeactivateSession(this, "start");
                 }
             }
             if ((string)startEnd == "end")
             {
                 if (this.MapToolInfos.SessionActive == true || this.MapToolInfos.SessionEndActive == false)
                 {
-                    Utils.MapToolUtils.DeactivateSession(this, "start");
-                    Utils.MapToolUtils.InitializeSession(this, "end");
+                    await Utils.MapToolUtils.DeactivateSession(this, "start");
+                    await Utils.MapToolUtils.InitializeSession(this, "end");
                 }
                 else if (this.MapToolInfos.SessionEndActive == true)
                 {
-                    Utils.MapToolUtils.DeactivateSession(this, "end");
+                    await Utils.MapToolUtils.DeactivateSession(this, "end");
                 }
             }
            

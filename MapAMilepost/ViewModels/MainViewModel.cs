@@ -62,7 +62,7 @@ namespace MapAMilepost.ViewModels
             if (MapViewUtils.CheckMapView())
             {
                 await GraphicsCommands.DeselectAllGraphics();//remove all graphic selections
-                MapToolUtils.DeactivateSession(this.SelectedViewModel);//deactivate any active map tool sessions
+                await MapToolUtils.DeactivateSession(this.SelectedViewModel);//deactivate any active map tool sessions
                 TabCommands.SwitchTab(button, this);//switch the selected viewmodel
             }   
         });
