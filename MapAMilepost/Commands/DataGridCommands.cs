@@ -33,47 +33,55 @@ namespace MapAMilepost.Commands
         ///// </summary>
         public static async Task UpdatePointSelection(DataGrid grid, Utils.ViewModelBase VM)
         {
-            await GraphicsCommands.DeleteUnsavedGraphics();
-            VM.PointArgs.X = 0;
-            VM.PointArgs.Y = 0;
-            DataGrid myGrid = grid as DataGrid;
-            var selItems = myGrid.SelectedItems;
-            bool dataGridRowSelected = false;
-            foreach (var item in selItems)
+            if (MapView.Active!=null && MapView.Active.Map!=null)
             {
-                DataGridRow dgr = myGrid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
-                if (dgr.IsMouseOver)
+                await GraphicsCommands.DeleteUnsavedGraphics();
+                VM.PointArgs.X = 0;
+                VM.PointArgs.Y = 0;
+                DataGrid myGrid = grid as DataGrid;
+                var selItems = myGrid.SelectedItems;
+                bool dataGridRowSelected = false;
+                foreach (var item in selItems)
                 {
-                    dataGridRowSelected = true;
+                    DataGridRow dgr = myGrid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
+                    if (dgr.IsMouseOver)
+                    {
+                        dataGridRowSelected = true;
+                    }
+                }
+                //if no row is clicked, clear the selection
+                if (dataGridRowSelected == false)
+                {
+                    //clear the response
+                    VM.PointResponse = new PointResponseModel();
+                    //clear selected items
+                    VM.SelectedPoints.Clear();
+                    //clear selected rows
+                    myGrid.SelectedItems.Clear();
+                    //clear selected graphics
+                    Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
+                }
+                //if a row is clicked, select the row and graphic
+                else
+                {
+                    VM.SelectedPoints.Clear();
+                    //clear selected graphics
+                    Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
+                    //update selected items
+                    VM.SelectedPoints = CastPointsToList(myGrid.SelectedItems);
+                    //update selected graphics
+                    Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
+                    if (VM.SelectedPoints.Count == 1)
+                    {
+                        VM.PointResponse = VM.SelectedPoints[0];
+                    }
                 }
             }
-            //if no row is clicked, clear the selection
-            if (dataGridRowSelected == false)
-            {
-                //clear the response
-                VM.PointResponse = new PointResponseModel();
-                //clear selected items
-                VM.SelectedPoints.Clear();
-                //clear selected rows
-                myGrid.SelectedItems.Clear();
-                //clear selected graphics
-                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
-            }
-            //if a row is clicked, select the row and graphic
             else
             {
-                VM.SelectedPoints.Clear();
-                //clear selected graphics
-                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
-                //update selected items
-                VM.SelectedPoints = CastPointsToList(myGrid.SelectedItems);
-                //update selected graphics
-                Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
-                if (VM.SelectedPoints.Count == 1)
-                {
-                    VM.PointResponse = VM.SelectedPoints[0];
-                }
+                MessageBox.Show("Please switch to a map view before attempting this selection.");
             }
+            
         }
 
         ///// <summary>
@@ -81,125 +89,146 @@ namespace MapAMilepost.Commands
         ///// </summary>
         public static async Task UpdateLineSelection(DataGrid grid, Utils.ViewModelBase VM)
         {
-            await Commands.GraphicsCommands.DeleteUnsavedGraphics();
-            VM.LineArgs = new LineArgsModel(VM.LineArgs.StartArgs.SearchRadius, VM.LineArgs.EndArgs.SearchRadius);
-            DataGrid myGrid = grid as DataGrid;
-            var selItems = myGrid.SelectedItems;
-            bool dataGridRowSelected = false;
-            foreach (var item in selItems)
+            if (MapView.Active.Map != null)
             {
-                DataGridRow dgr = myGrid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
-                if (dgr.IsMouseOver)
+                await Commands.GraphicsCommands.DeleteUnsavedGraphics();
+                VM.LineArgs = new LineArgsModel(VM.LineArgs.StartArgs.SearchRadius, VM.LineArgs.EndArgs.SearchRadius);
+                DataGrid myGrid = grid as DataGrid;
+                var selItems = myGrid.SelectedItems;
+                bool dataGridRowSelected = false;
+                foreach (var item in selItems)
                 {
-                    dataGridRowSelected = true;
+                    DataGridRow dgr = myGrid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
+                    if (dgr.IsMouseOver)
+                    {
+                        dataGridRowSelected = true;
+                    }
                 }
+                //if no row is clicked, clear the selection
+                if (dataGridRowSelected == false)
+                {
+                    //clear the response
+                    VM.LineResponse = new LineResponseModel();
+                    //clear selected items
+                    VM.SelectedLines.Clear();
+                    //clear selected rows
+                    myGrid.SelectedItems.Clear();
+                    //clear selected graphics
+                    Commands.GraphicsCommands.SetLineGraphicsSelected(VM.SelectedLines);
+                }
+                //if a row is clicked, select the row and graphic
+                else
+                {
+                    VM.SelectedLines.Clear();
+                    //clear selected graphics
+                    Commands.GraphicsCommands.SetLineGraphicsSelected(VM.SelectedLines);
+                    //update selected items
+                    VM.SelectedLines = CastLinesToList(myGrid.SelectedItems);
+                    //update selected graphics
+                    Commands.GraphicsCommands.SetLineGraphicsSelected(VM.SelectedLines);
+                    if (VM.SelectedLines.Count == 1)
+                    {
+                        VM.LineResponse = VM.SelectedLines[0];
+                    }
+                } 
             }
-            //if no row is clicked, clear the selection
-            if (dataGridRowSelected == false)
-            {
-                //clear the response
-                VM.LineResponse = new LineResponseModel();
-                //clear selected items
-                VM.SelectedLines.Clear();
-                //clear selected rows
-                myGrid.SelectedItems.Clear();
-                //clear selected graphics
-                Commands.GraphicsCommands.SetLineGraphicsSelected(VM.SelectedLines);
-            }
-            //if a row is clicked, select the row and graphic
             else
             {
-                VM.SelectedLines.Clear();
-                //clear selected graphics
-                Commands.GraphicsCommands.SetLineGraphicsSelected(VM.SelectedLines);
-                //update selected items
-                VM.SelectedLines = CastLinesToList(myGrid.SelectedItems);
-                //update selected graphics
-                Commands.GraphicsCommands.SetLineGraphicsSelected(VM.SelectedLines);
-                if (VM.SelectedLines.Count == 1)
-                {
-                    VM.LineResponse = VM.SelectedLines[0];
-                }
+                MessageBox.Show("Please switch to a map view before attempting this selection.");
             }
+            
         }
         public static async Task DeletePointItems(Utils.ViewModelBase VM = null)
         {
-
-            if (VM.PointResponses.Count > 0 && VM.SelectedPoints.Count > 0)
+            if (MapView.Active != null && MapView.Active.Map != null)
             {
-                if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
-                    $"Are you sure you wish to delete these {VM.SelectedPoints.Count} records?",
-                    "Delete Rows",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question) == MessageBoxResult.Yes
-                )
+                if (VM.PointResponses.Count > 0 && VM.SelectedPoints.Count > 0)
                 {
-                    if (VM != null)//if individual points are being deleted
+                    if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
+                        $"Are you sure you wish to delete these {VM.SelectedPoints.Count} records?",
+                        "Delete Rows",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question) == MessageBoxResult.Yes
+                    )
                     {
-                        string[] FeatureIDs = VM.SelectedPoints.Select(Item => Item.PointFeatureID).ToArray();//Selected item IDs
-                        foreach (var PointResponse in VM.PointResponses.ToList())
+                        if (VM != null)//if individual points are being deleted
                         {
-                            if (FeatureIDs.Contains(PointResponse.PointFeatureID))
+                            string[] FeatureIDs = VM.SelectedPoints.Select(Item => Item.PointFeatureID).ToArray();//Selected item IDs
+                            foreach (var PointResponse in VM.PointResponses.ToList())
                             {
-                                VM.PointResponses.Remove(PointResponse);
+                                if (FeatureIDs.Contains(PointResponse.PointFeatureID))
+                                {
+                                    VM.PointResponses.Remove(PointResponse);
+                                }
                             }
+                            await GraphicsCommands.DeleteGraphics("point",FeatureIDs);
                         }
-                        await GraphicsCommands.DeleteGraphics("point",FeatureIDs);
+                        else//if all points are being cleared
+                        {
+                            VM.PointResponses.Clear();
+                            await GraphicsCommands.DeleteGraphics("point");
+                        }
+                        if (VM.PointResponses.Count == 0)
+                        {
+                            VM.ShowResultsTable = false;
+                        };
+                        VM.LineResponse = new LineResponseModel();
                     }
-                    else//if all points are being cleared
-                    {
-                        VM.PointResponses.Clear();
-                        await GraphicsCommands.DeleteGraphics("point");
-                    }
-                    if (VM.PointResponses.Count == 0)
-                    {
-                        VM.ShowResultsTable = false;
-                    };
-                    VM.LineResponse = new LineResponseModel();
                 }
+            }
+            else
+            {
+                MessageBox.Show("Please switch to a map view before attempting to delete.");
             }
         }
 
         public static async Task DeleteLineItems(Utils.ViewModelBase VM = null)
         {
-            if (VM.LineResponses.Count > 0 && VM.SelectedLines.Count > 0)
+            if (MapView.Active !=null && MapView.Active.Map != null)
             {
-                if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
-                    $"Are you sure you wish to delete these {VM.SelectedLines.Count} records?",
-                    "Delete Rows",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question) == MessageBoxResult.Yes
-                )
+                if (VM.LineResponses.Count > 0 && VM.SelectedLines.Count > 0)
                 {
-                    if (VM != null)//if individual lines are being deleted
+                    if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
+                        $"Are you sure you wish to delete these {VM.SelectedLines.Count} records?",
+                        "Delete Rows",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question) == MessageBoxResult.Yes
+                    )
                     {
-                        string[] FeatureIDs = VM.SelectedLines.Select(Item => Item.LineFeatureID).ToArray();//Selected item IDs
-                        foreach (var LineResponse in VM.LineResponses.ToList())
+                        if (VM != null)//if individual lines are being deleted
                         {
-                            if (FeatureIDs.Contains(LineResponse.LineFeatureID))
+                            string[] FeatureIDs = VM.SelectedLines.Select(Item => Item.LineFeatureID).ToArray();//Selected item IDs
+                            foreach (var LineResponse in VM.LineResponses.ToList())
                             {
-                                VM.LineResponses.Remove(LineResponse);
+                                if (FeatureIDs.Contains(LineResponse.LineFeatureID))
+                                {
+                                    VM.LineResponses.Remove(LineResponse);
+                                }
                             }
+                            await GraphicsCommands.DeleteGraphics("line",FeatureIDs);
                         }
-                        await GraphicsCommands.DeleteGraphics("line",FeatureIDs);
+                        else//if all lines are being cleared
+                        {
+                            VM.LineResponses.Clear();
+                            await Commands.GraphicsCommands.DeleteGraphics("line");
+                        }
+                        if (VM.LineResponses.Count == 0)
+                        {
+                            VM.ShowResultsTable = false;
+                        };
+                        VM.LineResponse = new LineResponseModel();
                     }
-                    else//if all lines are being cleared
-                    {
-                        VM.LineResponses.Clear();
-                        await Commands.GraphicsCommands.DeleteGraphics("line");
-                    }
-                    if (VM.LineResponses.Count == 0)
-                    {
-                        VM.ShowResultsTable = false;
-                    };
-                    VM.LineResponse = new LineResponseModel();
                 }
+            }
+            else
+            {
+                MessageBox.Show("Please switch to a map view before attempting to delete.");
             }
         }
 
         public static async Task ClearDataGridItems(Utils.ViewModelBase VM, bool IgnorePrompt=false)
         {
-            if(VM.GetType() == typeof(MapPointViewModel))
+            if (VM.GetType() == typeof(MapPointViewModel))
             {
                 if (VM.PointResponses.Count > 0)
                 {
@@ -223,7 +252,7 @@ namespace MapAMilepost.Commands
                         VM.PointResponses.Clear();
                         VM.PointResponse = new PointResponseModel();//clear the SOE response info panel
                     }
-                   
+
                 }
                 if (VM.PointResponses.Count == 0)
                 {
@@ -235,7 +264,7 @@ namespace MapAMilepost.Commands
                 if (VM.LineResponses.Count > 0)
                 {
                     ResetClickPointArgs("line", VM);
-                    if(IgnorePrompt == false)//if this method was invoked from clicking the clear button
+                    if (IgnorePrompt == false)//if this method was invoked from clicking the clear button
                     {
                         if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
                             $"Are you sure you wish to clear all {VM.LineResponses.Count} line records?",

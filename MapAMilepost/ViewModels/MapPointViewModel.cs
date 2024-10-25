@@ -1,4 +1,5 @@
-﻿using MapAMilepost.Commands;
+﻿using ArcGIS.Desktop.Mapping;
+using MapAMilepost.Commands;
 using MapAMilepost.Models;
 using MapAMilepost.Utils;
 using System;
@@ -6,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace MapAMilepost.ViewModels
@@ -17,12 +19,14 @@ namespace MapAMilepost.ViewModels
         /// </summary>
         private PointResponseModel _pointResponse;
         private PointArgsModel _pointArgs;
+        private bool _isEnabled;
         private ObservableCollection<PointResponseModel> _pointResponses;
         private bool _showResultsTable = false;
         private MapToolInfo _mapToolInfos;
         private string _tabLabel = "TEST TAB LABEL";
         public MapPointViewModel()//constructor
         {
+            _isEnabled = false;
             _pointResponse = new PointResponseModel();
             _pointArgs = new PointArgsModel();
             _pointResponses = new ObservableCollection<PointResponseModel>();
@@ -33,6 +37,15 @@ namespace MapAMilepost.ViewModels
             };
         }
 
+        public bool isEnabled
+        {
+            get { return _isEnabled; }
+            set
+            {
+                _isEnabled = value;
+                OnPropertyChanged(nameof(isEnabled));
+            }
+        }
         public string TabLabel
         {
             get { return _tabLabel; }
@@ -93,9 +106,17 @@ namespace MapAMilepost.ViewModels
         public Commands.RelayCommand<object> UpdateSelectionCommand => new (async(grid) => await Commands.DataGridCommands.UpdatePointSelection(grid as DataGrid, this));
 
         public Commands.RelayCommand<object> DeleteItemsCommand => new (async(p) => await Commands.DataGridCommands.DeletePointItems(this));
-        
-        public Commands.RelayCommand<object> ClearItemsCommand => new (async(p) => await Commands.DataGridCommands.ClearDataGridItems(this));
 
+        public Commands.RelayCommand<object> ClearItemsCommand => new(async (parms) => {
+            if (MapView.Active != null && MapView.Active.Map != null)
+            {
+                await Commands.DataGridCommands.ClearDataGridItems(this);
+            }
+            else
+            {
+                MessageBox.Show("Please switch to a map view before attempting to clear mileposts.");
+            }
+        });
         public Commands.RelayCommand<object> SavePointResultCommand => new ((grid) => Commands.GraphicsCommands.SavePointResult(grid as DataGrid, this));       
 
         public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new (async(p) => { 

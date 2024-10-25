@@ -5,6 +5,7 @@ using System.Windows;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Windows.Controls;
+using ArcGIS.Desktop.Mapping;
 
 namespace MapAMilepost.ViewModels
 {
@@ -12,11 +13,13 @@ namespace MapAMilepost.ViewModels
     {
         private LineResponseModel _lineResponse;
         private LineArgsModel _lineArgs;
+        private bool _isEnabled;
         private ObservableCollection<LineResponseModel> _lineResponses;
         private bool _showResultsTable = true;
         private MapToolInfo _mapToolInfos;
         public MapLineViewModel()//constructor
         {
+            _isEnabled = false;
             _lineArgs = new LineArgsModel();
             _lineResponses = new ObservableCollection<LineResponseModel>();
             _lineResponse = new LineResponseModel();
@@ -30,6 +33,15 @@ namespace MapAMilepost.ViewModels
                 MapButtonEndToolTip = "Start 'end point' mapping session."
             };
             MappingTool = new MapAMilepostMaptool();
+        }
+        public bool isEnabled
+        {
+            get { return _isEnabled; }
+            set
+            {
+                _isEnabled = value;
+                OnPropertyChanged(nameof(isEnabled));
+            }
         }
         public override MapToolInfo MapToolInfos
         {
@@ -81,7 +93,16 @@ namespace MapAMilepost.ViewModels
 
         public Commands.RelayCommand<object> DeleteItemsCommand => new (async(parms) => await Commands.DataGridCommands.DeleteLineItems(this));
 
-        public Commands.RelayCommand<object> ClearItemsCommand => new (async(parms) => await Commands.DataGridCommands.ClearDataGridItems(this));
+        public Commands.RelayCommand<object> ClearItemsCommand => new(async (parms) => {
+            if (MapView.Active != null && MapView.Active.Map != null)
+            {
+                await Commands.DataGridCommands.ClearDataGridItems(this);
+            }
+            else
+            {
+                MessageBox.Show("Please switch to a map view before attempting to clear mileposts.");
+            }
+        });
 
         public Commands.RelayCommand<object> SaveLineResultCommand => new ((grid) => Commands.GraphicsCommands.SaveLineResult(grid as DataGrid, this));
 

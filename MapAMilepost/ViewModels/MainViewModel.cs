@@ -1,4 +1,6 @@
-﻿using ArcGIS.Desktop.Mapping;
+﻿using ArcGIS.Desktop.Core.Events;
+using ArcGIS.Desktop.Framework.Events;
+using ArcGIS.Desktop.Mapping;
 using ArcGIS.Desktop.Mapping.Events;
 using MapAMilepost.Commands;
 using MapAMilepost.Models;
@@ -26,6 +28,8 @@ namespace MapAMilepost.ViewModels
         /// -   The currently selected viewmodel, used when a tab is selected in the controlsGrid in MilepostDockpane.xaml
         ///     via data binding.
         /// </summary>
+        public bool SyncComplete {  get; set; }
+        public bool ShowLoader {  get; set; }
         public ViewModelBase SelectedViewModel
         {
             get { return _selectedViewModel; }
@@ -66,11 +70,28 @@ namespace MapAMilepost.ViewModels
                 TabCommands.SwitchTab(button, this);//switch the selected viewmodel
             }   
         });
-
-        private async void OnMapChanged(ActiveMapViewChangedEventArgs obj)
-        {
-            if (obj.IncomingView != null)//if a map is selected
+        public RelayCommand<object> OnShowCommand => new Commands.RelayCommand<object>(async (dockPane) => {
+            if (MapView.Active != null)
             {
+                GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
+                await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
+                await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
+                await GraphicsCommands.DeselectAllGraphics();
+                if (graphicsLayer != null)
+                {
+                    await GraphicsCommands.SynchronizeGraphicsToAddIn(this, graphicsLayer);
+                }
+            }
+        });
+
+        private async void OnMapViewChanged(ActiveMapViewChangedEventArgs obj)
+        {
+            this.SyncComplete = false;
+            this.MapPointVM.isEnabled = false;
+            this.MapLineVM.isEnabled = false;
+            if (obj.IncomingView != null)
+            {
+                ShowLoader = true;
                 GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(obj.IncomingView.Map);
                 await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
                 await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
@@ -80,12 +101,16 @@ namespace MapAMilepost.ViewModels
                     await GraphicsCommands.SynchronizeGraphicsToAddIn(this, graphicsLayer);
                 }
             }
-            else//if no map is incoming
+        }
+        private void OnDrawComplete( MapViewEventArgs obj)
+        {
+            if (SyncComplete)//if the add in is syncronized to the graphics layer contents
             {
-                await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
-                await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
+                this.MapPointVM.isEnabled = true;
+                this.MapLineVM.isEnabled = true;
+                this.ShowLoader = false;
             }
-                
+            
         }
         public MainViewModel()
         {
@@ -93,7 +118,8 @@ namespace MapAMilepost.ViewModels
             MapPointVM = new MapPointViewModel();
             MapLineVM = new MapLineViewModel();
             SelectedViewModel = MapPointVM;
-            ActiveMapViewChangedEvent.Subscribe(OnMapChanged);//subscribe to ArcGIS Pro active map changed event
+            ActiveMapViewChangedEvent.Subscribe(OnMapViewChanged);
+            DrawCompleteEvent.Subscribe(OnDrawComplete);
         }
     }
 }

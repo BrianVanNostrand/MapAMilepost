@@ -293,18 +293,22 @@ namespace MapAMilepost.Commands
         /// <returns></returns>
         public static async Task DeselectAllGraphics()
         {
-            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
-            if (graphicsLayer != null)
+            if (MapView.Active != null)
             {
-                await QueuedTask.Run(() =>
+                GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
+                if (graphicsLayer != null)
                 {
-                    var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic);
-                    for (int i = graphics.Count() - 1; i >= 0; i--)
+                    await QueuedTask.Run(() =>
                     {
-                        SetGraphicDelesected(graphics.ElementAt(i));
-                    }
-                });
+                        var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic);
+                        for (int i = graphics.Count() - 1; i >= 0; i--)
+                        {
+                            SetGraphicDelesected(graphics.ElementAt(i));
+                        }
+                    });
+                }
             }
+           
            
         }
 
@@ -615,6 +619,14 @@ namespace MapAMilepost.Commands
                         VM.MapLineVM.ShowResultsTable = false;
                     }
                 }
+                VM.SyncComplete = true;
+                if (MapView.Active.IsReady)//if mapview is drawn, enable add in
+                {
+                    VM.ShowLoader = false;
+                    VM.MapPointVM.isEnabled = true;
+                    VM.MapLineVM.isEnabled = true;
+                }
+                
             });
         }
 

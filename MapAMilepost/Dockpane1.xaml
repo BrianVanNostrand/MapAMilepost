@@ -30,7 +30,12 @@
             <RowDefinition Height="50"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <DockPanel DataContext="{DynamicResource MainViewModel}"  Background="white" Grid.Row="0" LastChildFill="true" KeyboardNavigation.TabNavigation="Local" Height="50">
+        <DockPanel x:Name="MainDockPanel" DataContext="{DynamicResource MainViewModel}" Background="white" Grid.Row="0" LastChildFill="true" KeyboardNavigation.TabNavigation="Local" Height="50">
+            <!--<i:Interaction.Triggers>
+                <i:EventTrigger EventName="Loaded">
+                    <i:InvokeCommandAction Command="{Binding OnShowCommand}" CommandParameter="{Binding ElementName=MainDockPanel}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>-->
             <TabControl Height="50" x:Name="controlsGrid">
                 <TabItem x:Name="MapPointTab" Height="50" Width="80" Header="Map a Point">
                     <i:Interaction.Triggers>

@@ -19,7 +19,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid x:Name="MainGrid" Background="White">
+    <Grid x:Name="MainGrid" Background="White" IsEnabled="{Binding isEnabled}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -154,13 +154,13 @@
                         </Style>
                     </DataGrid.RowStyle>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Route" Binding="{Binding Route}"/>
-                        <DataGridTextColumn Header="ARM" Binding="{Binding Arm}"/>
-                        <DataGridTextColumn Header="SRMP" Binding="{Binding Srmp}"/>
-                        <DataGridTextColumn Header="Decrease" Binding="{Binding Decrease}"/>
-                        <DataGridTextColumn Header="Back" Binding="{Binding Back}"/>
-                        <DataGridTextColumn Header="X" Binding="{Binding RouteGeometry.x}"/>
-                        <DataGridTextColumn Header="Y" Binding="{Binding RouteGeometry.y}"/>
+                        <DataGridTextColumn Header="Route" Binding="{Binding Route,Mode=OneWay}"/>
+                        <DataGridTextColumn Header="ARM" Binding="{Binding Arm,Mode=OneWay}"/>
+                        <DataGridTextColumn Header="SRMP" Binding="{Binding Srmp,Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Decrease" Binding="{Binding Decrease,Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Back" Binding="{Binding Back,Mode=OneWay}"/>
+                        <DataGridTextColumn Header="X" Binding="{Binding RouteGeometry.x,Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Y" Binding="{Binding RouteGeometry.y,Mode=OneWay}"/>
                     </DataGrid.Columns>
                     <b:Interaction.Triggers>
                         <b:EventTrigger EventName="MouseLeftButtonUp">

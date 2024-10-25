@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:controls="clr-namespace:ArcGIS.Desktop.Framework.Controls;assembly=ArcGIS.Desktop.Framework"
              xmlns:viewmodels="clr-namespace:MapAMilepost.ViewModels" 
              mc:Ignorable="d" 
              xmlns:theme ="../Themes/ButtonTheme.xaml"
@@ -18,7 +19,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid x:Name="MainGrid" Background="White">
+    <Grid x:Name="MainGrid" Background="White" IsEnabled="{Binding isEnabled}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -43,6 +44,7 @@
             <TextBox Grid.Row="0" Grid.Column="1" Style="{StaticResource SelectableTextBox}">Start Point</TextBox>
             <TextBox Grid.Row="0" Grid.Column="2" Style="{StaticResource SelectableTextBox}">End Point</TextBox>
             <TextBox x:Name="MapPointSearchDistanceLabel" Grid.Row="1" Grid.Column="0" Style="{StaticResource SelectableTextBox}">Search Distance</TextBox>
+            <controls:CircularAnimationControl SpeedRatio="0.5"/>
             <TextBox x:Name="FeetLabel" Grid.Row="1" Grid.Column="3" Style="{StaticResource SelectableTextBox}">Feet</TextBox>
             <TextBox x:Name="MapStartPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="1" Text="{Binding LineArgs.StartArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped start point."/>
             <TextBox x:Name="MapEndPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="2" Text="{Binding LineArgs.EndArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped end point."/>
@@ -185,18 +187,18 @@
                     </DataGrid.RowStyle>
                     <DataGrid.Columns>
                         <!--Start Info-->
-                        <DataGridTextColumn Header="Route" Binding="{Binding StartResponse.Route}"/>
-                        <DataGridTextColumn Header="ARM" Binding="{Binding StartResponse.Arm}"/>
-                        <DataGridTextColumn Header="EndARM" Binding="{Binding EndResponse.Arm}"/>
-                        <DataGridTextColumn Header="SRMP" Binding="{Binding StartResponse.Srmp}"/>
-                        <DataGridTextColumn Header="EndSRMP" Binding="{Binding EndResponse.Srmp}"/>
-                        <DataGridTextColumn Header="Decrease" Binding="{Binding StartResponse.Decrease}"/>
-                        <DataGridTextColumn Header="Back" Binding="{Binding StartResponse.Back}"/>
-                        <DataGridTextColumn Header="EndBack" Binding="{Binding EndResponse.Back}"/>
-                        <DataGridTextColumn Header="X" Binding="{Binding StartResponse.RouteGeometry.x}"/>
-                        <DataGridTextColumn Header="Y" Binding="{Binding StartResponse.RouteGeometry.y}"/>
-                        <DataGridTextColumn Header="EndX" Binding="{Binding EndResponse.RouteGeometry.x}"/>
-                        <DataGridTextColumn Header="EndY" Binding="{Binding EndResponse.RouteGeometry.y}"/>
+                        <DataGridTextColumn Header="Route" Binding="{Binding StartResponse.Route, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="ARM" Binding="{Binding StartResponse.Arm, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="EndARM" Binding="{Binding EndResponse.Arm, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="SRMP" Binding="{Binding StartResponse.Srmp, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="EndSRMP" Binding="{Binding EndResponse.Srmp, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Decrease" Binding="{Binding StartResponse.Decrease, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Back" Binding="{Binding StartResponse.Back, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="EndBack" Binding="{Binding EndResponse.Back, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="X" Binding="{Binding StartResponse.RouteGeometry.x, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Y" Binding="{Binding StartResponse.RouteGeometry.y, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="EndX" Binding="{Binding EndResponse.RouteGeometry.x, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="EndY" Binding="{Binding EndResponse.RouteGeometry.y, Mode=OneWay}"/>
                     </DataGrid.Columns>
                     <b:Interaction.Triggers>
                         <b:EventTrigger EventName="MouseLeftButtonUp">

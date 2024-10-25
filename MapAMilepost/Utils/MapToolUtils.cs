@@ -57,6 +57,7 @@ namespace MapAMilepost.Utils
                 VM.MapToolInfos.MapButtonLabel = "Start Mapping";
                 VM.MapToolInfos.MapButtonToolTip = "Start mapping session.";
                 VM.PointResponse = new PointResponseModel();
+                await Commands.GraphicsCommands.DeleteUnsavedGraphics(sessionType);
             }
             else if (sessionType == "start")
             {
