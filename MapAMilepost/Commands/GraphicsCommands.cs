@@ -620,7 +620,7 @@ namespace MapAMilepost.Commands
                     }
                 }
                 VM.SyncComplete = true;
-                if (MapView.Active.IsReady)//if mapview is drawn, enable add in
+                if (MapView.Active!=null&&MapView.Active.IsReady)//if mapview is drawn, enable add in
                 {
                     VM.ShowLoader = false;
                     VM.MapPointVM.isEnabled = true;

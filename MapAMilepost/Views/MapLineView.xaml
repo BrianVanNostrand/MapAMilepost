@@ -44,7 +44,6 @@
             <TextBox Grid.Row="0" Grid.Column="1" Style="{StaticResource SelectableTextBox}">Start Point</TextBox>
             <TextBox Grid.Row="0" Grid.Column="2" Style="{StaticResource SelectableTextBox}">End Point</TextBox>
             <TextBox x:Name="MapPointSearchDistanceLabel" Grid.Row="1" Grid.Column="0" Style="{StaticResource SelectableTextBox}">Search Distance</TextBox>
-            <controls:CircularAnimationControl SpeedRatio="0.5"/>
             <TextBox x:Name="FeetLabel" Grid.Row="1" Grid.Column="3" Style="{StaticResource SelectableTextBox}">Feet</TextBox>
             <TextBox x:Name="MapStartPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="1" Text="{Binding LineArgs.StartArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped start point."/>
             <TextBox x:Name="MapEndPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="2" Text="{Binding LineArgs.EndArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped end point."/>

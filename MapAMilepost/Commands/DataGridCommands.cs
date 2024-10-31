@@ -59,18 +59,18 @@ namespace MapAMilepost.Commands
                     //clear selected rows
                     myGrid.SelectedItems.Clear();
                     //clear selected graphics
-                    Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
+                    GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
                 }
                 //if a row is clicked, select the row and graphic
                 else
                 {
                     VM.SelectedPoints.Clear();
                     //clear selected graphics
-                    Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
+                    GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
                     //update selected items
                     VM.SelectedPoints = CastPointsToList(myGrid.SelectedItems);
                     //update selected graphics
-                    Commands.GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
+                    GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
                     if (VM.SelectedPoints.Count == 1)
                     {
                         VM.PointResponse = VM.SelectedPoints[0];
@@ -89,7 +89,7 @@ namespace MapAMilepost.Commands
         ///// </summary>
         public static async Task UpdateLineSelection(DataGrid grid, Utils.ViewModelBase VM)
         {
-            if (MapView.Active.Map != null)
+            if (MapView.Active!=null && MapView.Active.Map != null)
             {
                 await Commands.GraphicsCommands.DeleteUnsavedGraphics();
                 VM.LineArgs = new LineArgsModel(VM.LineArgs.StartArgs.SearchRadius, VM.LineArgs.EndArgs.SearchRadius);
@@ -114,18 +114,18 @@ namespace MapAMilepost.Commands
                     //clear selected rows
                     myGrid.SelectedItems.Clear();
                     //clear selected graphics
-                    Commands.GraphicsCommands.SetLineGraphicsSelected(VM.SelectedLines);
+                    GraphicsCommands.SetLineGraphicsSelected(VM.SelectedLines);
                 }
                 //if a row is clicked, select the row and graphic
                 else
                 {
                     VM.SelectedLines.Clear();
                     //clear selected graphics
-                    Commands.GraphicsCommands.SetLineGraphicsSelected(VM.SelectedLines);
+                    GraphicsCommands.SetLineGraphicsSelected(VM.SelectedLines);
                     //update selected items
                     VM.SelectedLines = CastLinesToList(myGrid.SelectedItems);
                     //update selected graphics
-                    Commands.GraphicsCommands.SetLineGraphicsSelected(VM.SelectedLines);
+                    GraphicsCommands.SetLineGraphicsSelected(VM.SelectedLines);
                     if (VM.SelectedLines.Count == 1)
                     {
                         VM.LineResponse = VM.SelectedLines[0];

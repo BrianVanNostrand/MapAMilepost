@@ -24,13 +24,27 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition x:Name="SearchTypeRow" Height="0px"/>
             <RowDefinition x:Name="SearchDistanceRow" Height="40px"/>
             <RowDefinition x:Name="PointResponseRow" />
             <RowDefinition x:Name="PointResponseControlsRow" Height="30px"/>
             <RowDefinition x:Name="DataGridRow"/>
             <RowDefinition Height="30px"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" x:Name="SoeArgsGrid">
+        <Grid Grid.Row="0" x:Name="SearchTypeGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Label VerticalAlignment="Center" Grid.Column="0">Search Type</Label>
+            <RadioButton VerticalAlignment="Center" Grid.Column="1" GroupName="searchType" IsChecked="True">Map</RadioButton>
+            <RadioButton VerticalAlignment="Center" Grid.Column="2" GroupName="searchType">Form</RadioButton>
+        </Grid>
+        <Grid Grid.Row="1" x:Name="SoeArgsGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -43,7 +57,7 @@
             <Label  Grid.Row="0" Grid.Column="2" VerticalAlignment="Center">Feet</Label>
             <TextBox BorderBrush="#b3c1fc" BorderThickness="1" x:Name="MapPointSearcDistanceTextBox" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Row="0" Grid.Column="1" Text="{Binding PointArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the nearest route location"></TextBox>
         </Grid>
-        <Grid Grid.Row="1" x:Name="SOEResultsGrid" >
+        <Grid Grid.Row="2" x:Name="SOEResultsGrid" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
@@ -88,7 +102,7 @@
             <Border Grid.ColumnSpan="3" Grid.Row="8" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="9" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
         </Grid>
-        <Grid Grid.Row="2" x:Name="MapToolControlsGrid">
+        <Grid Grid.Row="3" x:Name="MapToolControlsGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -112,7 +126,7 @@
                 </Button.Style>
             </Button>
         </Grid>
-        <Grid Height="200px" Grid.Row="3" x:Name="ResultsTableGrid">
+        <Grid Height="200px" Grid.Row="4" x:Name="ResultsTableGrid">
             <Grid.Resources>
                 <Style TargetType="Grid">
                     <Style.Triggers>
@@ -170,7 +184,7 @@
                 </DataGrid>
             </ScrollViewer>
         </Grid>
-        <Grid Grid.Row="4" x:Name="ResultsTableControls">
+        <Grid Grid.Row="5" x:Name="ResultsTableControls">
             <Grid.RowDefinitions>
                 <RowDefinition/>
             </Grid.RowDefinitions>

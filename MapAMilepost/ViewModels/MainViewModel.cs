@@ -89,7 +89,7 @@ namespace MapAMilepost.ViewModels
             this.SyncComplete = false;
             this.MapPointVM.isEnabled = false;
             this.MapLineVM.isEnabled = false;
-            if (obj.IncomingView != null)
+            if (obj.IncomingView != null && MapView.Active!=null)
             {
                 ShowLoader = true;
                 GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(obj.IncomingView.Map);
@@ -99,6 +99,10 @@ namespace MapAMilepost.ViewModels
                 if (graphicsLayer != null)
                 {
                     await GraphicsCommands.SynchronizeGraphicsToAddIn(this, graphicsLayer);
+                }
+                else
+                {
+                    this.SyncComplete = true;
                 }
             }
         }
@@ -112,6 +116,28 @@ namespace MapAMilepost.ViewModels
             }
             
         }
+        private async void OnProjectOpened(ProjectEventArgs obj)
+        {
+            if(MapView.Active == null)
+            {
+                await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
+                await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
+            }
+        }
+        private async void OnLayerRemoved(LayerEventsArgs obj) 
+        {
+            if (MapView.Active!=null)
+            {
+                GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
+                if (graphicsLayer == null)
+                {
+                    await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
+                    await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
+                    await Utils.MapToolUtils.DeactivateSession(this.MapPointVM, "point");
+                    await Utils.MapToolUtils.DeactivateSession(this.MapLineVM, "line");
+                }
+            }
+        }
         public MainViewModel()
         {
             ArcGIS.Desktop.Framework.FrameworkApplication.NotificationInterval = 0;//allow toast messages to appear immediately after another is displayed
@@ -120,6 +146,8 @@ namespace MapAMilepost.ViewModels
             SelectedViewModel = MapPointVM;
             ActiveMapViewChangedEvent.Subscribe(OnMapViewChanged);
             DrawCompleteEvent.Subscribe(OnDrawComplete);
+            ProjectOpenedEvent.Subscribe(OnProjectOpened);
+            LayersRemovedEvent.Subscribe(OnLayerRemoved);
         }
     }
 }

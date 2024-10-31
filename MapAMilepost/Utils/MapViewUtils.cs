@@ -32,7 +32,14 @@ namespace MapAMilepost.Utils
                 }
                 else
                 {
-                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please wait for map to finish loading.");
+                    var projectMapItems = Project.Current.GetItems<MapProjectItem>();
+                    if(projectMapItems != null && (projectMapItems.Count()==0)) {
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please create a map to use with the tool.");
+                    }
+                    else
+                    {
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please wait for map to finish loading.");
+                    }
                 }
             }
             return MapViewActive;
