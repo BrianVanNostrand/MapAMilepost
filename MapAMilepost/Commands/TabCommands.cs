@@ -26,7 +26,7 @@ namespace MapAMilepost.Commands
                 switch (Name)
                 {
                     case "MapPointTab":
-                         VM.SelectedViewModel = VM.MapPointVM;
+                        VM.SelectedViewModel = VM.MapPointVM;
                         break;
                     case "MapLineTab":
                         VM.SelectedViewModel = VM.MapLineVM;
