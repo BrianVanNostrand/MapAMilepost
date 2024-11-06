@@ -67,6 +67,10 @@ namespace MapAMilepost.Utils
         /// <returns></returns>
         public static bool HasBeenUpdated(object myObject)
         {
+            if(myObject == null)
+            {
+                return false;
+            }
             foreach (PropertyInfo pi in myObject.GetType().GetProperties())
             {
                 if (pi.PropertyType == typeof(string))

@@ -24,12 +24,30 @@ namespace MapAMilepost.ViewModels
         private ViewModelBase _selectedViewModel;
         private MapPointViewModel _mapPointVM;
         private MapLineViewModel _mapLineVM;
+        private bool _pointTabSelected;
+        private bool _isEnabled;
         /// <summary>
         /// -   The currently selected viewmodel, used when a tab is selected in the controlsGrid in MilepostDockpane.xaml
         ///     via data binding.
         /// </summary>
         public bool SyncComplete {  get; set; }
-        public bool ShowLoader {  get; set; }
+        public bool IsEnabled
+        {
+            get { return _isEnabled; }
+            set
+            {
+                _isEnabled = value;
+                OnPropertyChanged(nameof(IsEnabled));
+            }
+        }
+        public bool PointTabSelected {
+            get { return _pointTabSelected; }
+            set
+            {
+                _pointTabSelected = value;
+                OnPropertyChanged(nameof(PointTabSelected));
+            }
+        }
         public ViewModelBase SelectedViewModel
         {
             get { return _selectedViewModel; }
@@ -65,10 +83,27 @@ namespace MapAMilepost.ViewModels
         public RelayCommand<object> SelectPageCommand => new Commands.RelayCommand<object>(async (button) => {
             if (MapViewUtils.CheckMapView())
             {
+                TabControl parentControl = (button as TabItem).Parent as TabControl;
+                parentControl.SelectedIndex = -1;
+                this.IsEnabled = false;
+               //parentControl.IsEnabled = false;
                 await GraphicsCommands.DeselectAllGraphics();//remove all graphic selections
                 await MapToolUtils.DeactivateSession(this.SelectedViewModel);//deactivate any active map tool sessions
                 TabCommands.SwitchTab(button, this);//switch the selected viewmodel
-            }   
+               // parentControl.IsEnabled = true;
+                this.IsEnabled = true;
+                if (this.SelectedViewModel != null)
+                {
+                    if (this.SelectedViewModel == this.MapPointVM)
+                    {
+                        parentControl.SelectedIndex = 0;
+                    }
+                    else
+                    {
+                        parentControl.SelectedIndex = 1;
+                    }
+                }
+            }
         });
         public RelayCommand<object> OnShowCommand => new Commands.RelayCommand<object>(async (dockPane) => {
             if (MapView.Active != null)
@@ -91,7 +126,7 @@ namespace MapAMilepost.ViewModels
             this.MapLineVM.isEnabled = false;
             if (obj.IncomingView != null && MapView.Active!=null)
             {
-                ShowLoader = true;
+                //ShowLoader = true;
                 GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(obj.IncomingView.Map);
                 await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
                 await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
@@ -112,7 +147,7 @@ namespace MapAMilepost.ViewModels
             {
                 this.MapPointVM.isEnabled = true;
                 this.MapLineVM.isEnabled = true;
-                this.ShowLoader = false;
+                //this.ShowLoader = false;
             }
             
         }
@@ -144,6 +179,8 @@ namespace MapAMilepost.ViewModels
             MapPointVM = new MapPointViewModel();
             MapLineVM = new MapLineViewModel();
             SelectedViewModel = MapPointVM;
+            PointTabSelected = true;
+            IsEnabled = true;
             ActiveMapViewChangedEvent.Subscribe(OnMapViewChanged);
             DrawCompleteEvent.Subscribe(OnDrawComplete);
             ProjectOpenedEvent.Subscribe(OnProjectOpened);

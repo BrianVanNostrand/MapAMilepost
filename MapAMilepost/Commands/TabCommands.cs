@@ -1,4 +1,5 @@
-﻿using MapAMilepost.Utils;
+﻿using ArcGIS.Desktop.Internal.Mapping.Symbology;
+using MapAMilepost.Utils;
 using MapAMilepost.ViewModels;
 using System;
 using System.Collections.Generic;
