@@ -6,12 +6,15 @@
              mc:Ignorable="d" 
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              d:DesignWidth="364"
+             xmlns:valueConverters="clr-namespace:MapAMilepost.ValueConverters"
              xmlns:viewmodels="clr-namespace:MapAMilepost.ViewModels"
              xmlns:b ="http://schemas.microsoft.com/xaml/behaviors"
              Width="300"
              >
     <UserControl.Resources>
         <ResourceDictionary>
+            <valueConverters:BindingDecreaseConverter x:Key="BindingDecreaseConverter"/>
+            <valueConverters:BindingNumberConverter x:Key="BindingNumberConverter"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Themes/ButtonTheme.xaml" />
                 <ResourceDictionary Source="../Themes/DataGridRowTheme.xaml" />
@@ -80,16 +83,16 @@
             <TextBox Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Center" ToolTip="ARM measure of the route location found." Style="{StaticResource SelectableTextBox}">ARM</TextBox>
             <TextBox Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Center" ToolTip="X-coordinate of the route location found." Style="{StaticResource SelectableTextBox}">X</TextBox>
             <TextBox Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Center" ToolTip="Y-coordinate of the route location found." Style="{StaticResource SelectableTextBox}">Y</TextBox>
-            <TextBox Grid.Column="0" Grid.Row="6" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location is in the decreasing direction of the roadway (Southbound or Westbound)." Style="{StaticResource SelectableTextBox}">Decrease</TextBox>
+            <TextBox Grid.Column="0" Grid.Row="6" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location is in the decreasing direction of the roadway (Southbound or Westbound)." Style="{StaticResource SelectableTextBox}">Direction</TextBox>
             <TextBox Grid.Column="0" Grid.Row="7" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location represent back mileage." Style="{StaticResource SelectableTextBox}">Back</TextBox>
             <TextBox Grid.Column="0" Grid.Row="8" HorizontalContentAlignment="Center" ToolTip="Realignment date of the route location." Style="{StaticResource SelectableTextBox}">Realignment Date</TextBox>
             <TextBox Grid.Column="0" Grid.Row="9" HorizontalContentAlignment="Center" ToolTip="Response date of the route location found." Style="{StaticResource SelectableTextBox}">Response Date</TextBox>
             <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding PointResponse.Route, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding PointResponse.Srmp, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding PointResponse.Arm, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding PointResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="5" Text="{Binding PointResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="6" Text="{Binding PointResponse.Decrease, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding PointResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BindingNumberConverter}}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="5" Text="{Binding PointResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BindingNumberConverter}}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="6" Text="{Binding PointResponse.Decrease, ConverterParameter='PreviewPane', Converter={StaticResource BindingDecreaseConverter}}" Style="{StaticResource SelectableTextBox}"/>
             <TextBox Grid.Column="1" Grid.Row="7" Text="{Binding PointResponse.Back, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <TextBox Grid.Column="1" Grid.Row="8" Text="{Binding PointResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <TextBox Grid.Column="1" Grid.Row="9" Text="{Binding PointResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
@@ -171,10 +174,10 @@
                         <DataGridTextColumn Header="Route" Binding="{Binding Route,Mode=OneWay}"/>
                         <DataGridTextColumn Header="ARM" Binding="{Binding Arm,Mode=OneWay}"/>
                         <DataGridTextColumn Header="SRMP" Binding="{Binding Srmp,Mode=OneWay}"/>
-                        <DataGridTextColumn Header="Decrease" Binding="{Binding Decrease,Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Direction" Binding="{Binding Decrease,Mode=OneWay, Converter={StaticResource BindingDecreaseConverter}}"/>
                         <DataGridTextColumn Header="Back" Binding="{Binding Back,Mode=OneWay}"/>
-                        <DataGridTextColumn Header="X" Binding="{Binding RouteGeometry.x,Mode=OneWay}"/>
-                        <DataGridTextColumn Header="Y" Binding="{Binding RouteGeometry.y,Mode=OneWay}"/>
+                        <DataGridTextColumn Header="X" Binding="{Binding RouteGeometry.x, Converter={StaticResource BindingNumberConverter}, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Y" Binding="{Binding RouteGeometry.y, Converter={StaticResource BindingNumberConverter}, Mode=OneWay}"/>
                     </DataGrid.Columns>
                     <b:Interaction.Triggers>
                         <b:EventTrigger EventName="MouseLeftButtonUp">
@@ -205,7 +208,7 @@
                     </Style.Triggers>
                 </Style>
             </Grid.Resources>
-            <Button Grid.Row="2" Grid.Column="0" Style="{StaticResource whiteButton}">
+            <Button Grid.Row="2" Grid.Column="0" Style="{StaticResource whiteButton}" Background="lightgray" IsEnabled="False">
                 Export Data
             </Button>
             <Button  x:Name="DeleteItemsButton" Grid.Row="2" Grid.Column="1" Command="{Binding DeleteItemsCommand}" Style="{StaticResource whiteButton}">

@@ -93,6 +93,12 @@ namespace MapAMilepost.Commands
             {
                 CustomGraphics CustomSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
                 GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);//look for layer
+                IEnumerable<GraphicElement> graphicItems = graphicsLayer.GetElementsAsFlattenedList();
+                foreach (GraphicElement item in graphicItems) 
+                {
+                    CIMGraphic itemGraphic = item.GetGraphic();
+                    var type = item.GetType();
+                };
                 await QueuedTask.Run(() =>
                 {
                     //GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
@@ -148,6 +154,7 @@ namespace MapAMilepost.Commands
                         }
                     };
                     graphicsLayer.AddElement(cimGraphic: soePtGraphic, elementInfo: routePtElemInfo, select: false);
+                    IDisposable graphicLabel = CreateLabel(PointResponse, SoeArgs);
                     #endregion
                 });
             }
@@ -203,11 +210,12 @@ namespace MapAMilepost.Commands
         ///     in an overlay on the map.
         /// </summary>
         /// <param name="PointResponse"></param>
-        public static async void CreateLabel(PointResponseModel PointResponse, PointArgsModel SoeArgs)
+        public static async Task<IDisposable> CreateLabel(PointResponseModel PointResponse, PointArgsModel SoeArgs)
         {
             var textSymbol = new CIMTextSymbol();
             //define the text graphic
             var textGraphic = new CIMTextGraphic();
+            IDisposable overlayGraphic = null;
             await QueuedTask.Run(() =>
             {
                 var labelGeometry = (MapPointBuilderEx.CreateMapPoint(PointResponse.RouteGeometry.x, PointResponse.RouteGeometry.y, SoeArgs.SR));
@@ -220,8 +228,9 @@ namespace MapAMilepost.Commands
                 //Sets symbol to use to draw the text graphic
                 textGraphic.Symbol = textSymbol.MakeSymbolReference();
                 //Draw the overlay text graphic
-                MapView.Active.AddOverlay(textGraphic);
+                overlayGraphic = MapView.Active.AddOverlay(textGraphic);
             });
+            return overlayGraphic;
         }
 
         
@@ -643,13 +652,13 @@ namespace MapAMilepost.Commands
                 PointResponseModel pointInfo = new();
                 try
                 {
-                     pointInfo = new()
+                    pointInfo = new()
                     {
                         Route = item.GetCustomProperty("Route"),
-                        Decrease = Convert.ToBoolean(item.GetCustomProperty("Decrease")),
                         Arm = Convert.ToDouble(item.GetCustomProperty("Arm")),
                         Srmp = Convert.ToDouble(item.GetCustomProperty("Srmp")),
                         Back = Convert.ToBoolean(item.GetCustomProperty("Back")),
+                        Decrease = Convert.ToBoolean(item.GetCustomProperty("Decrease")),
                         ResponseDate = item.GetCustomProperty("ResponseDate"),
                         RealignmentDate = item.GetCustomProperty("RealignmentDate"),
                         PointFeatureID = item.GetCustomProperty("FeatureID"),

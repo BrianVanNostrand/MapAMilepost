@@ -110,7 +110,7 @@ namespace MapAMilepost.Utils
                 if (FRLresponse.StatusCode == 200)
                 {
                     string responseString = await FRLresponse.ResponseMessage.Content.ReadAsStringAsync();
-                    var PointResponses = JsonSerializer.Deserialize<List<PointResponseModel?>>(responseString);
+                    var PointResponses = JsonSerializer.Deserialize<List<PointResponseModel>>(responseString);
                     if (PointResponses.Count > 0)
                     {
                         if(PointResponses.First().RouteGeometry.x != 0 && PointResponses.First().RouteGeometry.y != 0) { 

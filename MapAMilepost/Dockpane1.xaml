@@ -8,7 +8,7 @@
              xmlns:views="clr-namespace:MapAMilepost.Views"
              xmlns:extensions="clr-namespace:ArcGIS.Desktop.Extensions;assembly=ArcGIS.Desktop.Extensions"
              xmlns:frameworkControls="clr-namespace:ArcGIS.Desktop.Framework.Controls;assembly=ArcGIS.Desktop.Framework"
-             xmlns:utils="clr-namespace:MapAMilepost.Utils"
+             xmlns:valueConverters="clr-namespace:MapAMilepost.ValueConverters"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="364"
@@ -19,7 +19,6 @@
     </UserControl.DataContext>
     <UserControl.Resources>
         <ResourceDictionary>
-            <utils:BindingBoolConverter x:Key="BindingBoolConverter"/>
             <BooleanToVisibilityConverter x:Key="BoolToVis" />
             <viewmodels:MainViewModel x:Key="MainViewModel" d:IsDataSource="True"/>
             <views:MapLineView x:Key="MapLineView"/>
@@ -111,11 +110,11 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <DockPanel x:Name="MainDockPanel" DataContext="{DynamicResource MainViewModel}" Background="white" Grid.Row="0" LastChildFill="true" KeyboardNavigation.TabNavigation="Local" Height="50">
-            <!--<i:Interaction.Triggers>
+            <i:Interaction.Triggers>
                 <i:EventTrigger EventName="Loaded">
                     <i:InvokeCommandAction Command="{Binding OnShowCommand}" CommandParameter="{Binding ElementName=MainDockPanel}"/>
                 </i:EventTrigger>
-            </i:Interaction.Triggers>-->
+            </i:Interaction.Triggers>
             <TabControl IsEnabled="{Binding IsEnabled}" Height="50" x:Name="controlsGrid">
                 <TabItem  x:Name="MapPointTab" Height="50" Width="80" Header="Map a Point">
                     <i:Interaction.Triggers>

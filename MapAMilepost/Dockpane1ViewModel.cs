@@ -26,6 +26,10 @@ namespace MapAMilepost
 
         protected Dockpane1ViewModel() { }
 
+        protected override void OnShow(bool isVisible)
+        {
+            Console.WriteLine(isVisible);
+        }
         /// <summary>
         /// Show the DockPane.
         /// </summary>

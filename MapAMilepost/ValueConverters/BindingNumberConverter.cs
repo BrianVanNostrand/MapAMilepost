@@ -5,18 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace MapAMilepost.Utils
+namespace MapAMilepost.ValueConverters
 {
     [ValueConversion(typeof(bool), typeof(bool))]
-    public class BindingBoolConverter : IValueConverter
+    public class BindingNumberConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter,
             System.Globalization.CultureInfo culture)
         {
-            if (targetType != typeof(bool))
-                throw new InvalidOperationException("The target must be a boolean");
-
-            return !(bool)value;
+            double outValue = 0;
+           if( value != null&& (value.GetType()==typeof(double)))
+           {
+               outValue = Math.Round((double)value,6);
+           }
+           return outValue;
         }
         public object ConvertBack(object value, Type targetType, object parameter,
             System.Globalization.CultureInfo culture)

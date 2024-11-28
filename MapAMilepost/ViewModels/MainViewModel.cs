@@ -1,5 +1,7 @@
-﻿using ArcGIS.Desktop.Core.Events;
+﻿using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Core.Events;
 using ArcGIS.Desktop.Framework.Events;
+using ArcGIS.Desktop.Internal.Mapping;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Desktop.Mapping.Events;
 using MapAMilepost.Commands;
@@ -105,29 +107,59 @@ namespace MapAMilepost.ViewModels
                 }
             }
         });
-        public RelayCommand<object> OnShowCommand => new Commands.RelayCommand<object>(async (dockPane) => {
-            if (MapView.Active != null)
+        public RelayCommand<object> OnShowCommand => new Commands.RelayCommand<object>(async (dockPane) => {//when a map opens without the add in, and add in is opened
+            if(MapPointVM.PointResponses.Count==0|| MapLineVM.LineResponses.Count == 0)
             {
-                GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
-                await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
-                await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
-                await GraphicsCommands.DeselectAllGraphics();
-                if (graphicsLayer != null)
+                if (MapView.Active != null)
                 {
-                    await GraphicsCommands.SynchronizeGraphicsToAddIn(this, graphicsLayer);
+                    GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
+                    await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
+                    await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
+                    await GraphicsCommands.DeselectAllGraphics();
+                    if (graphicsLayer != null)
+                    {
+                        await GraphicsCommands.SynchronizeGraphicsToAddIn(this, graphicsLayer);
+                    }
                 }
             }
         });
 
-        private async void OnMapViewChanged(ActiveMapViewChangedEventArgs obj)
+        private async void OnMapViewChanged(ActiveMapViewChangedEventArgs obj)//when the mapview changes
         {
-            this.SyncComplete = false;
-            this.MapPointVM.isEnabled = false;
-            this.MapLineVM.isEnabled = false;
-            if (obj.IncomingView != null && MapView.Active!=null)
+            if (this.MapPointVM.PointResponses.Count == 0 || this.MapLineVM.LineResponses.Count == 0)
             {
-                //ShowLoader = true;
-                GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(obj.IncomingView.Map);
+                this.SyncComplete = false;
+                this.MapPointVM.isEnabled = false;
+                this.MapLineVM.isEnabled = false;
+                if (obj.IncomingView != null && MapView.Active != null)
+                {
+                    //ShowLoader = true;
+                    GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(obj.IncomingView.Map);
+                    await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
+                    await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
+                    await GraphicsCommands.DeselectAllGraphics();
+                    if (graphicsLayer != null)
+                    {
+                        await GraphicsCommands.SynchronizeGraphicsToAddIn(this, graphicsLayer);
+                    }
+                    else
+                    {
+                        this.SyncComplete = true;
+                    }
+                }
+            }
+            
+        }
+        private async void OnDrawComplete( MapViewEventArgs obj)//when map is opened with add in opened, and draw completes.
+        {
+            if (SyncComplete)//if the add in is syncronized to the graphics layer contents
+            {
+                this.MapPointVM.isEnabled = true;
+                this.MapLineVM.isEnabled = true;
+            }
+            else
+            {
+                GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
                 await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
                 await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
                 await GraphicsCommands.DeselectAllGraphics();
@@ -140,24 +172,7 @@ namespace MapAMilepost.ViewModels
                     this.SyncComplete = true;
                 }
             }
-        }
-        private void OnDrawComplete( MapViewEventArgs obj)
-        {
-            if (SyncComplete)//if the add in is syncronized to the graphics layer contents
-            {
-                this.MapPointVM.isEnabled = true;
-                this.MapLineVM.isEnabled = true;
-                //this.ShowLoader = false;
-            }
             
-        }
-        private async void OnProjectOpened(ProjectEventArgs obj)
-        {
-            if(MapView.Active == null)
-            {
-                await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
-                await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
-            }
         }
         private async void OnLayerRemoved(LayerEventsArgs obj) 
         {
@@ -173,6 +188,18 @@ namespace MapAMilepost.ViewModels
                 }
             }
         }
+        private void OnPaneChanged(PaneEventArgs obj)
+        {
+            if (obj.IncomingPane != null)
+            {
+                var paneType = obj.IncomingPane.GetType();
+                if(paneType.Name== "MapPaneViewModel")
+                {
+
+                }
+            }
+            Console.Write(obj);
+        }
         public MainViewModel()
         {
             ArcGIS.Desktop.Framework.FrameworkApplication.NotificationInterval = 0;//allow toast messages to appear immediately after another is displayed
@@ -183,8 +210,8 @@ namespace MapAMilepost.ViewModels
             IsEnabled = true;
             ActiveMapViewChangedEvent.Subscribe(OnMapViewChanged);
             DrawCompleteEvent.Subscribe(OnDrawComplete);
-            ProjectOpenedEvent.Subscribe(OnProjectOpened);
             LayersRemovedEvent.Subscribe(OnLayerRemoved);
+            ActivePaneChangedEvent.Subscribe(OnPaneChanged);//if pane is opened for the first time after the map is loaded
         }
     }
 }
