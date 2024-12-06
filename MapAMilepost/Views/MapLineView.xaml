@@ -13,8 +13,12 @@
              Width="300">
     <UserControl.Resources>
         <ResourceDictionary>
+            <valueConverters:BindingBoolToBorderConverter x:Key="BindingBoolBorderConverter"/>
+            <valueConverters:BindingBoolConverter x:Key="BindingBoolConverter"/>
             <valueConverters:BindingDecreaseConverter x:Key="BindingDecreaseConverter"/>
             <valueConverters:BindingNumberConverter x:Key="BindingNumberConverter"/>
+            <valueConverters:BindingBoolToBrushConverter x:Key="BindingBrushConverter"/>
+            <valueConverters:BindingBoolToElementHeightConverter x:Key="BindingHeightConverter"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Themes/ButtonTheme.xaml" />
                 <ResourceDictionary Source="../Themes/DataGridRowTheme.xaml" />
@@ -22,53 +26,62 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid x:Name="MainGrid" Background="White" IsEnabled="{Binding isEnabled}">
+    <Grid x:Name="MainGrid" Background="White" IsEnabled="{Binding isEnabled}" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="SearchDistanceRow" Height="55px"/>
+            <RowDefinition x:Name="SearchDistanceRow" Height="*"/>
             <RowDefinition/>
             <RowDefinition Height="30px"/>
             <RowDefinition Height="200px"/>
             <RowDefinition Height="30px"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" x:Name="SoeArgsGrid">
+        <Grid  Grid.Row="0" x:Name="SoeArgsGrid" Margin="0 0 0 10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="125px"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="40px"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition Height="20px"/>
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource BindingHeightConverter}}"/>
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource BindingHeightConverter}}"/>
             </Grid.RowDefinitions>
-            <TextBox Grid.Row="0" Grid.Column="1" Style="{StaticResource SelectableTextBox}">Start Point</TextBox>
-            <TextBox Grid.Row="0" Grid.Column="2" Style="{StaticResource SelectableTextBox}">End Point</TextBox>
-            <TextBox x:Name="MapPointSearchDistanceLabel" Grid.Row="1" Grid.Column="0" Style="{StaticResource SelectableTextBox}">Search Distance</TextBox>
-            <TextBox x:Name="FeetLabel" Grid.Row="1" Grid.Column="3" Style="{StaticResource SelectableTextBox}">Feet</TextBox>
+            <Grid Grid.Row="0" Grid.Column="0" x:Name="ToggleGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" Grid.Row="0" Style="{StaticResource SelectableTextBox}" HorizontalContentAlignment="Center">Mode</TextBox>
+                <Button Background="{Binding IsMapMode, Converter={StaticResource BindingBrushConverter}, ConverterParameter='Map'}" Command="{Binding ChangeModeCommand}" Grid.Column="1" Grid.Row="0" FontSize="7pt" HorizontalContentAlignment="Center">Map</Button>
+                <Button Background="{Binding IsMapMode, Converter={StaticResource BindingBrushConverter}, ConverterParameter='Form'}" Command="{Binding ChangeModeCommand}" Grid.Column="2" Grid.Row="0"  FontSize="7pt" HorizontalContentAlignment="Center">Form</Button>
+            </Grid>
+            <TextBox x:Name="MapPointSearchDistanceStartLabel" Grid.Row="1" Grid.Column="0" Style="{StaticResource SelectableTextBox}">Search Distance (Start)</TextBox>
             <TextBox x:Name="MapStartPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="1" Text="{Binding LineArgs.StartArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped start point."/>
-            <TextBox x:Name="MapEndPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="2" Text="{Binding LineArgs.EndArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped end point."/>
-            
+            <TextBox x:Name="FeetStartLabel" Grid.Row="1" Grid.Column="2" Style="{StaticResource SelectableTextBox}">Feet</TextBox>
+            <TextBox x:Name="MapPointSearchDistanceEndLabel" Grid.Row="2" Grid.Column="0" Style="{StaticResource SelectableTextBox}">Search Distance (End)</TextBox>
+            <TextBox x:Name="MapEndPointSearcDistanceTextBox"  Grid.Row="2" Grid.Column="1" Text="{Binding LineArgs.EndArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped end point."/>
+            <TextBox x:Name="FeetEndLabel" Grid.Row="2" Grid.Column="2" Style="{StaticResource SelectableTextBox}">Feet</TextBox>
         </Grid>
-        <Grid Grid.Row="1" x:Name="SOEResultsGrid">
+        <Grid Grid.Row="1" x:Name="SOEResultsGrid" Margin="0 0 0 10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="75"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition/><!-->Header<-->
+                <RowDefinition/><!-->Route<-->
+                <RowDefinition/><!-->SRMP<-->
+                <RowDefinition/><!-->ARM<-->
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource BindingHeightConverter}}"/><!-->X<-->
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource BindingHeightConverter}}"/><!-->Y<-->
+                <RowDefinition/><!-->Direction<-->
+                <RowDefinition/><!-->Back<-->
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource BindingHeightConverter}}"/><!-->Realignment<-->
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource BindingHeightConverter}}"/><!-->Response<-->
             </Grid.RowDefinitions>
             <!--Labels-->
             <TextBox Grid.Column="0" Grid.Row="0" Background="#cfd8ff" Style="{StaticResource SelectableTextBox}">Results</TextBox>
@@ -84,25 +97,25 @@
             <TextBox Grid.Column="0" Grid.Row="8" HorizontalContentAlignment="Center" ToolTip="Realignment date of the route location." Style="{StaticResource SelectableTextBox}">Realignment Date</TextBox>
             <TextBox Grid.Column="0" Grid.Row="9" HorizontalContentAlignment="Center" ToolTip="Response date of the route location found." Style="{StaticResource SelectableTextBox}">Response Date</TextBox>
             <!--Start Point Bindings-->
-            <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding LineResponse.StartResponse.Route, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding LineResponse.StartResponse.Srmp, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding LineResponse.StartResponse.Arm, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding LineResponse.StartResponse.Route, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
+            <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding LineResponse.StartResponse.Srmp, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
+            <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding LineResponse.StartResponse.Arm, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
             <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding LineResponse.StartResponse.RouteGeometry.x, Converter={StaticResource BindingNumberConverter}, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <TextBox Grid.Column="1" Grid.Row="5" Text="{Binding LineResponse.StartResponse.RouteGeometry.y, Converter={StaticResource BindingNumberConverter}, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="6" Text="{Binding LineResponse.StartResponse.Decrease, ConverterParameter='PreviewPane', Converter={StaticResource BindingDecreaseConverter}, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="7" Text="{Binding LineResponse.StartResponse.Back, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="1" Grid.Row="6" Text="{Binding LineResponse.StartResponse.Decrease, ConverterParameter='PreviewPane', Converter={StaticResource BindingDecreaseConverter}, UpdateSourceTrigger=PropertyChanged}"  IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
+            <TextBox Grid.Column="1" Grid.Row="7" Text="{Binding LineResponse.StartResponse.Back, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
             <TextBox Grid.Column="1" Grid.Row="8" Text="{Binding LineResponse.StartResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <TextBox Grid.Column="1" Grid.Row="9" Text="{Binding LineResponse.StartResponse.ResponseDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
              <!--End Point Bindings-->
-            <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding LineResponse.EndResponse.Route, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="2" Grid.Row="2" Text="{Binding LineResponse.EndResponse.Srmp, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="2" Grid.Row="3" Text="{Binding LineResponse.EndResponse.Arm, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding LineResponse.EndResponse.Route, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
+            <TextBox Grid.Column="2" Grid.Row="2" Text="{Binding LineResponse.EndResponse.Srmp, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
+            <TextBox Grid.Column="2" Grid.Row="3" Text="{Binding LineResponse.EndResponse.Arm, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
             <TextBox Grid.Column="2" Grid.Row="4" Text="{Binding LineResponse.EndResponse.RouteGeometry.x, Converter={StaticResource BindingNumberConverter}, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding LineResponse.EndResponse.RouteGeometry.y, Converter={StaticResource BindingNumberConverter}, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="2" Grid.Row="6" Text="{Binding LineResponse.EndResponse.Decrease, ConverterParameter='PreviewPane', Converter={StaticResource BindingDecreaseConverter}, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="2" Grid.Row="7" Text="{Binding LineResponse.EndResponse.Back, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="2" Grid.Row="8" Text="{Binding LineResponse.EndResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="2" Grid.Row="9" Text="{Binding LineResponse.EndResponse.ResponseDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="6" Text="{Binding LineResponse.EndResponse.Decrease, ConverterParameter='PreviewPane', Converter={StaticResource BindingDecreaseConverter}, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
+            <TextBox Grid.Column="2" Grid.Row="7" Text="{Binding LineResponse.EndResponse.Back, UpdateSourceTrigger=PropertyChanged}"  IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
+            <TextBox Grid.Column="2" Grid.Row="8" Text="{Binding LineResponse.EndResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}"  IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
+            <TextBox Grid.Column="2" Grid.Row="9" Text="{Binding LineResponse.EndResponse.ResponseDate, UpdateSourceTrigger=PropertyChanged}"  IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
             
             <Border Grid.ColumnSpan="3" Grid.Row="2" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="3" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />

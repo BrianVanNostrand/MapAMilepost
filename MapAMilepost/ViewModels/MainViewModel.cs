@@ -2,6 +2,7 @@
 using ArcGIS.Desktop.Core.Events;
 using ArcGIS.Desktop.Framework.Events;
 using ArcGIS.Desktop.Internal.Mapping;
+using ArcGIS.Desktop.Internal.Mapping.Events;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Desktop.Mapping.Events;
 using MapAMilepost.Commands;

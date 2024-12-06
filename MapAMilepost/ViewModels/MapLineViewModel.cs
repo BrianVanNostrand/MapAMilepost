@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Windows.Controls;
 using ArcGIS.Desktop.Mapping;
+using System;
 
 namespace MapAMilepost.ViewModels
 {
@@ -17,12 +18,14 @@ namespace MapAMilepost.ViewModels
         private ObservableCollection<LineResponseModel> _lineResponses;
         private bool _showResultsTable = true;
         private MapToolInfo _mapToolInfos;
+        private bool _isMapMode;
         public MapLineViewModel()//constructor
         {
             _isEnabled = false;
             _lineArgs = new LineArgsModel();
             _lineResponses = new ObservableCollection<LineResponseModel>();
             _lineResponse = new LineResponseModel();
+            _isMapMode = true;
             _mapToolInfos = new MapToolInfo
             {
                 SessionActive = false,
@@ -71,6 +74,15 @@ namespace MapAMilepost.ViewModels
             }
         }
 
+        /// <summary>
+        /// -   Indicates whether selected mode is "map click" or not.
+        /// </summary>
+        public override bool IsMapMode
+        {
+            get { return _isMapMode; }
+            set { _isMapMode = value; OnPropertyChanged(nameof(IsMapMode)); }
+        }
+
         public override LineArgsModel LineArgs 
         {
             get { return _lineArgs; }
@@ -92,6 +104,11 @@ namespace MapAMilepost.ViewModels
         public Commands.RelayCommand<object> UpdateSelectionCommand => new (async(grid) => await Commands.DataGridCommands.UpdateLineSelection(grid as DataGrid, this));
 
         public Commands.RelayCommand<object> DeleteItemsCommand => new (async(parms) => await Commands.DataGridCommands.DeleteLineItems(this));
+
+        public Commands.RelayCommand<object> ChangeModeCommand => new((param) =>
+        {
+            IsMapMode = !IsMapMode;
+        });
 
         public Commands.RelayCommand<object> ClearItemsCommand => new(async (parms) => {
             if (MapView.Active != null && MapView.Active.Map != null)

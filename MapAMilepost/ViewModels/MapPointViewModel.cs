@@ -1,4 +1,5 @@
-﻿using ArcGIS.Desktop.Mapping;
+﻿using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Mapping;
 using MapAMilepost.Commands;
 using MapAMilepost.Models;
 using MapAMilepost.Utils;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -24,9 +26,11 @@ namespace MapAMilepost.ViewModels
         private bool _showResultsTable = false;
         private MapToolInfo _mapToolInfos;
         private string _tabLabel = "TEST TAB LABEL";
+        private bool _isMapMode;
         public MapPointViewModel()//constructor
         {
             _isEnabled = false;
+            _isMapMode = true;
             _pointResponse = new PointResponseModel();
             _pointArgs = new PointArgsModel();
             _pointResponses = new ObservableCollection<PointResponseModel>();
@@ -98,6 +102,15 @@ namespace MapAMilepost.ViewModels
         }
 
         /// <summary>
+        /// -   Indicates whether selected mode is "map click" or not.
+        /// </summary>
+        public override bool IsMapMode
+        {
+            get { return _isMapMode; }
+            set { _isMapMode = value; OnPropertyChanged(nameof(IsMapMode)); }
+        }
+
+        /// <summary>
         /// -   Array of selected saved SOE response data objects in the DataGrid in ResultsView.xaml. Updated when a row is clicked in he DataGrid
         ///     via data binding.
         /// </summary>
@@ -106,6 +119,22 @@ namespace MapAMilepost.ViewModels
         public Commands.RelayCommand<object> UpdateSelectionCommand => new (async(grid) => await Commands.DataGridCommands.UpdatePointSelection(grid as DataGrid, this));
 
         public Commands.RelayCommand<object> DeleteItemsCommand => new (async(p) => await Commands.DataGridCommands.DeletePointItems(this));
+
+        public Commands.RelayCommand<object> ChangeModeCommand => new((param) =>
+        {
+            IsMapMode = !IsMapMode;
+            if (!IsMapMode)
+            {
+                PointResponse = new PointResponseModel();
+            }
+            else
+            {
+                if (SelectedPoints.Count == 1)
+                {
+                    PointResponse = SelectedPoints[0];
+                }
+            }
+        });
 
         public Commands.RelayCommand<object> ClearItemsCommand => new(async (parms) => {
             if (MapView.Active != null && MapView.Active.Map != null)
@@ -119,13 +148,30 @@ namespace MapAMilepost.ViewModels
         });
         public Commands.RelayCommand<object> SavePointResultCommand => new ((grid) => Commands.GraphicsCommands.SavePointResult(grid as DataGrid, this));       
 
-        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new (async(p) => { 
-            if (!this.MapToolInfos.SessionActive) {
-                await Utils.MapToolUtils.InitializeSession(this,"point");
+        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new (async(p) => {
+            if (IsMapMode)
+            {
+                await ToggleSession();
             }
-            else{
-                await Utils.MapToolUtils.DeactivateSession(this,"point");
+            else
+            {
+                //Console.WriteLine(PointResponse);
+                //CurrentViewModel.LineResponse.StartResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.StartArgs) as PointResponseModel);
+                //lineGeometryResponse = await Utils.MapToolUtils.GetLine(CurrentViewModel.LineResponse.StartResponse, CurrentViewModel.LineResponse.EndResponse, CurrentViewModel.LineArgs.StartArgs.SR, CurrentViewModel.LineArgs.StartArgs.ReferenceDate);
+                //await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.StartArgs, CurrentViewModel.LineResponse.StartResponse, MapToolSessionType);
             }
         });
+
+        private async Task ToggleSession()
+        {
+            if (!this.MapToolInfos.SessionActive)
+            {
+                await Utils.MapToolUtils.InitializeSession(this, "point");
+            }
+            else
+            {
+                await Utils.MapToolUtils.DeactivateSession(this, "point");
+            }
+        }
     }
 }

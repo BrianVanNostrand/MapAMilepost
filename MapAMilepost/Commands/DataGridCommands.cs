@@ -71,7 +71,7 @@ namespace MapAMilepost.Commands
                     VM.SelectedPoints = CastPointsToList(myGrid.SelectedItems);
                     //update selected graphics
                     GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
-                    if (VM.SelectedPoints.Count == 1)
+                    if (VM.SelectedPoints.Count == 1 && VM.IsMapMode == true)
                     {
                         VM.PointResponse = VM.SelectedPoints[0];
                     }

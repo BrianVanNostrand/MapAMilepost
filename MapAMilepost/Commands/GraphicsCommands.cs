@@ -94,11 +94,6 @@ namespace MapAMilepost.Commands
                 CustomGraphics CustomSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
                 GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);//look for layer
                 IEnumerable<GraphicElement> graphicItems = graphicsLayer.GetElementsAsFlattenedList();
-                foreach (GraphicElement item in graphicItems) 
-                {
-                    CIMGraphic itemGraphic = item.GetGraphic();
-                    var type = item.GetType();
-                };
                 await QueuedTask.Run(() =>
                 {
                     //GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer

@@ -18,6 +18,7 @@ namespace MapAMilepost.Utils
         public ViewModelBase() {
             MappingTool = new MapAMilepostMaptool();
         }
+        public virtual bool IsMapMode { get; set; } 
         public MapAMilepostMaptool MappingTool { get; set; }
         public virtual MapToolInfo MapToolInfos { get; set; }
         public virtual bool ShowResultsTable { get; set; }

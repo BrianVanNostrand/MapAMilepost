@@ -11,7 +11,7 @@
              xmlns:valueConverters="clr-namespace:MapAMilepost.ValueConverters"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="364"
+             d:DesignHeight="600" 
              x:Name="MainUserControl">
     
     <UserControl.DataContext>
