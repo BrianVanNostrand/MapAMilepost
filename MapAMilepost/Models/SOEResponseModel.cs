@@ -165,7 +165,7 @@ namespace MapAMilepost.Models
     /// The subset of properties returned by the "Find Nearest Route Location" API endpoint,
     /// that are used in the "Find Route Locations" API Endpoint. 
     /// </summary>
-    public class FRLRequestObject
+    public class LocationInfo
     {
         public double? Id { get; set; }
         public string? Route { get; set; }
@@ -176,12 +176,12 @@ namespace MapAMilepost.Models
         public string? ReferenceDate { get; set; }
         public string? ResponseDate { get; set; }
        // public bool? EndBack { get; set; }
-        public coordinatePair? EventPoint { get; set; }
-        public class coordinatePair
-        {
-            public double? x { get; set; }
-            public double? y { get; set; }
-        }
+        //public coordinatePair? EventPoint { get; set; }
+        //public class coordinatePair
+        //{
+        //    public double? x { get; set; }
+        //    public double? y { get; set; }
+        //}
 
         /// <summary>
         /// -   Constructor to automatically assign the properties of the response object returned by the
@@ -189,7 +189,7 @@ namespace MapAMilepost.Models
         ///     URL parameters of the "Find Route Locations" request.
         /// </summary>
         /// <param name="FNRL"></param>
-        public FRLRequestObject(PointResponseModel FNRL)
+        public LocationInfo(PointResponseModel FNRL)
         {
             Route = FNRL.Route;
             Decrease = FNRL.Decrease;
@@ -198,10 +198,6 @@ namespace MapAMilepost.Models
             Back = FNRL.Back;
             ReferenceDate = FNRL.ReferenceDate;
             ResponseDate = FNRL.ResponseDate;
-            //EndBack = FNRL.EndBack;
-            EventPoint = new coordinatePair();
-            EventPoint.x = FNRL.RouteGeometry.x;
-            EventPoint.y = FNRL.RouteGeometry.y;
         }
     }
     public class FRLLineGeometryModel : ObservableObject

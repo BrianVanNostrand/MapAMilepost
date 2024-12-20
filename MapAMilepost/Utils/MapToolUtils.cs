@@ -17,8 +17,6 @@ namespace MapAMilepost.Utils
     {
         /// <summary>
         /// -   Initialize a mapping session (using the setsession method in MapAMilepostMaptool viewmodel)
-        /// -   Update the public MapButtonLabel property to reflect the behavior of the MapPointExecuteButton.
-        ///     This value is bound to the content of the button as a label.
         /// -   Update the private _sessionActive property to change the behavior of the method.
         /// </summary>
         /// <param name="VM">the target viewmodel</param>
@@ -28,15 +26,11 @@ namespace MapAMilepost.Utils
             {
                 if (sessionType == "point"|| sessionType == "start")//if point mapping
                 {
-                    VM.MapToolInfos.SessionActive = true;
-                    VM.MapToolInfos.MapButtonLabel = "Stop Mapping";
-                    VM.MapToolInfos.MapButtonToolTip = "End mapping session.";
+                    VM.SessionActive = true;
                 }
                 else
                 {
-                    VM.MapToolInfos.SessionEndActive = true;
-                    VM.MapToolInfos.MapButtonEndLabel = "Stop Mapping";
-                    VM.MapToolInfos.MapButtonEndToolTip = "End mapping session.";
+                    VM.SessionEndActive = true;
                 }
                 await VM.MappingTool.StartSession(VM, sessionType);
             }
@@ -53,23 +47,17 @@ namespace MapAMilepost.Utils
         {
             if (sessionType == "point")//if start session or point session
             {
-                VM.MapToolInfos.SessionActive = false;
-                VM.MapToolInfos.MapButtonLabel = "Start Mapping";
-                VM.MapToolInfos.MapButtonToolTip = "Start mapping session.";
+                VM.SessionActive = false;
                 VM.PointResponse = new PointResponseModel();
                 await Commands.GraphicsCommands.DeleteUnsavedGraphics(sessionType);
             }
             else if (sessionType == "start")
             {
-                VM.MapToolInfos.SessionActive = false;
-                VM.MapToolInfos.MapButtonLabel = "Map Start";
-                VM.MapToolInfos.MapButtonToolTip = "Start mapping session for start point.";
+                VM.SessionActive = false;
             }
             else if (sessionType == "end")//if end session
             {
-                VM.MapToolInfos.SessionEndActive = false;
-                VM.MapToolInfos.MapButtonEndLabel = "Map End";
-                VM.MapToolInfos.MapButtonEndToolTip = "Start mapping session for end point.";
+                VM.SessionEndActive = false;
             }
             //  Calls the EndSession method from the MapAMilepostMapTool viewmodel, setting the active tool
             //  to whatever was selected before the mapping session was initialized.

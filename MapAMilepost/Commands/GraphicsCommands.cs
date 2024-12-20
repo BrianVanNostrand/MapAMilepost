@@ -149,7 +149,7 @@ namespace MapAMilepost.Commands
                         }
                     };
                     graphicsLayer.AddElement(cimGraphic: soePtGraphic, elementInfo: routePtElemInfo, select: false);
-                    IDisposable graphicLabel = CreateLabel(PointResponse, SoeArgs);
+                   // IDisposable graphicLabel = CreateLabel(PointResponse, SoeArgs);
                     #endregion
                 });
             }

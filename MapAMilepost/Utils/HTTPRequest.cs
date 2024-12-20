@@ -37,19 +37,18 @@ namespace MapAMilepost.Utils
             args.X = ((MapPoint)mapPoint).X;
             args.Y = ((MapPoint)mapPoint).Y;
             args.SR = ((MapPoint)mapPoint).SpatialReference.Wkid;
-            object response = new();// assume find nearest route location fails
-            object FNRLResponse = await FindNearestRouteLocation(args);
-            if (FNRLResponse != null)
+            object routeLocation = new();// assume find nearest route location fails
+            object nearestLocation = await FindNearestRouteLocation(args);
+            if (nearestLocation != null)
             {
-                var FRLParams = new FRLRequestObject(FNRLResponse as PointResponseModel);
-                object FRLResponse = await FindRouteLocation(FRLParams, args);
-                response = FRLResponse;
+                var locationParam = new LocationInfo(nearestLocation as PointResponseModel);
+                routeLocation = await FindRouteLocation(locationParam, args);
             }
             else
             {
-                response = null;
+                routeLocation = null;
             }
-            return response;
+            return routeLocation;
         }
 
         private static async Task<object> FindNearestRouteLocation(PointArgsModel args)
@@ -65,7 +64,7 @@ namespace MapAMilepost.Utils
                 {"f", "json"},
             };
             FNRLurl.SetQueryParams(FNRLQueryParams);
-            var responseObject = new object();
+            var location = new object();
             try
             {
                 var FNRLresponse = await FNRLurl.GetAsync();
@@ -75,12 +74,12 @@ namespace MapAMilepost.Utils
                     var PointResponses = JsonSerializer.Deserialize<List<PointResponseModel>>(responseString);
                     if (PointResponses.Count > 0)
                     {
-                        responseObject = PointResponses.First();
+                        location = PointResponses.First();
                     }
                     else
                     {
                         ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"No results found within {args.SearchRadius} feet of clicked point.");
-                        responseObject = null;
+                        location = null;
                     }
                 }
                 else
@@ -92,18 +91,18 @@ namespace MapAMilepost.Utils
             {
                 ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("'Find Nearest Route Location' timed out. Please check internet connection and try again.");
             }
-            return responseObject;
+            return location;
         }
-        private static async Task<object> FindRouteLocation(object FNRLResponse, PointArgsModel args)
+        public static async Task<object> FindRouteLocation(object location, PointArgsModel args)
         {
             var FNRLurl = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Route%20Locations");
             Dictionary<string,object> FNRLQueryParams = new Dictionary<string, object> {
                 {"f", "json"},
-                {"locations", $"[{JsonSerializer.Serialize(FNRLResponse)}]"},
+                {"locations", $"[{JsonSerializer.Serialize(location)}]"},
                 {"outSR",args.SR}
             };
             FNRLurl.SetQueryParams(FNRLQueryParams);
-            var responseObject = new object();
+            var routeLocation = new object();
             try
             {
                 var FRLresponse = await FNRLurl.GetAsync();
@@ -113,8 +112,8 @@ namespace MapAMilepost.Utils
                     var PointResponses = JsonSerializer.Deserialize<List<PointResponseModel>>(responseString);
                     if (PointResponses.Count > 0)
                     {
-                        if(PointResponses.First().RouteGeometry.x != 0 && PointResponses.First().RouteGeometry.y != 0) { 
-                            responseObject = PointResponses.First();
+                        if(PointResponses.First().RouteGeometry.x != 0 && PointResponses.First().RouteGeometry.y != 0) {
+                            routeLocation = PointResponses.First();
                         }
                         else
                         {
@@ -137,8 +136,46 @@ namespace MapAMilepost.Utils
             {
                 ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("'Find Route Location' timed out. Please check internet connection and try again.");
             }
-            return responseObject;
+            return routeLocation;
         }
+
+        public static bool CheckFormData(PointResponseModel FormInfo)
+        {
+            bool formDataValid = true;
+            List<string> missingParams = new List<string> { };
+            if (FormInfo != null) {
+                if (FormInfo.Arm == null && FormInfo.Srmp == null)
+                {
+                    formDataValid = false;
+                    missingParams.Add("SRMP");
+                }
+                if (FormInfo.Back == null)
+                {
+                    formDataValid = false;
+                    missingParams.Add("Back");
+                }
+                if (FormInfo.Decrease == null)
+                {
+                    formDataValid = false;
+                    missingParams.Add("Direction");
+                }
+                if ( FormInfo.Route == null || FormInfo.Route == "")
+                {
+                    formDataValid = false;
+                    missingParams.Add("Route ID");
+                }
+            }
+            else
+            {
+                formDataValid = false;
+            }
+            if (missingParams.Count>0)
+            {
+                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"The following parameters must be provided in the input form: {string.Join(",",missingParams)}");
+            }
+            return formDataValid;
+        }
+
         public static async Task<List<List<double>>> FindLineLocation(PointResponseModel startResponse, PointResponseModel endResponse, long SR, string ReferenceDate)
         {
             var lineRequestURL = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Route%20Locations");

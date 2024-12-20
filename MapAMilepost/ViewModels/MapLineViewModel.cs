@@ -7,34 +7,23 @@ using System.Collections.Generic;
 using System.Windows.Controls;
 using ArcGIS.Desktop.Mapping;
 using System;
+using System.Threading.Tasks;
+using ArcGIS.Core.Data;
 
 namespace MapAMilepost.ViewModels
 {
     public class MapLineViewModel:ViewModelBase
     {
-        private LineResponseModel _lineResponse;
-        private LineArgsModel _lineArgs;
-        private bool _isEnabled;
-        private ObservableCollection<LineResponseModel> _lineResponses;
+        private LineResponseModel _lineResponse = new();
+        private LineArgsModel _lineArgs = new();
+        private bool _isEnabled = false;
+        private ObservableCollection<LineResponseModel> _lineResponses = new();
         private bool _showResultsTable = true;
-        private MapToolInfo _mapToolInfos;
-        private bool _isMapMode;
+        private bool _sessionActive = false;
+        private bool _sessionEndActive = false;
+        private bool _isMapMode = false;
         public MapLineViewModel()//constructor
         {
-            _isEnabled = false;
-            _lineArgs = new LineArgsModel();
-            _lineResponses = new ObservableCollection<LineResponseModel>();
-            _lineResponse = new LineResponseModel();
-            _isMapMode = true;
-            _mapToolInfos = new MapToolInfo
-            {
-                SessionActive = false,
-                SessionEndActive = false,
-                MapButtonLabel = "Map Start",
-                MapButtonEndLabel = "Map End",
-                MapButtonToolTip = "Start 'start point' mapping session.",
-                MapButtonEndToolTip = "Start 'end point' mapping session."
-            };
             MappingTool = new MapAMilepostMaptool();
         }
         public bool isEnabled
@@ -46,13 +35,22 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(isEnabled));
             }
         }
-        public override MapToolInfo MapToolInfos
-        {
-            get { return _mapToolInfos; }
+        public override bool SessionActive 
+        { 
+            get { return _sessionActive; }
             set
             {
-                _mapToolInfos = value;
-                OnPropertyChanged(nameof(MapToolInfos));
+                _sessionActive = value;
+                OnPropertyChanged(nameof(SessionActive));
+            }
+        }
+        public override bool SessionEndActive
+        {
+            get { return _sessionEndActive; }
+            set
+            {
+                _sessionEndActive = value;
+                OnPropertyChanged(nameof(SessionEndActive));
             }
         }
         public override bool ShowResultsTable
@@ -123,33 +121,50 @@ namespace MapAMilepost.ViewModels
 
         public Commands.RelayCommand<object> SaveLineResultCommand => new ((grid) => Commands.GraphicsCommands.SaveLineResult(grid as DataGrid, this));
 
-        public Commands.RelayCommand<object> ToggleMapToolSessionCommand => new (async(startEnd) =>
+        public Commands.RelayCommand<object> InteractionCommand => new (async(startEnd) =>
         {
-            if((string)startEnd=="start")//if start button is clicked
+            if (IsMapMode)
             {
-                if (this.MapToolInfos.SessionEndActive == true || this.MapToolInfos.SessionActive == false)
+                await ToggleSession((string)startEnd);
+            }
+            else
+            {
+                Console.WriteLine(LineResponse);
+                //bool formDataValid = HTTPRequest.CheckFormData(LineResponse);
+                //LocationInfo formLocation = new LocationInfo(LineResponse);
+                //CurrentViewModel.LineResponse.StartResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.StartArgs) as PointResponseModel);
+                //lineGeometryResponse = await Utils.MapToolUtils.GetLine(CurrentViewModel.LineResponse.StartResponse, CurrentViewModel.LineResponse.EndResponse, CurrentViewModel.LineArgs.StartArgs.SR, CurrentViewModel.LineArgs.StartArgs.ReferenceDate);
+                //await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.StartArgs, CurrentViewModel.LineResponse.StartResponse, MapToolSessionType);
+            }
+
+        });
+
+        private async Task ToggleSession(string startEnd)
+        {
+            if (startEnd == "start")//if start button is clicked
+            {
+                if (this.SessionEndActive == true || this.SessionActive == false)
                 {
                     await Utils.MapToolUtils.DeactivateSession(this, "end");
                     await Utils.MapToolUtils.InitializeSession(this, "start");
                 }
-                else if(this.MapToolInfos.SessionActive == true)
+                else if (this.SessionActive == true)
                 {
                     await Utils.MapToolUtils.DeactivateSession(this, "start");
                 }
             }
-            if ((string)startEnd == "end")
+            if (startEnd == "end")
             {
-                if (this.MapToolInfos.SessionActive == true || this.MapToolInfos.SessionEndActive == false)
+                if (this.SessionActive == true || this.SessionEndActive == false)
                 {
                     await Utils.MapToolUtils.DeactivateSession(this, "start");
                     await Utils.MapToolUtils.InitializeSession(this, "end");
                 }
-                else if (this.MapToolInfos.SessionEndActive == true)
+                else if (this.SessionEndActive == true)
                 {
                     await Utils.MapToolUtils.DeactivateSession(this, "end");
                 }
             }
-           
-        });
+        }
     }
 }

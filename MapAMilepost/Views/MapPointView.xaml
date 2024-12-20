@@ -13,12 +13,18 @@
              >
     <UserControl.Resources>
         <ResourceDictionary>
-            <valueConverters:BindingBoolToBorderConverter x:Key="BindingBoolBorderConverter"/>
-            <valueConverters:BindingBoolConverter x:Key="BindingBoolConverter"/>
-            <valueConverters:BindingDecreaseConverter x:Key="BindingDecreaseConverter"/>
-            <valueConverters:BindingNumberConverter x:Key="BindingNumberConverter"/>
-            <valueConverters:BindingBoolToBrushConverter x:Key="BindingBrushConverter"/>
-            <valueConverters:BindingBoolToElementHeightConverter x:Key="BindingHeightConverter"/>
+            <valueConverters:BorderConverter x:Key="BorderConverter"/>
+            <valueConverters:BooleanInverter x:Key="BooleanInverter"/>
+            <valueConverters:DirectionConverter x:Key="DirectionConverter"/>
+            <valueConverters:NumberConverter x:Key="NumberConverter"/>
+            <valueConverters:BrushConverter x:Key="BrushConverter"/>
+            <valueConverters:ElementHeightConverter x:Key="ElementHeightConverter"/>
+            <valueConverters:ComboBoxIndexConverter x:Key="ComboBoxConverter"/>
+            <valueConverters:ExecuteButtonLabelConverter x:Key="ExecuteButtonLabelConverter"/>
+            <valueConverters:ExecuteButtonToolTipConverter x:Key="ExecuteButtonToolTipConverter"/>
+            <valueConverters:InteractionButtonLabelConverter x:Key="InteractionButtonLabelConverter"/>
+            <valueConverters:InputModeButtonLabelConverter x:Key="InputModeButtonLabelConverter"/>
+            <valueConverters:VisibilityConverter x:Key="VisibilityConverter"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Themes/ButtonTheme.xaml" />
                 <ResourceDictionary Source="../Themes/DataGridRowTheme.xaml" />
@@ -59,17 +65,15 @@
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="20px"/>
-                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource BindingHeightConverter}}"/>
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/>
             </Grid.RowDefinitions>
             <Grid Grid.Row="0" Grid.Column="0" x:Name="ToggleGrid">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
-                    <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <TextBox Grid.Column="0" Grid.Row="0" Style="{StaticResource SelectableTextBox}" HorizontalContentAlignment="Center">Mode</TextBox>
-                <Button Background="{Binding IsMapMode, Converter={StaticResource BindingBrushConverter}, ConverterParameter='Map'}" Command="{Binding ChangeModeCommand}" Grid.Column="1" Grid.Row="0" FontSize="7pt" HorizontalContentAlignment="Center">Map</Button>
-                <Button Background="{Binding IsMapMode, Converter={StaticResource BindingBrushConverter}, ConverterParameter='Form'}" Command="{Binding ChangeModeCommand}" Grid.Column="2" Grid.Row="0"  FontSize="7pt" HorizontalContentAlignment="Center">Form</Button>
+                <Button Grid.Column="1" Grid.Row="0" Command="{Binding ChangeModeCommand}" FontSize="7pt" HorizontalContentAlignment="Center"  Height="20" VerticalAlignment="Top" Content="{Binding IsMapMode, Converter={StaticResource InputModeButtonLabelConverter}}"/> 
             </Grid>
             <TextBox x:Name="MapPointSearchDistanceStartLabel" Grid.Row="1" Grid.Column="0" Style="{StaticResource SelectableTextBox}">Search Distance</TextBox>
             <TextBox x:Name="MapStartPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="1" Text="{Binding PointArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped start point."/>
@@ -77,6 +81,7 @@
         </Grid>
         <Grid Grid.Row="2" x:Name="SOEResultsGrid" Margin="0 0 0 10">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20px"/>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
@@ -90,37 +95,63 @@
                 <!-->ARM<-->
                 <RowDefinition/>
                 <!-->X<-->
-                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource BindingHeightConverter}}"/>
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/>
                 <!-->Y<-->
-                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource BindingHeightConverter}}"/>
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/>
                 <!-->Direction<-->
                 <RowDefinition/>
                 <!-->Back<-->
                 <RowDefinition />
                 <!-->Realignment<-->
-                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource BindingHeightConverter}}"/>
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/>
                 <!-->Response<-->
-                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource BindingHeightConverter}}"/>
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/>
             </Grid.RowDefinitions>
-            <TextBox Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" HorizontalContentAlignment="Center" ToolTip="Information about the route location found." Background="#cfd8ff" Style="{StaticResource SelectableTextBox}">Results</TextBox>
-            <TextBox Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Center" ToolTip="The route that the location belongs to."  Style="{StaticResource SelectableTextBox}">Route</TextBox>
-            <TextBox Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Center" ToolTip="SRMP measure of the route location found." Style="{StaticResource SelectableTextBox}">SRMP</TextBox>
-            <TextBox Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Center" ToolTip="ARM measure of the route location found." Style="{StaticResource SelectableTextBox}">ARM</TextBox>
-            <TextBox Grid.Column="0" Grid.Row="4" HorizontalContentAlignment="Center" ToolTip="X-coordinate of the route location found." Style="{StaticResource SelectableTextBox}">X</TextBox>
-            <TextBox Grid.Column="0" Grid.Row="5" HorizontalContentAlignment="Center" ToolTip="Y-coordinate of the route location found." Style="{StaticResource SelectableTextBox}">Y</TextBox>
-            <TextBox Grid.Column="0" Grid.Row="6" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location is in the decreasing direction of the roadway (Southbound or Westbound)." Style="{StaticResource SelectableTextBox}">Direction</TextBox>
-            <TextBox Grid.Column="0" Grid.Row="7" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location represent back mileage." Style="{StaticResource SelectableTextBox}">Back</TextBox>
-            <TextBox Grid.Column="0" Grid.Row="8" HorizontalContentAlignment="Center" ToolTip="Realignment date of the route location." Style="{StaticResource SelectableTextBox}">Realignment Date</TextBox>
-            <TextBox Grid.Column="0" Grid.Row="9" HorizontalContentAlignment="Center" ToolTip="Response date of the route location found." Style="{StaticResource SelectableTextBox}">Response Date</TextBox>
-            <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding PointResponse.Route, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
-            <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding PointResponse.Srmp, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
-            <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding PointResponse.Arm, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
-            <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding PointResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BindingNumberConverter}}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="5" Text="{Binding PointResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource BindingNumberConverter}}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="6" Text="{Binding PointResponse.Decrease, ConverterParameter='PreviewPane', Converter={StaticResource BindingDecreaseConverter}, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
-            <TextBox Grid.Column="1" Grid.Row="7" Text="{Binding PointResponse.Back, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BindingBoolBorderConverter}}"/>
-            <TextBox Grid.Column="1" Grid.Row="8" Text="{Binding PointResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="1" Grid.Row="9" Text="{Binding PointResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" HorizontalContentAlignment="Center" ToolTip="Information about the route location found." Background="#cfd8ff" Style="{StaticResource SelectableTextBox}">Results</TextBox>
+            <RadioButton Grid.Column="0" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="SRMP" Grid.Row="2" IsChecked="True"/>
+            <RadioButton Grid.Column="0" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="ARM" Grid.Row="3"/>
+            <TextBox Grid.Column="1" Grid.Row="1" HorizontalContentAlignment="Center" ToolTip="The route that the location belongs to."  Style="{StaticResource SelectableTextBox}">Route</TextBox>
+            <TextBox Grid.Column="1" Grid.Row="2" HorizontalContentAlignment="Center" ToolTip="SRMP measure of the route location found." Style="{StaticResource SelectableTextBox}">SRMP</TextBox>
+            <TextBox Grid.Column="1" Grid.Row="3" HorizontalContentAlignment="Center" ToolTip="ARM measure of the route location found." Style="{StaticResource SelectableTextBox}">ARM</TextBox>
+            <TextBox Grid.Column="1" Grid.Row="4" HorizontalContentAlignment="Center" ToolTip="X-coordinate of the route location found." Style="{StaticResource SelectableTextBox}">X</TextBox>
+            <TextBox Grid.Column="1" Grid.Row="5" HorizontalContentAlignment="Center" ToolTip="Y-coordinate of the route location found." Style="{StaticResource SelectableTextBox}">Y</TextBox>
+            <TextBox Grid.Column="1" Grid.Row="6" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location is in the decreasing direction of the roadway (Southbound or Westbound)." Style="{StaticResource SelectableTextBox}">Direction</TextBox>
+            <TextBox Grid.Column="1" Grid.Row="7" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location represent back mileage." Style="{StaticResource SelectableTextBox}">Back</TextBox>
+            <TextBox Grid.Column="1" Grid.Row="8" HorizontalContentAlignment="Center" ToolTip="Realignment date of the route location." Style="{StaticResource SelectableTextBox}">Realignment Date</TextBox>
+            <TextBox Grid.Column="1" Grid.Row="9" HorizontalContentAlignment="Center" ToolTip="Response date of the route location found." Style="{StaticResource SelectableTextBox}">Response Date</TextBox>
+            <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding PointResponse.Route, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"/>
+            <TextBox Grid.Column="2" Grid.Row="2" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding PointResponse.Srmp, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"/>
+            <TextBox Grid.Column="2" Grid.Row="2" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding PointResponse.Srmp, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="3" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding PointResponse.Arm, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected, Converter={StaticResource BooleanInverter}}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"/>
+            <TextBox Grid.Column="2" Grid.Row="3" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding PointResponse.Arm, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="4" Text="{Binding PointResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NumberConverter}}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding PointResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NumberConverter}}" Style="{StaticResource SelectableTextBox}"/>
+            <ComboBox 
+                Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}"
+                Grid.Column="2" Grid.Row="6" 
+                IsEditable ="False" 
+                BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"
+                IsHitTestVisible="{Binding IsMapMode, Converter={StaticResource BooleanInverter}}" 
+                SelectedIndex="{Binding PointResponse.Decrease, Converter={StaticResource ComboBoxConverter}, Mode=TwoWay}"
+            >
+                <ComboBoxItem>Decreasing</ComboBoxItem>
+                <ComboBoxItem>Increasing</ComboBoxItem>
+            </ComboBox>
+            <TextBox Grid.Column="2" Grid.Row="6" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding PointResponse.Decrease, ConverterParameter='PreviewPane', Converter={StaticResource DirectionConverter}}" Style="{StaticResource SelectableTextBox}"/>
+            <ComboBox 
+                Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}"
+                Grid.Column="2" Grid.Row="7" 
+                IsEditable ="False" 
+                BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"
+                IsHitTestVisible="{Binding IsMapMode, Converter={StaticResource BooleanInverter}}" 
+                SelectedIndex="{Binding PointResponse.Back, Converter={StaticResource ComboBoxConverter}, Mode=TwoWay}"
+            >
+                <ComboBoxItem>True</ComboBoxItem>
+                <ComboBoxItem>False</ComboBoxItem>
+            </ComboBox>
+            <TextBox Grid.Column="2" Grid.Row="7"  Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding PointResponse.Back, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="8" Text="{Binding PointResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="9" Text="{Binding PointResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <Border Grid.ColumnSpan="3" Grid.Row="2" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="3" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="4" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
@@ -136,7 +167,25 @@
                 <ColumnDefinition />
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="MapPointExecuteButton" Style="{StaticResource whiteButton}" Grid.Row="1" Grid.Column="0" CommandParameter="{Binding MapToolInfos.SessionActive}" Command="{Binding ToggleMapToolSessionCommand}" Content="{Binding MapToolInfos.MapButtonLabel}" ToolTip="{Binding MapToolInfos.MapButtonToolTip}"/>
+            <!--<Button x:Name="MapPointExecuteButton" Style="{StaticResource whiteButton}" Grid.Row="1" Grid.Column="0" CommandParameter="{Binding MapToolInfos.SessionActive}" Command="{Binding InteractionCommand}" Content="{Binding MapToolInfos.MapButtonLabel}" ToolTip="{Binding MapToolInfos.MapButtonToolTip}"/>-->
+            <Button 
+                x:Name="MapPointExecuteButton" 
+                Style="{StaticResource whiteButton}"
+                Grid.Row="1" Grid.Column="0"
+                CommandParameter="{Binding SessionActive}" 
+                Command="{Binding InteractionCommand}"
+                Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}"
+                Content="{Binding SessionActive, Converter={StaticResource InteractionButtonLabelConverter}, ConverterParameter='Point'}"
+            />
+            <Button 
+                x:Name="MapPointExecuteButtonForm" 
+                Style="{StaticResource whiteButton}"
+                Grid.Row="1" Grid.Column="0"
+                CommandParameter="{Binding SessionActive}" 
+                Command="{Binding InteractionCommand}"
+                Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}"
+                Content="Get Milepost"
+            />
             <Button x:Name="ClearResultsButton" Grid.Row="3" Grid.Column="1" CommandParameter="{Binding ElementName=PointsGrid}"  Command="{Binding UpdateSelectionCommand}" Style="{StaticResource whiteButton}" ToolTip="Clear the selection in this tab.">Clear</Button>
             <Button x:Name="MapPointSaveButton" Grid.Row="1" Grid.Column="2" CommandParameter="{Binding ElementName=PointsGrid}" Command="{Binding SavePointResultCommand}" ToolTip="Save selection to the results grid.">
                 <Button.Style>
@@ -199,10 +248,10 @@
                         <DataGridTextColumn Header="Route" Binding="{Binding Route,Mode=OneWay}"/>
                         <DataGridTextColumn Header="ARM" Binding="{Binding Arm,Mode=OneWay}"/>
                         <DataGridTextColumn Header="SRMP" Binding="{Binding Srmp,Mode=OneWay}"/>
-                        <DataGridTextColumn Header="Direction" Binding="{Binding Decrease,Mode=OneWay, Converter={StaticResource BindingDecreaseConverter}}"/>
+                        <DataGridTextColumn Header="Direction" Binding="{Binding Decrease,Mode=OneWay, Converter={StaticResource DirectionConverter}}"/>
                         <DataGridTextColumn Header="Back" Binding="{Binding Back,Mode=OneWay}"/>
-                        <DataGridTextColumn Header="X" Binding="{Binding RouteGeometry.x, Converter={StaticResource BindingNumberConverter}, Mode=OneWay}"/>
-                        <DataGridTextColumn Header="Y" Binding="{Binding RouteGeometry.y, Converter={StaticResource BindingNumberConverter}, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="X" Binding="{Binding RouteGeometry.x, Converter={StaticResource NumberConverter}, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Y" Binding="{Binding RouteGeometry.y, Converter={StaticResource NumberConverter}, Mode=OneWay}"/>
                     </DataGrid.Columns>
                     <b:Interaction.Triggers>
                         <b:EventTrigger EventName="MouseLeftButtonUp">

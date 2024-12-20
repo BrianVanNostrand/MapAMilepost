@@ -20,7 +20,8 @@ namespace MapAMilepost.Utils
         }
         public virtual bool IsMapMode { get; set; } 
         public MapAMilepostMaptool MappingTool { get; set; }
-        public virtual MapToolInfo MapToolInfos { get; set; }
+        public virtual bool SessionActive { get; set; }
+        public virtual bool SessionEndActive { get; set; }
         public virtual bool ShowResultsTable { get; set; }
         public virtual PointResponseModel PointResponse { get; set; } //used for point sessions
         public virtual LineResponseModel LineResponse { get; set; } // used for lines
