@@ -17,7 +17,11 @@ namespace MapAMilepost.Utils
     {
         public ViewModelBase() {
             MappingTool = new MapAMilepostMaptool();
+            Directions = ["Increasing","Decreasing"];
+            AheadBack = [true, false];
         }
+        public ObservableCollection<string> Directions { get; set; }
+        public ObservableCollection<bool> AheadBack { get; set; }
         public virtual bool IsMapMode { get; set; } 
         public MapAMilepostMaptool MappingTool { get; set; }
         public virtual bool SessionActive { get; set; }

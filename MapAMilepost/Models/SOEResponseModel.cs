@@ -200,6 +200,12 @@ namespace MapAMilepost.Models
             ResponseDate = FNRL.ResponseDate;
         }
     }
+    public class ArmCalcInfo
+    {
+        public double? ArmCalcReturnCode { get; set; }
+        public string ArmCalcReturnMessage { get; set; }
+    }
+
     public class FRLLineGeometryModel : ObservableObject
     {
         private PathsArray? _routeGeometry;

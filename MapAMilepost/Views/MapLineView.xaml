@@ -20,6 +20,7 @@
             <valueConverters:BrushConverter x:Key="BrushConverter"/>
             <valueConverters:ElementHeightConverter x:Key="ElementHeightConverter"/>
             <valueConverters:InteractionButtonLabelConverter x:Key="InteractionButtonLabelConverter"/>
+            <valueConverters:InputModeButtonLabelConverter x:Key="InputModeButtonLabelConverter"/>
             <valueConverters:VisibilityConverter x:Key="VisibilityConverter"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Themes/ButtonTheme.xaml" />
@@ -54,11 +55,9 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
-                    <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <TextBox Grid.Column="0" Grid.Row="0" Style="{StaticResource SelectableTextBox}" HorizontalContentAlignment="Center">Mode</TextBox>
-                <Button Background="{Binding IsMapMode, Converter={StaticResource BrushConverter}, ConverterParameter='Map'}" Command="{Binding ChangeModeCommand}" Grid.Column="1" Grid.Row="0" FontSize="7pt" HorizontalContentAlignment="Center">Map</Button>
-                <Button Background="{Binding IsMapMode, Converter={StaticResource BrushConverter}, ConverterParameter='Form'}" Command="{Binding ChangeModeCommand}" Grid.Column="2" Grid.Row="0"  FontSize="7pt" HorizontalContentAlignment="Center">Form</Button>
+                <Button Grid.Column="1" Grid.Row="0" Command="{Binding ChangeModeCommand}" FontSize="7pt" HorizontalContentAlignment="Center"  Height="20" VerticalAlignment="Top" Content="{Binding IsMapMode, Converter={StaticResource InputModeButtonLabelConverter}}"/>
             </Grid>
             <TextBox x:Name="MapPointSearchDistanceStartLabel" Grid.Row="1" Grid.Column="0" Style="{StaticResource SelectableTextBox}">Search Distance (Start)</TextBox>
             <TextBox x:Name="MapStartPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="1" Text="{Binding LineArgs.StartArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped start point."/>
@@ -115,9 +114,10 @@
             <TextBox Grid.Column="2" Grid.Row="4" Text="{Binding LineResponse.EndResponse.RouteGeometry.x, Converter={StaticResource NumberConverter}, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding LineResponse.EndResponse.RouteGeometry.y, Converter={StaticResource NumberConverter}, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <TextBox Grid.Column="2" Grid.Row="6" Text="{Binding LineResponse.EndResponse.Decrease, ConverterParameter='PreviewPane', Converter={StaticResource DirectionConverter}, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"/>
+            <!---->
             <TextBox Grid.Column="2" Grid.Row="7" Text="{Binding LineResponse.EndResponse.Back, UpdateSourceTrigger=PropertyChanged}"  IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"/>
-            <TextBox Grid.Column="2" Grid.Row="8" Text="{Binding LineResponse.EndResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}"  IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"/>
-            <TextBox Grid.Column="2" Grid.Row="9" Text="{Binding LineResponse.EndResponse.ResponseDate, UpdateSourceTrigger=PropertyChanged}"  IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"/>
+            <TextBox Grid.Column="2" Grid.Row="8" Text="{Binding LineResponse.EndResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="9" Text="{Binding LineResponse.EndResponse.ResponseDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             
             <Border Grid.ColumnSpan="3" Grid.Row="2" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="3" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
@@ -139,11 +139,11 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <Button
-                x:Name="MapStartPointExecuteButton" 
-                Grid.Row="3" Grid.Column="0" 
-                Command="{Binding InteractionCommand}" 
-                CommandParameter="start" 
+                x:Name="MapStartPointExecuteButtonMap" 
                 Style="{StaticResource whiteButton}"
+                Grid.Row="3" Grid.Column="0" 
+                CommandParameter="start" 
+                Command="{Binding InteractionCommand}" 
                 Content="{Binding SessionActive, Converter={StaticResource InteractionButtonLabelConverter}, ConverterParameter='Start'}"
             />
             <Button
@@ -155,7 +155,14 @@
                 Content="{Binding SessionActive}"
             />
             <Button 
-                x:Name="MapEndPointExecuteButton" 
+                x:Name="MapEndPointExecuteButtonMap" 
+                Grid.Row="3" Grid.Column="1" 
+                Command="{Binding InteractionCommand}" 
+                CommandParameter="end" 
+                Style="{StaticResource whiteButton}"
+            />
+            <Button 
+                x:Name="MapEndPointExecuteButtonForm" 
                 Grid.Row="3" Grid.Column="1" 
                 Command="{Binding InteractionCommand}" 
                 CommandParameter="end" 
@@ -213,7 +220,7 @@
                 <Label Grid.Row="0" Grid.Column="1" Content="{Binding LineResponses.Count}"/>
             </Grid>
             <ScrollViewer  Grid.ColumnSpan="3" Grid.Row="3">
-                <DataGrid CanUserAddRows="False" x:Name="LinesGrid" HorizontalAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding LineResponses}">
+                <DataGrid CanUserAddRows="False" CanUserDeleteRows="False" x:Name="LinesGrid" HorizontalAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding LineResponses}">
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow">
                             <Style.Triggers>

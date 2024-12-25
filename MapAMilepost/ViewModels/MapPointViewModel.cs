@@ -1,4 +1,5 @@
 ﻿using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using MapAMilepost.Commands;
 using MapAMilepost.Models;
@@ -30,7 +31,6 @@ namespace MapAMilepost.ViewModels
         public MapPointViewModel()//constructor
         {
         }
-
         public bool isEnabled// whether or not the map point view is enabled
         {
             get { return _isEnabled; }
@@ -160,6 +160,7 @@ namespace MapAMilepost.ViewModels
                 this.PointResponse.Srmp = null;
             }
         });
+
         public Commands.RelayCommand<object> InteractionCommand => new (async(p) => {
             if (IsMapMode)
             {
@@ -167,6 +168,7 @@ namespace MapAMilepost.ViewModels
             }
             else
             {
+                await Commands.GraphicsCommands.DeleteUnsavedGraphics();//delete all unsaved graphics
                 if (PointArgs.SR == 0)
                 {
                     PointArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
@@ -177,8 +179,34 @@ namespace MapAMilepost.ViewModels
                 {
 
                     LocationInfo formLocation = new LocationInfo(PointResponse);
-                    PointResponse = await Utils.HTTPRequest.FindRouteLocation(formLocation, PointArgs) as PointResponseModel;
-                    await Commands.GraphicsCommands.CreatePointGraphics(PointArgs, PointResponse, "Point");
+                    if (formLocation.Route.Length < 3)
+                    {
+                        while (formLocation.Route.Length < 3)
+                        {
+                            formLocation.Route = "0"+formLocation.Route;
+                        }
+                    }
+                    if (SRMPIsSelected)
+                    {
+                        formLocation.Arm = null;
+                    }
+                    else
+                    {
+                        formLocation.Srmp = null;
+                    }
+                    var newPointResponse = await Utils.HTTPRequest.FindRouteLocation(formLocation, PointArgs) as PointResponseModel;
+                    if (newPointResponse != null && newPointResponse.RouteGeometry != null) {
+                        PointResponse = newPointResponse;
+                        await Commands.GraphicsCommands.CreatePointGraphics(PointArgs, PointResponse, "point");
+                        await QueuedTask.Run(() =>
+                        {
+                            Camera newCamera = MapView.Active.Camera;
+                            newCamera.X = PointResponse.RouteGeometry.x;
+                            newCamera.Y = PointResponse.RouteGeometry.y;
+                            MapView.Active.ZoomToAsync(newCamera, TimeSpan.FromSeconds(.5));
+                        });
+                    }
+                   
                 }
             }
         });

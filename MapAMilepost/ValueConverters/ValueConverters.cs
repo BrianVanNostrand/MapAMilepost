@@ -148,7 +148,7 @@ namespace MapAMilepost.ValueConverters
             throw new NotImplementedException();
         }
     }
-    public class ComboBoxIndexConverter : IValueConverter
+    public class ComboBoxDirectionConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -156,20 +156,33 @@ namespace MapAMilepost.ValueConverters
             {
                 if ((bool)value == true)
                 {
-                    return 0;
+                    return "Decreasing";
                 }
                 if ((bool)value == false)
                 {
-                    return 1;
+                    return "Increasing";
                 }
             }
             return null;
         }
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            if (value != null)
+            {
+                if ((string)value == "Decreasing")
+                {
+                    return true;
+                }
+                if ((string)value == "Increasing")
+                {
+                    return false;
+                }
+            }
             return null;
         }
     }
+
+
     public class InteractionButtonLabelConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

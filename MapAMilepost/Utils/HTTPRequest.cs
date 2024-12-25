@@ -102,7 +102,7 @@ namespace MapAMilepost.Utils
                 {"outSR",args.SR}
             };
             FNRLurl.SetQueryParams(FNRLQueryParams);
-            var routeLocation = new object();
+            object routeLocation = new();
             try
             {
                 var FRLresponse = await FNRLurl.GetAsync();
@@ -110,21 +110,30 @@ namespace MapAMilepost.Utils
                 {
                     string responseString = await FRLresponse.ResponseMessage.Content.ReadAsStringAsync();
                     var PointResponses = JsonSerializer.Deserialize<List<PointResponseModel>>(responseString);
-                    if (PointResponses.Count > 0)
+                    var ArmCalcReturnInfo = JsonSerializer.Deserialize<List<ArmCalcInfo>>(responseString);
+                    if (ArmCalcReturnInfo.First().ArmCalcReturnCode == 0)
                     {
-                        if(PointResponses.First().RouteGeometry.x != 0 && PointResponses.First().RouteGeometry.y != 0) {
-                            routeLocation = PointResponses.First();
+                        if (PointResponses.Count > 0)
+                        {
+                            if (PointResponses.First().RouteGeometry.x != 0 && PointResponses.First().RouteGeometry.y != 0)
+                            {
+                                routeLocation = PointResponses.First();
+                            }
+                            else
+                            {
+                                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
+                                    messageText: $"The nearest route, {PointResponses.First().Route}, did not return a route location."
+                                );
+                            }
                         }
                         else
                         {
-                            ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
-                                messageText:$"The nearest route, {PointResponses.First().Route}, did not return a route location."
-                            );
+                            ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"Location couldn't be found. Please try again.");
                         }
                     }
                     else
                     {
-                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"Location couldn't be found. Please try again.");
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(ArmCalcReturnInfo.First().ArmCalcReturnMessage);
                     }
                 }
                 else

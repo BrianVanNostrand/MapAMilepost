@@ -53,7 +53,10 @@ namespace MapAMilepost.Commands
                 if (dataGridRowSelected == false)
                 {
                     //clear the response
-                    VM.PointResponse = new PointResponseModel();
+                    if (VM.IsMapMode)
+                    {
+                        VM.PointResponse = new PointResponseModel();
+                    }
                     //clear selected items
                     VM.SelectedPoints.Clear();
                     //clear selected rows

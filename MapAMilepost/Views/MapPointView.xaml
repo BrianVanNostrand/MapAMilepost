@@ -19,9 +19,7 @@
             <valueConverters:NumberConverter x:Key="NumberConverter"/>
             <valueConverters:BrushConverter x:Key="BrushConverter"/>
             <valueConverters:ElementHeightConverter x:Key="ElementHeightConverter"/>
-            <valueConverters:ComboBoxIndexConverter x:Key="ComboBoxConverter"/>
-            <valueConverters:ExecuteButtonLabelConverter x:Key="ExecuteButtonLabelConverter"/>
-            <valueConverters:ExecuteButtonToolTipConverter x:Key="ExecuteButtonToolTipConverter"/>
+            <valueConverters:ComboBoxDirectionConverter x:Key="ComboBoxDirectionConverter"/>
             <valueConverters:InteractionButtonLabelConverter x:Key="InteractionButtonLabelConverter"/>
             <valueConverters:InputModeButtonLabelConverter x:Key="InputModeButtonLabelConverter"/>
             <valueConverters:VisibilityConverter x:Key="VisibilityConverter"/>
@@ -120,38 +118,37 @@
             <TextBox Grid.Column="1" Grid.Row="8" HorizontalContentAlignment="Center" ToolTip="Realignment date of the route location." Style="{StaticResource SelectableTextBox}">Realignment Date</TextBox>
             <TextBox Grid.Column="1" Grid.Row="9" HorizontalContentAlignment="Center" ToolTip="Response date of the route location found." Style="{StaticResource SelectableTextBox}">Response Date</TextBox>
             <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding PointResponse.Route, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"/>
+            <!-- The SRMP and ARM context-dependent text boxes -->
             <TextBox Grid.Column="2" Grid.Row="2" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding PointResponse.Srmp, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"/>
             <TextBox Grid.Column="2" Grid.Row="2" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding PointResponse.Srmp, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}"/>
             <TextBox Grid.Column="2" Grid.Row="3" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding PointResponse.Arm, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected, Converter={StaticResource BooleanInverter}}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"/>
             <TextBox Grid.Column="2" Grid.Row="3" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding PointResponse.Arm, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}"/>
+            <!---->
             <TextBox Grid.Column="2" Grid.Row="4" Text="{Binding PointResponse.RouteGeometry.x, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NumberConverter}}" Style="{StaticResource SelectableTextBox}"/>
             <TextBox Grid.Column="2" Grid.Row="5" Text="{Binding PointResponse.RouteGeometry.y, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource NumberConverter}}" Style="{StaticResource SelectableTextBox}"/>
+            <!-- The direction and back comboboxes (Form) and textboxes (Map)-->
             <ComboBox 
                 Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}"
                 Grid.Column="2" Grid.Row="6" 
                 IsEditable ="False" 
                 BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"
-                IsHitTestVisible="{Binding IsMapMode, Converter={StaticResource BooleanInverter}}" 
-                SelectedIndex="{Binding PointResponse.Decrease, Converter={StaticResource ComboBoxConverter}, Mode=TwoWay}"
-            >
-                <ComboBoxItem>Decreasing</ComboBoxItem>
-                <ComboBoxItem>Increasing</ComboBoxItem>
-            </ComboBox>
+                ItemsSource="{Binding Directions}"
+                SelectedValue="{Binding PointResponse.Decrease, Converter={StaticResource ComboBoxDirectionConverter}, Mode=TwoWay}"
+            />
             <TextBox Grid.Column="2" Grid.Row="6" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding PointResponse.Decrease, ConverterParameter='PreviewPane', Converter={StaticResource DirectionConverter}}" Style="{StaticResource SelectableTextBox}"/>
             <ComboBox 
                 Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}"
                 Grid.Column="2" Grid.Row="7" 
                 IsEditable ="False" 
                 BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"
-                IsHitTestVisible="{Binding IsMapMode, Converter={StaticResource BooleanInverter}}" 
-                SelectedIndex="{Binding PointResponse.Back, Converter={StaticResource ComboBoxConverter}, Mode=TwoWay}"
-            >
-                <ComboBoxItem>True</ComboBoxItem>
-                <ComboBoxItem>False</ComboBoxItem>
-            </ComboBox>
+                ItemsSource="{Binding AheadBack}"
+                SelectedValue="{Binding PointResponse.Back, Mode=TwoWay}"
+            />
             <TextBox Grid.Column="2" Grid.Row="7"  Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding PointResponse.Back, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}"/>
+            <!---->
             <TextBox Grid.Column="2" Grid.Row="8" Text="{Binding PointResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             <TextBox Grid.Column="2" Grid.Row="9" Text="{Binding PointResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            
             <Border Grid.ColumnSpan="3" Grid.Row="2" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="3" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="4" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
@@ -234,7 +231,7 @@
                 <Label Grid.Row="0" Grid.Column="1" Content="{Binding PointResponses.Count}"/>
             </Grid>
             <ScrollViewer Grid.ColumnSpan="3" Grid.Row="1">
-                <DataGrid CanUserAddRows="False" x:Name="PointsGrid" AutoGenerateColumns="False" ItemsSource="{Binding PointResponses}" CellStyle="{DynamicResource DataGridCellStyle}">
+                <DataGrid CanUserAddRows="False" CanUserDeleteRows="False" x:Name="PointsGrid" AutoGenerateColumns="False" ItemsSource="{Binding PointResponses}" CellStyle="{DynamicResource DataGridCellStyle}">
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow">
                             <Style.Triggers>

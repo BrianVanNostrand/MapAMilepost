@@ -142,6 +142,7 @@ namespace MapAMilepost
             QueuedTask.Run(() =>
             {
                 GraphicsLayer graphicsLayer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(gl_param, map);
+                
                 CIMBaseLayer newDefinition = graphicsLayer.GetDefinition();
                 CIMStringMap[] CustomLayerProps = new CIMStringMap[]//hidden ID for map layer
                 {

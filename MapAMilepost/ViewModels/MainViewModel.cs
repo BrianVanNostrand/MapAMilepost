@@ -1,8 +1,13 @@
-﻿using ArcGIS.Core.Geometry;
+﻿using ArcGIS.Core.Data.UtilityNetwork.Trace;
+using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Core.Events;
 using ArcGIS.Desktop.Framework.Events;
+using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Internal.Mapping;
 using ArcGIS.Desktop.Internal.Mapping.Events;
+using ArcGIS.Desktop.Internal.Mapping.Locate;
+using ArcGIS.Desktop.Layouts;
+using ArcGIS.Desktop.Layouts.Events;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Desktop.Mapping.Events;
 using MapAMilepost.Commands;
@@ -201,6 +206,33 @@ namespace MapAMilepost.ViewModels
             }
             Console.Write(obj);
         }
+        private async void OnElementSelectionChanged(ElementSelectionChangedEventArgs obj)
+        {
+
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
+            if (graphicsLayer == obj.ElementContainer)
+            {
+                await QueuedTask.Run(() => { 
+                foreach (GraphicElement graphicElement in graphicsLayer.GetSelectedElements())
+                    {
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Sorry, but to keep things from getting too complicated, graphics can only be selected from the Milepost Tools add in, and deleted and recreated if they need to be moved. Please click the row of the record you wish to delete, and use the 'Delete Records' button.");
+                        graphicsLayer.UnSelectElement(graphicElement);
+                    }
+                });
+            }
+        }
+        private async void OnElementChanged(ElementEventArgs obj)
+        {
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
+            if(graphicsLayer == obj.Container)
+            {
+                foreach (GraphicElement graphicElement in graphicsLayer.GetSelectedElements())
+                {
+                    graphicsLayer.UnSelectElement(graphicElement);
+                }
+                Console.WriteLine(obj);
+            }
+        }
         public MainViewModel()
         {
             ArcGIS.Desktop.Framework.FrameworkApplication.NotificationInterval = 0;//allow toast messages to appear immediately after another is displayed
@@ -213,6 +245,8 @@ namespace MapAMilepost.ViewModels
             DrawCompleteEvent.Subscribe(OnDrawComplete);
             LayersRemovedEvent.Subscribe(OnLayerRemoved);
             ActivePaneChangedEvent.Subscribe(OnPaneChanged);//if pane is opened for the first time after the map is loaded
+            ElementSelectionChangedEvent.Subscribe(OnElementSelectionChanged);
+           // ElementEvent.Subscribe(OnElementChanged);
         }
     }
 }
