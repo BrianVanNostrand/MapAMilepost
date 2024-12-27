@@ -221,18 +221,6 @@ namespace MapAMilepost.ViewModels
                 });
             }
         }
-        private async void OnElementChanged(ElementEventArgs obj)
-        {
-            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
-            if(graphicsLayer == obj.Container)
-            {
-                foreach (GraphicElement graphicElement in graphicsLayer.GetSelectedElements())
-                {
-                    graphicsLayer.UnSelectElement(graphicElement);
-                }
-                Console.WriteLine(obj);
-            }
-        }
         public MainViewModel()
         {
             ArcGIS.Desktop.Framework.FrameworkApplication.NotificationInterval = 0;//allow toast messages to appear immediately after another is displayed
@@ -246,7 +234,6 @@ namespace MapAMilepost.ViewModels
             LayersRemovedEvent.Subscribe(OnLayerRemoved);
             ActivePaneChangedEvent.Subscribe(OnPaneChanged);//if pane is opened for the first time after the map is loaded
             ElementSelectionChangedEvent.Subscribe(OnElementSelectionChanged);
-           // ElementEvent.Subscribe(OnElementChanged);
         }
     }
 }

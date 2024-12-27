@@ -9,6 +9,7 @@ using ArcGIS.Desktop.Mapping;
 using System;
 using System.Threading.Tasks;
 using ArcGIS.Core.Data;
+using ArcGIS.Desktop.Framework.Threading.Tasks;
 
 namespace MapAMilepost.ViewModels
 {
@@ -22,6 +23,7 @@ namespace MapAMilepost.ViewModels
         private bool _sessionActive = false;
         private bool _sessionEndActive = false;
         private bool _isMapMode = false;
+        private bool _srmpIsSelected = true;
         public MapLineViewModel()//constructor
         {
             MappingTool = new MapAMilepostMaptool();
@@ -33,6 +35,15 @@ namespace MapAMilepost.ViewModels
             {
                 _isEnabled = value;
                 OnPropertyChanged(nameof(isEnabled));
+            }
+        }
+        public bool SRMPIsSelected
+        {
+            get { return _srmpIsSelected; }
+            set
+            {
+                _srmpIsSelected = value;
+                OnPropertyChanged(nameof(SRMPIsSelected));
             }
         }
         public override bool SessionActive 
@@ -71,6 +82,16 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(LineResponse)); 
             }
         }
+        public override LineArgsModel LineArgs 
+        {
+            get { return _lineArgs; }
+            set { _lineArgs = value; OnPropertyChanged(nameof(LineArgs)); }
+        }
+        public override ObservableCollection<LineResponseModel> LineResponses
+        {
+            get { return _lineResponses; }
+            set { _lineResponses = value; OnPropertyChanged(nameof(LineResponses)); }
+        }
 
         /// <summary>
         /// -   Indicates whether selected mode is "map click" or not.
@@ -80,19 +101,6 @@ namespace MapAMilepost.ViewModels
             get { return _isMapMode; }
             set { _isMapMode = value; OnPropertyChanged(nameof(IsMapMode)); }
         }
-
-        public override LineArgsModel LineArgs 
-        {
-            get { return _lineArgs; }
-            set { _lineArgs = value; OnPropertyChanged(nameof(LineArgs)); }
-        }
-
-        public override ObservableCollection<LineResponseModel> LineResponses
-        {
-            get { return _lineResponses; }
-            set { _lineResponses = value; OnPropertyChanged(nameof(LineResponses)); }
-        }
-
         /// <summary>
         /// -   Array of selected saved SOE response data objects in the DataGrid in ResultsView.xaml. Updated when a row is clicked in he DataGrid
         ///     via data binding.
@@ -103,9 +111,33 @@ namespace MapAMilepost.ViewModels
 
         public Commands.RelayCommand<object> DeleteItemsCommand => new (async(parms) => await Commands.DataGridCommands.DeleteLineItems(this));
 
-        public Commands.RelayCommand<object> ChangeModeCommand => new((param) =>
+        public Commands.RelayCommand<object> ChangeModeCommand => new(async(param) =>
         {
             IsMapMode = !IsMapMode;
+            await Utils.MapToolUtils.DeactivateSession(this, "line");
+            if (!IsMapMode)
+            {
+                LineResponse = new LineResponseModel();
+                LineResponse.StartResponse = new PointResponseModel()
+                {
+                    Decrease = false,
+                    Back = false,
+                    Srmp = 0
+                };
+                LineResponse.EndResponse = new PointResponseModel()
+                {
+                    Decrease = false,
+                    Back = false,
+                    Srmp = 0
+                };
+            }
+            else
+            {
+                if (SelectedLines.Count == 1)
+                {
+                    LineResponse = SelectedLines[0];
+                }
+            }
         });
 
         public Commands.RelayCommand<object> ClearItemsCommand => new(async (parms) => {
@@ -120,7 +152,21 @@ namespace MapAMilepost.ViewModels
         });
 
         public Commands.RelayCommand<object> SaveLineResultCommand => new ((grid) => Commands.GraphicsCommands.SaveLineResult(grid as DataGrid, this));
-
+        public Commands.RelayCommand<object> ChangeMPTypeCommand => new((val) =>
+        {
+            if ((string)val == "SRMP")
+            {
+                SRMPIsSelected = true;
+                this.LineResponse.StartResponse.Arm = null;
+                this.LineResponse.StartResponse.Srmp = 0;
+            }
+            else
+            {
+                SRMPIsSelected = false;
+                this.LineResponse.StartResponse.Arm = 0;
+                this.LineResponse.StartResponse.Srmp = null;
+            }
+        });
         public Commands.RelayCommand<object> InteractionCommand => new (async(startEnd) =>
         {
             if (IsMapMode)
@@ -129,14 +175,47 @@ namespace MapAMilepost.ViewModels
             }
             else
             {
-                Console.WriteLine(LineResponse);
-                //bool formDataValid = HTTPRequest.CheckFormData(LineResponse);
-                //LocationInfo formLocation = new LocationInfo(LineResponse);
-                //CurrentViewModel.LineResponse.StartResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.StartArgs) as PointResponseModel);
-                //lineGeometryResponse = await Utils.MapToolUtils.GetLine(CurrentViewModel.LineResponse.StartResponse, CurrentViewModel.LineResponse.EndResponse, CurrentViewModel.LineArgs.StartArgs.SR, CurrentViewModel.LineArgs.StartArgs.ReferenceDate);
-                //await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.StartArgs, CurrentViewModel.LineResponse.StartResponse, MapToolSessionType);
-            }
+                await Commands.GraphicsCommands.DeleteUnsavedGraphics();//delete all unsaved graphics
+                //if (PointArgs.SR == 0)
+                //{
+                //    PointArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+                //}
+                //PointResponse.ReferenceDate = PointArgs.ReferenceDate;
+                //bool formDataValid = HTTPRequest.CheckFormData(PointResponse);
+                //if (formDataValid)
+                //{
 
+                //    LocationInfo formLocation = new LocationInfo(PointResponse);
+                //    if (formLocation.Route.Length < 3)
+                //    {
+                //        while (formLocation.Route.Length < 3)
+                //        {
+                //            formLocation.Route = "0" + formLocation.Route;
+                //        }
+                //    }
+                //    if (SRMPIsSelected)
+                //    {
+                //        formLocation.Arm = null;
+                //    }
+                //    else
+                //    {
+                //        formLocation.Srmp = null;
+                //    }
+                //    var newPointResponse = await Utils.HTTPRequest.FindRouteLocation(formLocation, PointArgs) as PointResponseModel;
+                //    if (newPointResponse != null && newPointResponse.RouteGeometry != null)
+                //    {
+                //        PointResponse = newPointResponse;
+                //        await Commands.GraphicsCommands.CreatePointGraphics(PointArgs, PointResponse, "point");
+                //        await QueuedTask.Run(() =>
+                //        {
+                //            Camera newCamera = MapView.Active.Camera;
+                //            newCamera.X = PointResponse.RouteGeometry.x;
+                //            newCamera.Y = PointResponse.RouteGeometry.y;
+                //            MapView.Active.ZoomToAsync(newCamera, TimeSpan.FromSeconds(.5));
+                //        });
+                //    }
+                //}
+            }
         });
 
         private async Task ToggleSession(string startEnd)

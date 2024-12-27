@@ -35,27 +35,13 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="SearchTypeRow" Height="0px"/>
             <RowDefinition x:Name="SearchDistanceRow" Height="*"/>
             <RowDefinition x:Name="PointResponseRow" />
             <RowDefinition x:Name="PointResponseControlsRow" Height="30px"/>
             <RowDefinition x:Name="DataGridRow"/>
             <RowDefinition Height="30px"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" x:Name="SearchTypeGrid">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-            <Label VerticalAlignment="Center" Grid.Column="0">Search Type</Label>
-            <RadioButton VerticalAlignment="Center" Grid.Column="1" GroupName="searchType" IsChecked="True">Map</RadioButton>
-            <RadioButton VerticalAlignment="Center" Grid.Column="2" GroupName="searchType">Form</RadioButton>
-        </Grid>
-        <Grid Grid.Row="1" x:Name="SoeArgsGrid" Margin="0 0 0 10">
+        <Grid Grid.Row="0" x:Name="SoeArgsGrid" Margin="0 0 0 10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -77,37 +63,30 @@
             <TextBox x:Name="MapStartPointSearcDistanceTextBox"  Grid.Row="1" Grid.Column="1" Text="{Binding PointArgs.SearchRadius, Mode=TwoWay}" ToolTip="Set the search distance to find the route location nearest the mapped start point."/>
             <TextBox x:Name="FeetStartLabel" Grid.Row="1" Grid.Column="2" Style="{StaticResource SelectableTextBox}">Feet</TextBox>
         </Grid>
-        <Grid Grid.Row="2" x:Name="SOEResultsGrid" Margin="0 0 0 10">
+        <Grid Grid.Row="1" x:Name="SOEResultsGrid" Margin="0 0 0 10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="20px"/>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <!-->Header<-->
-                <RowDefinition/>
-                <!-->Route<-->
-                <RowDefinition/>
-                <!-->SRMP<-->
-                <RowDefinition/>
-                <!-->ARM<-->
-                <RowDefinition/>
-                <!-->X<-->
-                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/>
-                <!-->Y<-->
-                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/>
-                <!-->Direction<-->
-                <RowDefinition/>
-                <!-->Back<-->
-                <RowDefinition />
-                <!-->Realignment<-->
-                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/>
-                <!-->Response<-->
-                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/>
+                <RowDefinition/><!-->Header<-->
+                <RowDefinition/><!-->Route<-->
+                <RowDefinition/><!-->SRMP<-->
+                <RowDefinition/><!-->ARM<-->
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/><!-->X<-->
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/><!-->Y<-->
+                <RowDefinition/><!-->Direction<-->
+                <RowDefinition /><!-->Back<-->
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/><!-->Realignment<-->
+                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/><!-->Response<-->
             </Grid.RowDefinitions>
+            <!--Header-->
             <TextBox Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" HorizontalContentAlignment="Center" ToolTip="Information about the route location found." Background="#cfd8ff" Style="{StaticResource SelectableTextBox}">Results</TextBox>
+            <!--MP Type Radio Buttons-->
             <RadioButton Grid.Column="0" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="SRMP" Grid.Row="2" IsChecked="True"/>
             <RadioButton Grid.Column="0" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="ARM" Grid.Row="3"/>
+            <!--Labels-->
             <TextBox Grid.Column="1" Grid.Row="1" HorizontalContentAlignment="Center" ToolTip="The route that the location belongs to."  Style="{StaticResource SelectableTextBox}">Route</TextBox>
             <TextBox Grid.Column="1" Grid.Row="2" HorizontalContentAlignment="Center" ToolTip="SRMP measure of the route location found." Style="{StaticResource SelectableTextBox}">SRMP</TextBox>
             <TextBox Grid.Column="1" Grid.Row="3" HorizontalContentAlignment="Center" ToolTip="ARM measure of the route location found." Style="{StaticResource SelectableTextBox}">ARM</TextBox>
@@ -158,7 +137,7 @@
             <Border Grid.ColumnSpan="3" Grid.Row="8" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
             <Border Grid.ColumnSpan="3" Grid.Row="9" BorderBrush="#b3c1fc" BorderThickness="0,.5,0,0" Background="{x:Null}" />
         </Grid>
-        <Grid Grid.Row="3" x:Name="MapToolControlsGrid">
+        <Grid Grid.Row="2" x:Name="MapToolControlsGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -200,7 +179,7 @@
                 </Button.Style>
             </Button>
         </Grid>
-        <Grid Height="200px" Grid.Row="4" x:Name="ResultsTableGrid">
+        <Grid Grid.Row="3" x:Name="ResultsTableGrid" Height="200px">
             <Grid.Resources>
                 <Style TargetType="Grid">
                     <Style.Triggers>
@@ -258,7 +237,7 @@
                 </DataGrid>
             </ScrollViewer>
         </Grid>
-        <Grid Grid.Row="5" x:Name="ResultsTableControls">
+        <Grid Grid.Row="4" x:Name="ResultsTableControls">
             <Grid.RowDefinitions>
                 <RowDefinition/>
             </Grid.RowDefinitions>
