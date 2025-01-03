@@ -148,7 +148,7 @@ namespace MapAMilepost.Utils
             return routeLocation;
         }
 
-        public static bool CheckFormData(PointResponseModel FormInfo)
+        public static bool CheckFormData(PointResponseModel FormInfo, string type = null)
         {
             bool formDataValid = true;
             List<string> missingParams = new List<string> { };
@@ -180,7 +180,7 @@ namespace MapAMilepost.Utils
             }
             if (missingParams.Count>0)
             {
-                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"The following parameters must be provided in the input form: {string.Join(",",missingParams)}");
+                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"The following parameters must be provided in the input form:{(type!=null?" "+type:null)} {string.Join(",",missingParams)}");
             }
             return formDataValid;
         }

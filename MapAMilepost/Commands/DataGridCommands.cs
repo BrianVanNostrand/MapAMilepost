@@ -111,7 +111,10 @@ namespace MapAMilepost.Commands
                 if (dataGridRowSelected == false)
                 {
                     //clear the response
-                    VM.LineResponse = new LineResponseModel();
+                    if (VM.IsMapMode)
+                    {
+                        VM.LineResponse = new LineResponseModel();
+                    }
                     //clear selected items
                     VM.SelectedLines.Clear();
                     //clear selected rows
@@ -129,9 +132,10 @@ namespace MapAMilepost.Commands
                     VM.SelectedLines = CastLinesToList(myGrid.SelectedItems);
                     //update selected graphics
                     GraphicsCommands.SetLineGraphicsSelected(VM.SelectedLines);
-                    if (VM.SelectedLines.Count == 1)
+                    if (VM.SelectedLines.Count == 1 && VM.IsMapMode == true)
                     {
-                        VM.LineResponse = VM.SelectedLines[0];
+                        VM.LineResponse.StartResponse = VM.SelectedLines[0].StartResponse;
+                        VM.LineResponse.EndResponse = VM.SelectedLines[0].EndResponse;
                     }
                 } 
             }

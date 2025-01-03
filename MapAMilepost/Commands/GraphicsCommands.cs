@@ -487,12 +487,7 @@ namespace MapAMilepost.Commands
                     await DeleteUnsavedGraphics();
                     VM.PointArgs.X = 0;
                     VM.PointArgs.Y = 0;
-                    VM.PointResponse = new PointResponseModel() {
-                        Srmp = VM.IsMapMode ? null : 0,
-                        Decrease = VM.IsMapMode ? null : false,
-                        Back = VM.IsMapMode ? null : false,
-
-                    };//clear the SOE response info panel
+                    VM.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);//clear the SOE response info panel
                     if (VM.PointResponses.Count > 0)
                     {
                         VM.ShowResultsTable = true;

@@ -48,21 +48,23 @@ namespace MapAMilepost.Utils
             if (sessionType == "point")//if start session or point session
             {
                 VM.SessionActive = false;
-                VM.PointResponse = new PointResponseModel();
-                await Commands.GraphicsCommands.DeleteUnsavedGraphics(sessionType);
+                VM.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);//clear the SOE response info panel or set the default parameters for form
             }
             else if (sessionType == "start")
             {
                 VM.SessionActive = false;
+               VM.LineResponse.StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);//clear the SOE response info panel or set the default parameters for form
             }
             else if (sessionType == "end")//if end session
             {
                 VM.SessionEndActive = false;
+                VM.LineResponse.EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);//clear the SOE response info panel or set the default parameters for form
             }
             //  Calls the EndSession method from the MapAMilepostMapTool viewmodel, setting the active tool
             //  to whatever was selected before the mapping session was initialized.
             VM.MappingTool.EndSession();
-            if(sessionType == null)//tab switched
+            await Commands.GraphicsCommands.DeleteUnsavedGraphics(sessionType);
+            if (sessionType == null)//tab switched
             {
                 await Commands.GraphicsCommands.DeleteUnsavedGraphics(sessionType);
                 if (VM.GetType() == typeof(MapPointViewModel))
@@ -73,8 +75,6 @@ namespace MapAMilepost.Utils
                 {
                     await DeactivateSession(VM, "start");
                     await DeactivateSession(VM, "end");
-                    VM.LineResponse.EndResponse = new PointResponseModel();
-                    VM.LineResponse.StartResponse = new PointResponseModel();
                 }
             }
         }

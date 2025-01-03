@@ -121,9 +121,7 @@ namespace MapAMilepost.ViewModels
             await Utils.MapToolUtils.DeactivateSession(this, "point");
             if (!IsMapMode)
             {
-                PointResponse = new PointResponseModel() { 
-                    Decrease = false, Back = false, Srmp=0
-                };
+                PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(this);
             }
             else
             {
@@ -131,7 +129,7 @@ namespace MapAMilepost.ViewModels
                 {
                     PointResponse = SelectedPoints[0];
                 }
-            }
+            };
         });
 
         public Commands.RelayCommand<object> ClearItemsCommand => new(async (parms) => {

@@ -114,30 +114,21 @@ namespace MapAMilepost.ViewModels
         public Commands.RelayCommand<object> ChangeModeCommand => new(async(param) =>
         {
             IsMapMode = !IsMapMode;
-            await Utils.MapToolUtils.DeactivateSession(this, "line");
+            await Utils.MapToolUtils.DeactivateSession(this, "start");
+            await Utils.MapToolUtils.DeactivateSession(this, "end");
             if (!IsMapMode)
             {
-                LineResponse = new LineResponseModel();
-                LineResponse.StartResponse = new PointResponseModel()
-                {
-                    Decrease = false,
-                    Back = false,
-                    Srmp = 0
-                };
-                LineResponse.EndResponse = new PointResponseModel()
-                {
-                    Decrease = false,
-                    Back = false,
-                    Srmp = 0
-                };
+                LineResponse.StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(this);
+                LineResponse.EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(this);
             }
             else
             {
                 if (SelectedLines.Count == 1)
                 {
-                    LineResponse = SelectedLines[0];
+                    LineResponse.StartResponse = SelectedLines[0].StartResponse;
+                    LineResponse.EndResponse = SelectedLines[0].EndResponse;
                 }
-            }
+            };
         });
 
         public Commands.RelayCommand<object> ClearItemsCommand => new(async (parms) => {
@@ -167,56 +158,72 @@ namespace MapAMilepost.ViewModels
                 this.LineResponse.StartResponse.Srmp = null;
             }
         });
-        public Commands.RelayCommand<object> InteractionCommand => new (async(startEnd) =>
+        public Commands.RelayCommand<object> InteractionCommand => new (async(MapToolSessionType) =>
         {
             if (IsMapMode)
             {
-                await ToggleSession((string)startEnd);
+                await ToggleSession((string)MapToolSessionType);
             }
             else
             {
-                await Commands.GraphicsCommands.DeleteUnsavedGraphics();//delete all unsaved graphics
-                //if (PointArgs.SR == 0)
-                //{
-                //    PointArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
-                //}
-                //PointResponse.ReferenceDate = PointArgs.ReferenceDate;
-                //bool formDataValid = HTTPRequest.CheckFormData(PointResponse);
-                //if (formDataValid)
-                //{
-
-                //    LocationInfo formLocation = new LocationInfo(PointResponse);
-                //    if (formLocation.Route.Length < 3)
-                //    {
-                //        while (formLocation.Route.Length < 3)
-                //        {
-                //            formLocation.Route = "0" + formLocation.Route;
-                //        }
-                //    }
-                //    if (SRMPIsSelected)
-                //    {
-                //        formLocation.Arm = null;
-                //    }
-                //    else
-                //    {
-                //        formLocation.Srmp = null;
-                //    }
-                //    var newPointResponse = await Utils.HTTPRequest.FindRouteLocation(formLocation, PointArgs) as PointResponseModel;
-                //    if (newPointResponse != null && newPointResponse.RouteGeometry != null)
-                //    {
-                //        PointResponse = newPointResponse;
-                //        await Commands.GraphicsCommands.CreatePointGraphics(PointArgs, PointResponse, "point");
-                //        await QueuedTask.Run(() =>
-                //        {
-                //            Camera newCamera = MapView.Active.Camera;
-                //            newCamera.X = PointResponse.RouteGeometry.x;
-                //            newCamera.Y = PointResponse.RouteGeometry.y;
-                //            MapView.Active.ZoomToAsync(newCamera, TimeSpan.FromSeconds(.5));
-                //        });
-                //    }
-                //}
+                List<List<double>> lineGeometryResponse = new();
+                await Commands.GraphicsCommands.DeleteUnsavedGraphics((string)MapToolSessionType);//delete unsaved start 
+                if ((string)MapToolSessionType == "start")
+                {
+                    await ProcessPoint(LineResponse.StartResponse, LineArgs.StartArgs, "start");
+                    lineGeometryResponse = await Utils.MapToolUtils.GetLine(LineResponse.StartResponse, LineResponse.EndResponse, LineArgs.StartArgs.SR, LineArgs.StartArgs.ReferenceDate);
+                }
+                else 
+                {
+                    await ProcessPoint(LineResponse.EndResponse, LineArgs.EndArgs, "end");
+                    lineGeometryResponse = await Utils.MapToolUtils.GetLine(LineResponse.StartResponse, LineResponse.EndResponse, LineArgs.StartArgs.SR, LineArgs.StartArgs.ReferenceDate);
+                }
             }
         });
+
+        private async Task ProcessPoint(PointResponseModel Point, PointArgsModel Args, string startEnd)
+        {
+            if (Args.SR == 0)
+            {
+                Args.SR = MapView.Active.Map.SpatialReference.Wkid;
+            }
+            Point.ReferenceDate = Args.ReferenceDate;
+            var errorDialog = startEnd == "start" ? "Start point" : "End point";
+            bool formDataValid = HTTPRequest.CheckFormData(Point, errorDialog);
+            if (formDataValid)
+            {
+
+                LocationInfo formLocation = new LocationInfo(Point);
+                if (formLocation.Route.Length < 3)
+                {
+                    while (formLocation.Route.Length < 3)
+                    {
+                        formLocation.Route = "0" + formLocation.Route;
+                    }
+                }
+                if (SRMPIsSelected)
+                {
+                    formLocation.Arm = null;
+                }
+                else
+                {
+                    formLocation.Srmp = null;
+                }
+                var newPointResponse = await Utils.HTTPRequest.FindRouteLocation(formLocation, Args) as PointResponseModel;
+                if (newPointResponse != null && newPointResponse.RouteGeometry != null)
+                {
+                    Point = newPointResponse;
+                    await Commands.GraphicsCommands.CreatePointGraphics(Args, Point, startEnd);
+                    await QueuedTask.Run(() =>
+                    {
+                        Camera newCamera = MapView.Active.Camera;
+                        newCamera.X = Point.RouteGeometry.x;
+                        newCamera.Y = Point.RouteGeometry.y;
+                        MapView.Active.ZoomToAsync(newCamera, TimeSpan.FromSeconds(.5));
+                    });
+                }
+            }
+        }
 
         private async Task ToggleSession(string startEnd)
         {

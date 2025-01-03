@@ -94,20 +94,21 @@ namespace MapAMilepost.ViewModels
                 TabControl parentControl = (button as TabItem).Parent as TabControl;
                 parentControl.SelectedIndex = -1;
                 this.IsEnabled = false;
-               //parentControl.IsEnabled = false;
                 await GraphicsCommands.DeselectAllGraphics();//remove all graphic selections
                 await MapToolUtils.DeactivateSession(this.SelectedViewModel);//deactivate any active map tool sessions
                 TabCommands.SwitchTab(button, this);//switch the selected viewmodel
-               // parentControl.IsEnabled = true;
                 this.IsEnabled = true;
                 if (this.SelectedViewModel != null)
                 {
                     if (this.SelectedViewModel == this.MapPointVM)
                     {
+                        this.SelectedViewModel.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(this.MapPointVM);
                         parentControl.SelectedIndex = 0;
                     }
                     else
                     {
+                        this.SelectedViewModel.LineResponse.StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(this.MapLineVM);
+                        this.SelectedViewModel.LineResponse.EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(this.MapLineVM);
                         parentControl.SelectedIndex = 1;
                     }
                 }

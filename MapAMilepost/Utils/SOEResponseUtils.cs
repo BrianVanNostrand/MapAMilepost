@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MapAMilepost.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -85,6 +86,17 @@ namespace MapAMilepost.Utils
                 }
             }
             return true;
+        }
+
+        public static PointResponseModel CreateInputConditionalPointModel(ViewModelBase VM)
+        {
+            PointResponseModel Point = new PointResponseModel()
+            {
+                Srmp = VM.IsMapMode ? null : 0,
+                Decrease = VM.IsMapMode ? null : false,
+                Back = VM.IsMapMode ? null : false,
+            };
+            return Point;
         }
     }
 }
