@@ -574,7 +574,15 @@ namespace MapAMilepost.Commands
                             UpdateSaveGraphicInfos(customPointSymbols, FeatureID);
                             await DeleteUnsavedGraphics();
                             VM.LineArgs = new LineArgsModel(VM.LineArgs.StartArgs.SearchRadius, VM.LineArgs.EndArgs.SearchRadius);
-                            VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
+                            if(VM.IsMapMode)
+                            {
+                                VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
+                            }
+                            else
+                            {
+                                VM.LineResponse.StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);
+                                VM.LineResponse.EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);
+                            }
                             VM.MappingTool.EndSession();
                             if (VM.LineResponses.Count > 0)
                             {

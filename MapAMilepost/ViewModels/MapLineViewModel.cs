@@ -10,6 +10,7 @@ using System;
 using System.Threading.Tasks;
 using ArcGIS.Core.Data;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
+using System.Linq;
 
 namespace MapAMilepost.ViewModels
 {
@@ -114,6 +115,7 @@ namespace MapAMilepost.ViewModels
         public Commands.RelayCommand<object> ChangeModeCommand => new(async(param) =>
         {
             IsMapMode = !IsMapMode;
+            await Commands.GraphicsCommands.DeleteUnsavedGraphics();
             await Utils.MapToolUtils.DeactivateSession(this, "start");
             await Utils.MapToolUtils.DeactivateSession(this, "end");
             if (!IsMapMode)
@@ -128,6 +130,12 @@ namespace MapAMilepost.ViewModels
                     LineResponse.StartResponse = SelectedLines[0].StartResponse;
                     LineResponse.EndResponse = SelectedLines[0].EndResponse;
                 }
+                else 
+                { 
+                    LineResponse.StartResponse = new PointResponseModel();
+                    LineResponse.EndResponse = new PointResponseModel();
+
+                };
             };
         });
 
@@ -170,18 +178,63 @@ namespace MapAMilepost.ViewModels
                 await Commands.GraphicsCommands.DeleteUnsavedGraphics((string)MapToolSessionType);//delete unsaved start 
                 if ((string)MapToolSessionType == "start")
                 {
-                    await ProcessPoint(LineResponse.StartResponse, LineArgs.StartArgs, "start");
-                    lineGeometryResponse = await Utils.MapToolUtils.GetLine(LineResponse.StartResponse, LineResponse.EndResponse, LineArgs.StartArgs.SR, LineArgs.StartArgs.ReferenceDate);
+                    LineResponse.StartResponse = await ProcessPoint(LineResponse.StartResponse, LineArgs.StartArgs, "start");
+                    if (LineResponse.StartResponse.RouteGeometry != null && LineResponse.EndResponse.RouteGeometry != null)
+                    {
+                        lineGeometryResponse = await Utils.MapToolUtils.GetLine(LineResponse.StartResponse, LineResponse.EndResponse, LineArgs.StartArgs.SR, LineArgs.StartArgs.ReferenceDate);
+                        if (lineGeometryResponse.Count > 0)
+                        {
+                            await Commands.GraphicsCommands.CreateLineGraphics(LineResponse.StartResponse, LineResponse.EndResponse, lineGeometryResponse);
+                        }
+                    }
                 }
                 else 
                 {
-                    await ProcessPoint(LineResponse.EndResponse, LineArgs.EndArgs, "end");
-                    lineGeometryResponse = await Utils.MapToolUtils.GetLine(LineResponse.StartResponse, LineResponse.EndResponse, LineArgs.StartArgs.SR, LineArgs.StartArgs.ReferenceDate);
+                    LineResponse.EndResponse = await ProcessPoint(LineResponse.EndResponse, LineArgs.EndArgs, "end");
+                    if (LineResponse.StartResponse.RouteGeometry != null && LineResponse.EndResponse.RouteGeometry != null)
+                    {
+                        lineGeometryResponse = await Utils.MapToolUtils.GetLine(LineResponse.StartResponse, LineResponse.EndResponse, LineArgs.StartArgs.SR, LineArgs.StartArgs.ReferenceDate);
+                        if (lineGeometryResponse.Count > 0)
+                        {
+                            await Commands.GraphicsCommands.CreateLineGraphics(LineResponse.StartResponse, LineResponse.EndResponse, lineGeometryResponse);
+                        }
+                    }
+                }
+                
+            }
+        });
+
+        public Commands.RelayCommand<object> RouteChangedCommand => new((startEnd) =>
+        {
+            if (!IsMapMode)
+            {
+                if ((string)startEnd == "start")
+                {
+                    if (this.SRMPIsSelected)
+                    {
+                        LineResponse.StartResponse.Arm = null;
+                    }
+                    else
+                    {
+                        LineResponse.StartResponse.Srmp = null;
+                    }
+                }
+                else
+                {
+                    if (this.SRMPIsSelected)
+                    {
+                        LineResponse.EndResponse.Arm = null;
+                    }
+                    else
+                    {
+                        LineResponse.EndResponse.Srmp = null;
+                    }
                 }
             }
         });
 
-        private async Task ProcessPoint(PointResponseModel Point, PointArgsModel Args, string startEnd)
+
+        private async Task<PointResponseModel> ProcessPoint(PointResponseModel Point, PointArgsModel Args, string startEnd)
         {
             if (Args.SR == 0)
             {
@@ -192,15 +245,14 @@ namespace MapAMilepost.ViewModels
             bool formDataValid = HTTPRequest.CheckFormData(Point, errorDialog);
             if (formDataValid)
             {
-
-                LocationInfo formLocation = new LocationInfo(Point);
-                if (formLocation.Route.Length < 3)
+                if (Point.Route.Length < 3)
                 {
-                    while (formLocation.Route.Length < 3)
+                    while (Point.Route.Length < 3)
                     {
-                        formLocation.Route = "0" + formLocation.Route;
+                        Point.Route = "0" + Point.Route;
                     }
                 }
+                LocationInfo formLocation = new LocationInfo(Point);
                 if (SRMPIsSelected)
                 {
                     formLocation.Arm = null;
@@ -209,7 +261,7 @@ namespace MapAMilepost.ViewModels
                 {
                     formLocation.Srmp = null;
                 }
-                var newPointResponse = await Utils.HTTPRequest.FindRouteLocation(formLocation, Args) as PointResponseModel;
+                PointResponseModel newPointResponse = await Utils.HTTPRequest.FindRouteLocation(formLocation, Args) as PointResponseModel;
                 if (newPointResponse != null && newPointResponse.RouteGeometry != null)
                 {
                     Point = newPointResponse;
@@ -223,10 +275,18 @@ namespace MapAMilepost.ViewModels
                     });
                 }
             }
+            return Point;
         }
 
         private async Task ToggleSession(string startEnd)
         {
+            if(SelectedLines.Count > 0)
+            {
+                if(SelectedLines.First().StartResponse==LineResponse.StartResponse|| SelectedLines.First().EndResponse == LineResponse.EndResponse)
+                {
+                    LineResponse = new LineResponseModel();
+                }
+            }
             if (startEnd == "start")//if start button is clicked
             {
                 if (this.SessionEndActive == true || this.SessionActive == false)
