@@ -57,6 +57,10 @@ namespace MapAMilepost.Commands
                     {
                         VM.PointResponse = new PointResponseModel();
                     }
+                    else
+                    {
+                        VM.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);
+                    }
                     //clear selected items
                     VM.SelectedPoints.Clear();
                     //clear selected rows
@@ -114,6 +118,13 @@ namespace MapAMilepost.Commands
                     if (VM.IsMapMode)
                     {
                         VM.LineResponse = new LineResponseModel();
+                    }
+                    else
+                    {
+                        VM.LineResponse = new LineResponseModel {
+                            StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM),
+                            EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM)
+                        };
                     }
                     //clear selected items
                     VM.SelectedLines.Clear();
@@ -251,7 +262,14 @@ namespace MapAMilepost.Commands
                         {
                             await Commands.GraphicsCommands.DeleteGraphics("point");
                             VM.PointResponses.Clear();
-                            VM.PointResponse = new PointResponseModel();//clear the SOE response info panel
+                            if (VM.IsMapMode)
+                            {
+                                VM.PointResponse = new PointResponseModel();//clear the SOE response info panel
+                            }
+                            else
+                            {
+                                VM.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);    
+                            }
                         }
                     }
                     else//if this map was invoked by a map change event
@@ -282,7 +300,18 @@ namespace MapAMilepost.Commands
                         {
                             await Commands.GraphicsCommands.DeleteGraphics("line");
                             VM.LineResponses.Clear();
-                            VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
+                            if (VM.IsMapMode)
+                            {
+                                VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
+                            }
+                            else
+                            {
+                                VM.LineResponse = new LineResponseModel()
+                                {
+                                    StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM),
+                                    EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM)
+                                };
+                            }
                         }
                     }
                     else//if this map was invoked by a map change event

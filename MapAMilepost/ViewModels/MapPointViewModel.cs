@@ -129,6 +129,10 @@ namespace MapAMilepost.ViewModels
                 {
                     PointResponse = SelectedPoints[0];
                 }
+                else
+                {
+                    PointResponse = new PointResponseModel();
+                }
             };
         });
 
@@ -196,15 +200,46 @@ namespace MapAMilepost.ViewModels
                     if (newPointResponse != null && newPointResponse.RouteGeometry != null) {
                         PointResponse = newPointResponse;
                         await Commands.GraphicsCommands.CreatePointGraphics(PointArgs, PointResponse, "point");
-                        await QueuedTask.Run(() =>
-                        {
-                            Camera newCamera = MapView.Active.Camera;
-                            newCamera.X = PointResponse.RouteGeometry.x;
-                            newCamera.Y = PointResponse.RouteGeometry.y;
-                            MapView.Active.ZoomToAsync(newCamera, TimeSpan.FromSeconds(.5));
-                        });
+                        //await QueuedTask.Run(() =>
+                        //{
+                        //    Camera newCamera = MapView.Active.Camera;
+                        //    newCamera.X = PointResponse.RouteGeometry.x;
+                        //    newCamera.Y = PointResponse.RouteGeometry.y;
+                        //    MapView.Active.ZoomToAsync(newCamera, TimeSpan.FromSeconds(.5));
+                        //});
+                        await CameraUtils.ZoomToCoords(PointResponse.RouteGeometry.x, PointResponse.RouteGeometry.y);
                     }
                    
+                }
+            }
+        });
+
+        public Commands.RelayCommand<object> RouteChangedCommand => new((startEnd) =>
+        {
+            if (!IsMapMode)
+            {
+                if (this.SRMPIsSelected)
+                {
+                    PointResponse.Arm = null;
+                }
+                else
+                {
+                    PointResponse.Srmp = null;
+                }
+            }
+        });
+
+        public Commands.RelayCommand<object> MPChangedCommand => new((startEnd) =>
+        {
+            if (!IsMapMode)
+            {
+                if (this.SRMPIsSelected)
+                {
+                    PointResponse.Arm = null;
+                }
+                else
+                {
+                    PointResponse.Srmp = null;
                 }
             }
         });

@@ -1,10 +1,12 @@
 ﻿using ArcGIS.Core.CIM;
 using ArcGIS.Desktop.Core;
+using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Internal.Mapping;
 using ArcGIS.Desktop.Internal.Mapping.CommonControls;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,6 +70,27 @@ namespace MapAMilepost.Utils
             });
             return targetLayer;
         }
+        public static async Task<bool> CreateMilepostMappingLayer(Map map)
+        {
+            string title = Interaction.InputBox("Please enter a title for your milepost graphics layer.", "Create Milepost Layer", "My Milepost Layer");
+            if (title != "")
+            {
+                GraphicsLayerCreationParams gl_param = new() { Name = title };
+                await QueuedTask.Run(() =>
+                {
+                    GraphicsLayer graphicsLayer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(gl_param, map);
 
+                    CIMBaseLayer newDefinition = graphicsLayer.GetDefinition();
+                    CIMStringMap[] CustomLayerProps = new CIMStringMap[]//hidden ID for map layer
+                    {
+                    new() { Key = "MilepostMappingLayer", Value = "true" },
+                    };
+                    newDefinition.CustomProperties = CustomLayerProps;
+                    graphicsLayer.SetDefinition(newDefinition);//add custom prop to layer
+                });
+                await FrameworkApplication.SetCurrentToolAsync("MapAMilepost_MapTool");
+            }
+            return (title == "" ? false : true);
+        }
     }
 }

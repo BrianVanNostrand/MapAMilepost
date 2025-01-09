@@ -23,7 +23,7 @@ namespace MapAMilepost.ViewModels
         private bool _showResultsTable = true;
         private bool _sessionActive = false;
         private bool _sessionEndActive = false;
-        private bool _isMapMode = false;
+        private bool _isMapMode = true;
         private bool _srmpIsSelected = true;
         public MapLineViewModel()//constructor
         {
@@ -143,6 +143,10 @@ namespace MapAMilepost.ViewModels
             if (MapView.Active != null && MapView.Active.Map != null)
             {
                 await Commands.DataGridCommands.ClearDataGridItems(this);
+                if (!IsMapMode)
+                {
+
+                }
             }
             else
             {
@@ -158,12 +162,16 @@ namespace MapAMilepost.ViewModels
                 SRMPIsSelected = true;
                 this.LineResponse.StartResponse.Arm = null;
                 this.LineResponse.StartResponse.Srmp = 0;
+                this.LineResponse.EndResponse.Arm = null;
+                this.LineResponse.EndResponse.Srmp = 0;
             }
             else
             {
                 SRMPIsSelected = false;
                 this.LineResponse.StartResponse.Arm = 0;
                 this.LineResponse.StartResponse.Srmp = null;
+                this.LineResponse.EndResponse.Arm = 0;
+                this.LineResponse.EndResponse.Srmp = null;
             }
         });
         public Commands.RelayCommand<object> InteractionCommand => new (async(MapToolSessionType) =>
@@ -175,36 +183,40 @@ namespace MapAMilepost.ViewModels
             else
             {
                 List<List<double>> lineGeometryResponse = new();
-                await Commands.GraphicsCommands.DeleteUnsavedGraphics((string)MapToolSessionType);//delete unsaved start 
-                if ((string)MapToolSessionType == "start")
+                await Commands.GraphicsCommands.DeleteUnsavedGraphics();//delete unsaved lines
+                LineResponse.StartResponse = await ProcessPoint(LineResponse.StartResponse, LineArgs.StartArgs, "start");
+                LineResponse.EndResponse = await ProcessPoint(LineResponse.EndResponse, LineArgs.EndArgs, "end");
+                if (LineResponse.StartResponse.RouteGeometry != null && LineResponse.EndResponse.RouteGeometry != null)
                 {
-                    LineResponse.StartResponse = await ProcessPoint(LineResponse.StartResponse, LineArgs.StartArgs, "start");
-                    if (LineResponse.StartResponse.RouteGeometry != null && LineResponse.EndResponse.RouteGeometry != null)
+                    lineGeometryResponse = await Utils.MapToolUtils.GetLine(LineResponse.StartResponse, LineResponse.EndResponse, LineArgs.StartArgs.SR, LineArgs.StartArgs.ReferenceDate);
+                    if (lineGeometryResponse.Count > 0)
                     {
-                        lineGeometryResponse = await Utils.MapToolUtils.GetLine(LineResponse.StartResponse, LineResponse.EndResponse, LineArgs.StartArgs.SR, LineArgs.StartArgs.ReferenceDate);
-                        if (lineGeometryResponse.Count > 0)
-                        {
-                            await Commands.GraphicsCommands.CreateLineGraphics(LineResponse.StartResponse, LineResponse.EndResponse, lineGeometryResponse);
-                        }
+                        await Commands.GraphicsCommands.CreateLineGraphics(LineResponse.StartResponse, LineResponse.EndResponse, lineGeometryResponse);
+                        await CameraUtils.ZoomToCoords(lineGeometryResponse.First()[0], lineGeometryResponse.Last()[1]);
                     }
                 }
-                else 
-                {
-                    LineResponse.EndResponse = await ProcessPoint(LineResponse.EndResponse, LineArgs.EndArgs, "end");
-                    if (LineResponse.StartResponse.RouteGeometry != null && LineResponse.EndResponse.RouteGeometry != null)
-                    {
-                        lineGeometryResponse = await Utils.MapToolUtils.GetLine(LineResponse.StartResponse, LineResponse.EndResponse, LineArgs.StartArgs.SR, LineArgs.StartArgs.ReferenceDate);
-                        if (lineGeometryResponse.Count > 0)
-                        {
-                            await Commands.GraphicsCommands.CreateLineGraphics(LineResponse.StartResponse, LineResponse.EndResponse, lineGeometryResponse);
-                        }
-                    }
-                }
-                
             }
         });
 
         public Commands.RelayCommand<object> RouteChangedCommand => new((startEnd) =>
+        {
+            if (!IsMapMode)
+            {
+                LineResponse.EndResponse.Route = LineResponse.StartResponse.Route;
+                if (this.SRMPIsSelected)
+                {
+                    LineResponse.StartResponse.Arm = null;
+                    LineResponse.EndResponse.Arm = null;
+                }
+                else
+                {
+                    LineResponse.StartResponse.Srmp = null;
+                    LineResponse.EndResponse.Srmp = null;
+                }
+            }
+        });
+
+        public Commands.RelayCommand<object> MPChangedCommand => new((startEnd) =>
         {
             if (!IsMapMode)
             {
@@ -233,8 +245,12 @@ namespace MapAMilepost.ViewModels
             }
         });
 
+        public Commands.RelayCommand<object> DirectionChangedCommand => new((startEnd) =>
+        {
+            LineResponse.EndResponse.Decrease = LineResponse.StartResponse.Decrease;
+        });
 
-        private async Task<PointResponseModel> ProcessPoint(PointResponseModel Point, PointArgsModel Args, string startEnd)
+         private async Task<PointResponseModel> ProcessPoint(PointResponseModel Point, PointArgsModel Args, string startEnd)
         {
             if (Args.SR == 0)
             {
@@ -266,13 +282,6 @@ namespace MapAMilepost.ViewModels
                 {
                     Point = newPointResponse;
                     await Commands.GraphicsCommands.CreatePointGraphics(Args, Point, startEnd);
-                    await QueuedTask.Run(() =>
-                    {
-                        Camera newCamera = MapView.Active.Camera;
-                        newCamera.X = Point.RouteGeometry.x;
-                        newCamera.Y = Point.RouteGeometry.y;
-                        MapView.Active.ZoomToAsync(newCamera, TimeSpan.FromSeconds(.5));
-                    });
                 }
             }
             return Point;
