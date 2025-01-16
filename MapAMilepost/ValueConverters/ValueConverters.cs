@@ -308,4 +308,20 @@ namespace MapAMilepost.ValueConverters
             throw new NotSupportedException();
         }
     }
+
+    //public class DateStringConverter : IValueConverter 
+    //{
+    //    public object Convert(object value, Type targetType, object parameter,
+    //            System.Globalization.CultureInfo culture)
+    //    {
+    //        return DateTime.Parse((string)value);
+    //    }
+    //    public object ConvertBack(object value, Type targetType, object parameter,
+    //        System.Globalization.CultureInfo culture)
+    //    {
+    //        DateTime dt = DateTime.ParseExact(value, "ddMMyyyy",
+    //                              CultureInfo.InvariantCulture);
+    //        return $"{value.ToString("M/d/yyyy")}";
+    //    }
+    //}
 }

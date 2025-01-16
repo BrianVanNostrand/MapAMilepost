@@ -12,6 +12,7 @@ namespace MapAMilepost.Models
     {
         private bool _appReady;
         private bool _mapViewPaneSelected;
+        private bool _mapLoaded;
         private GraphicsLayer _layer;
         public bool MapViewPaneSelected
         {
@@ -40,18 +41,28 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(AppReady));
             }
         }
+        public bool MapLoaded
+        {
+            get { return _mapLoaded; }
+            set
+            {
+                _mapLoaded = value;
+                OnPropertyChanged(nameof(MapLoaded));
+            }
+        }
         public AppStateModel()
         {
-
+            _mapLoaded = false;
             _appReady = false;
             _layer = null;
         }
     }
-    public class ErrorModalModel : ObservableObject
+    public class InfoModalInfo : ObservableObject
     {
         private string _title;
         private string _caption;
         private bool _showButton;
+        private bool _showLoader;
         public string Title
         {
             get { return _title; }
@@ -79,11 +90,21 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(ShowButton));
             }
         }
-        public ErrorModalModel()
+        public bool ShowLoader
+        {
+            get { return _showLoader; }
+            set
+            {
+                _showLoader = value;
+                OnPropertyChanged(nameof(ShowLoader));
+            }
+        }
+        public InfoModalInfo()
         {
             Title = "Error";
             Caption = "Error";
             ShowButton = false;
+            ShowLoader = false;
         }
     }
 }

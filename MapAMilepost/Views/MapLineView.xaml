@@ -31,7 +31,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid x:Name="MainGrid" Background="White" IsEnabled="{Binding isEnabled}" >
+    <Grid x:Name="MainGrid" Background="White" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -113,7 +113,7 @@
                 </i:Interaction.Triggers>
             </TextBox>
             <!-- The SRMP and ARM context-dependent text boxes -->
-            <TextBox Grid.Column="2" Grid.Row="2" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding LineResponse.StartResponse.Srmp, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}">
+            <TextBox Grid.Column="2" Grid.Row="2" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding LineResponse.StartResponse.Srmp, UpdateSourceTrigger=LostFocus, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="KeyDown">
                         <i:InvokeCommandAction Command="{Binding MPChangedCommand}" CommandParameter="start"  />
@@ -121,7 +121,7 @@
                 </i:Interaction.Triggers>
             </TextBox>
             <TextBox Grid.Column="2" Grid.Row="2" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding LineResponse.StartResponse.Srmp, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, Delay=300}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="2" Grid.Row="3" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding LineResponse.StartResponse.Arm, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected, Converter={StaticResource BooleanInverter}}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}">
+            <TextBox Grid.Column="2" Grid.Row="3" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding LineResponse.StartResponse.Arm, UpdateSourceTrigger=LostFocus, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected, Converter={StaticResource BooleanInverter}}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="KeyDown">
                         <i:InvokeCommandAction Command="{Binding MPChangedCommand}" CommandParameter="start"  />
@@ -161,7 +161,7 @@
              <!--End Point Bindings-->
             <TextBox Grid.Column="3" Grid.Row="1"  Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding LineResponse.EndResponse.Route, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}"/>
             <!-- The SRMP and ARM context-dependent text boxes -->
-            <TextBox Grid.Column="3" Grid.Row="2" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding LineResponse.EndResponse.Srmp, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}">
+            <TextBox Grid.Column="3" Grid.Row="2" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding LineResponse.EndResponse.Srmp, UpdateSourceTrigger=LostFocus, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="PreviewKeyDown">
                         <i:InvokeCommandAction Command="{Binding MPChangedCommand}" CommandParameter="end"  />
@@ -169,7 +169,7 @@
                 </i:Interaction.Triggers>
             </TextBox>
             <TextBox Grid.Column="3" Grid.Row="2" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding LineResponse.EndResponse.Srmp, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="3" Grid.Row="3" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding LineResponse.EndResponse.Arm, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected, Converter={StaticResource BooleanInverter}}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}">
+            <TextBox Grid.Column="3" Grid.Row="3" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding LineResponse.EndResponse.Arm, UpdateSourceTrigger=LostFocus, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected, Converter={StaticResource BooleanInverter}}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="PreviewKeyDown">
                         <i:InvokeCommandAction Command="{Binding MPChangedCommand}" CommandParameter="end"  />

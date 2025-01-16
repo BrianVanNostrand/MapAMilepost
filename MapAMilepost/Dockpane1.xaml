@@ -10,6 +10,7 @@
              xmlns:frameworkControls="clr-namespace:ArcGIS.Desktop.Framework.Controls;assembly=ArcGIS.Desktop.Framework"
              xmlns:valueConverters="clr-namespace:MapAMilepost.ValueConverters"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
              mc:Ignorable="d"
              d:DesignHeight="600" 
              x:Name="MainUserControl">
@@ -30,6 +31,7 @@
             <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="#EEE" />
             <SolidColorBrush x:Key="DisabledBorderBrush" Color="#AAA" />
             <SolidColorBrush x:Key="DisabledForegroundBrush" Color="#888" />
+            <SolidColorBrush x:Key="ThemeBlue" Color="#007ac1"/>
             <Style TargetType="{x:Type TabItem}">
                 <Setter Property="Template">
                     <Setter.Value>
@@ -56,7 +58,7 @@
                                         VerticalAlignment="Bottom"  
                                         X1="00" Y1="0"
                                         X2="50" Y2="0"
-                                        Stroke="#007ac1"
+                                        Stroke="{DynamicResource ThemeBlue}"
                                         StrokeThickness="4"
                                         Margin="10 10 10 10"
                                         Visibility="{TemplateBinding IsSelected, Converter={StaticResource BoolToVis}}"
@@ -110,13 +112,13 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <DockPanel x:Name="PageTabs" Visibility="{Binding AppState.AppReady, Converter={StaticResource BoolToVis}}" Grid.Row="0" Grid.Column="0" DataContext="{DynamicResource MainViewModel}" Background="white" LastChildFill="true" KeyboardNavigation.TabNavigation="Local" Height="50">
+            <DockPanel x:Name="PageTabs" Visibility="{Binding AddInReady, Converter={StaticResource BoolToVis}}" Grid.Row="0" Grid.Column="0" DataContext="{DynamicResource MainViewModel}" Background="white" LastChildFill="true" KeyboardNavigation.TabNavigation="Local" Height="50">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Loaded">
-                        <i:InvokeCommandAction Command="{Binding OnShowCommand}" CommandParameter="{Binding ElementName=MainDockPanel}"/>
+                        <i:InvokeCommandAction Command="{Binding OnShowCommand}" CommandParameter="{Binding ElementName=PageTabs}"/>
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
-                <TabControl IsEnabled="{Binding IsEnabled}" Height="50" x:Name="controlsGrid">
+                <TabControl Height="50" x:Name="controlsGrid">
                     <TabItem  x:Name="MapPointTab" Height="50" Width="80" Header="Map a Point">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="PreviewMouseDown">
@@ -133,9 +135,9 @@
                     </TabItem>
                 </TabControl>
             </DockPanel>
-            <Border  x:Name="ViewmodelHandler" Visibility="{Binding AppState.AppReady, Converter={StaticResource BoolToVis}}" DataContext="{DynamicResource MainViewModel}" Grid.Row="1" BorderBrush="{StaticResource SolidBorderBrush}"  Background="White">
+            <Border  x:Name="ViewmodelHandler" Visibility="{Binding AddInReady, Converter={StaticResource BoolToVis}}" DataContext="{DynamicResource MainViewModel}" Grid.Row="1" BorderBrush="{StaticResource SolidBorderBrush}"  Background="White">
                 <ScrollViewer Background="white" VerticalScrollBarVisibility="Auto" >
-                    <ContentControl IsEnabled="{Binding IsEnabled}" DataContext="{DynamicResource MainViewModel}" Background="white" ClipToBounds="True" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Row="1" Content="{Binding SelectedViewModel}">
+                    <ContentControl DataContext="{DynamicResource MainViewModel}" Background="white" ClipToBounds="True" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Row="1" Content="{Binding SelectedViewModel}">
                         <ContentControl.Resources>
                             <DataTemplate DataType="{x:Type viewmodels:MapPointViewModel}">
                                 <views:MapPointView/>
@@ -147,7 +149,7 @@
                     </ContentControl>
                 </ScrollViewer>
             </Border>
-            <Border x:Name="Settings" Visibility="{Binding AppState.AppReady, Converter={StaticResource BoolToVis}}" DataContext="{DynamicResource MainViewModel}" Grid.Row="2" Grid.Column="0" Background="White" BorderThickness="1px">
+            <Border x:Name="Settings" Visibility="{Binding AddInReady, Converter={StaticResource BoolToVis}}" DataContext="{DynamicResource MainViewModel}" Grid.Row="2" Grid.Column="0" Background="White" BorderThickness="1px">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="50"/>
@@ -169,25 +171,34 @@
                         <Grid.RowDefinitions>
                             <RowDefinition />
                             <RowDefinition />
+                            <RowDefinition />
+                            <RowDefinition />
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Column="0" Grid.Row="0" Text="Response Date" HorizontalAlignment="Right" Margin="0 0 10 0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                        <DatePicker Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px"/>
+                        <DatePicker Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px" SelectedDate="{Binding ResponseDate, Mode=TwoWay, StringFormat='M/d/yyyy'}"/>
                         <TextBlock Grid.Column="0" Grid.Row="1" Text="Reference Date" HorizontalAlignment="Right" Margin="0 0 10 0" VerticalAlignment="Center"/>
-                        <DatePicker Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px"/>
+                        <DatePicker Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px" SelectedDate="{Binding ReferenceDate, Mode=TwoWay, StringFormat='M/d/yyyy'}"/>
+                        <TextBlock Grid.Column="0" Grid.Row="2" Text="Zoom Scale" HorizontalAlignment="Right" Margin="0 0 10 0" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px" Text="{Binding ZoomScale, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Column="0" Grid.Row="3" Text="Search Distance" HorizontalAlignment="Right" Margin="0 0 10 0" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px" Text="{Binding SearchRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </Grid>
                 </Grid>
             </Border>
-            <Border x:Name="CreateLayerModal" DataContext="{DynamicResource MainViewModel}" Visibility="{Binding AppState.AppReady, Converter={StaticResource VisibilityConverter},ConverterParameter='true'}" Grid.Row="3" Background="White">
+            <Border x:Name="InfoModal" DataContext="{DynamicResource MainViewModel}" Visibility="{Binding AddInReady, Converter={StaticResource VisibilityConverter},ConverterParameter='true'}" Grid.Row="3" Background="White">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition/>
                         <RowDefinition Height="40"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <TextBlock FontWeight="Bold" Foreground="#007ac1" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="20px" TextWrapping="Wrap" Grid.Row="0" Width="Auto" Margin="10 0 10 10" Text="{Binding ErrorModalInfo.Title}"/>
-                    <TextBlock VerticalAlignment="Top" TextWrapping="Wrap" HorizontalAlignment="Center" Grid.Row="1" Width="Auto" Margin="10 10 10 10" Text="{Binding ErrorModalInfo.Caption}"/>
-                    <Border Visibility="{Binding ErrorModalInfo.ShowButton, Converter={StaticResource BoolToVis}}" Grid.Row="2" VerticalAlignment="Top">
-                        <Button Width="80px" Height="20px" Margin="10 10 10 10" Background="White" BorderBrush="#007ac1" Command="{Binding CreateGraphicsLayerCommand}">Click Here</Button>
+                    <TextBlock FontWeight="Bold" Foreground="{DynamicResource ThemeBlue}" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="20px" TextWrapping="Wrap" Grid.Row="0" Width="Auto" Margin="10 0 10 10" Text="{Binding ModalInfo.Title}"/>
+                    <TextBlock VerticalAlignment="Top" TextWrapping="Wrap" HorizontalAlignment="Center" Grid.Row="1" Width="Auto" Margin="10 10 10 10" Text="{Binding ModalInfo.Caption}"/>
+                    <Border Visibility="{Binding ModalInfo.ShowButton, Converter={StaticResource BoolToVis}}" Grid.Row="2" VerticalAlignment="Top">
+                        <Button Width="80px" Height="20px" Margin="10 10 10 10" Background="White" BorderBrush="{DynamicResource ThemeBlue}" Command="{Binding CreateGraphicsLayerCommand}">Click Here</Button>
+                    </Border>
+                    <Border Visibility="{Binding ModalInfo.ShowLoader, Converter={StaticResource BoolToVis}}" Grid.Row="2" VerticalAlignment="Top">
+                        <fa:ImageAwesome Foreground="{DynamicResource ThemeBlue}" Icon="Spinner" Spin="True" SpinDuration="5" Width="20px" Height="20px"/>
                     </Border>
                 </Grid>
             </Border>

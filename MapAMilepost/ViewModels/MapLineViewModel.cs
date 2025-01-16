@@ -18,7 +18,6 @@ namespace MapAMilepost.ViewModels
     {
         private LineResponseModel _lineResponse = new();
         private LineArgsModel _lineArgs = new();
-        private bool _isEnabled = false;
         private ObservableCollection<LineResponseModel> _lineResponses = new();
         private bool _showResultsTable = true;
         private bool _sessionActive = false;
@@ -28,15 +27,6 @@ namespace MapAMilepost.ViewModels
         public MapLineViewModel()//constructor
         {
             MappingTool = new MapAMilepostMaptool();
-        }
-        public bool isEnabled
-        {
-            get { return _isEnabled; }
-            set
-            {
-                _isEnabled = value;
-                OnPropertyChanged(nameof(isEnabled));
-            }
         }
         public bool SRMPIsSelected
         {

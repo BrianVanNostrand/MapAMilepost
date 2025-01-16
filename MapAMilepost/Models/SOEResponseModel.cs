@@ -70,7 +70,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Route));
             }
         }
-        public  double? Srmp
+        public double? Srmp
         {
             get { return _srmp; }
             set

@@ -22,7 +22,6 @@ namespace MapAMilepost.ViewModels
         /// </summary>
         private PointResponseModel _pointResponse = new();
         private PointArgsModel _pointArgs = new();
-        private bool _isEnabled = false;
         private ObservableCollection<PointResponseModel> _pointResponses = new();
         private bool _showResultsTable = false;
         private bool _sessionActive = false;
@@ -30,15 +29,6 @@ namespace MapAMilepost.ViewModels
         private bool _srmpIsSelected = true;
         public MapPointViewModel()//constructor
         {
-        }
-        public bool isEnabled// whether or not the map point view is enabled
-        {
-            get { return _isEnabled; }
-            set
-            {
-                _isEnabled = value;
-                OnPropertyChanged(nameof(isEnabled));
-            }
         }
         public bool SRMPIsSelected
         {
@@ -113,11 +103,21 @@ namespace MapAMilepost.ViewModels
 
         public Commands.RelayCommand<object> UpdateSelectionCommand => new (async(grid) => await Commands.DataGridCommands.UpdatePointSelection(grid as DataGrid, this));
 
+        public Commands.RelayCommand<object> ZoomToRecordCommand => new(async(grid) =>
+        {
+            PointResponseModel.coordinatePair coordPair = Commands.DataGridCommands.GetSelectedGraphicInfo(grid as DataGrid, this);
+            if(coordPair != null)
+            {
+                await CameraUtils.ZoomToCoords(coordPair.x, coordPair.y, PointArgs.ZoomScale);
+            }
+        });
+
         public Commands.RelayCommand<object> DeleteItemsCommand => new (async(p) => await Commands.DataGridCommands.DeletePointItems(this));
 
         public Commands.RelayCommand<object> ChangeModeCommand => new(async (param) =>
         {
             IsMapMode = !IsMapMode;
+            await Commands.GraphicsCommands.DeleteUnsavedGraphics();
             await Utils.MapToolUtils.DeactivateSession(this, "point");
             if (!IsMapMode)
             {
@@ -200,13 +200,6 @@ namespace MapAMilepost.ViewModels
                     if (newPointResponse != null && newPointResponse.RouteGeometry != null) {
                         PointResponse = newPointResponse;
                         await Commands.GraphicsCommands.CreatePointGraphics(PointArgs, PointResponse, "point");
-                        //await QueuedTask.Run(() =>
-                        //{
-                        //    Camera newCamera = MapView.Active.Camera;
-                        //    newCamera.X = PointResponse.RouteGeometry.x;
-                        //    newCamera.Y = PointResponse.RouteGeometry.y;
-                        //    MapView.Active.ZoomToAsync(newCamera, TimeSpan.FromSeconds(.5));
-                        //});
                         await CameraUtils.ZoomToCoords(PointResponse.RouteGeometry.x, PointResponse.RouteGeometry.y);
                     }
                    

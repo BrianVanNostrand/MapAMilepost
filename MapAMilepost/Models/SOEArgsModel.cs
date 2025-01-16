@@ -14,7 +14,7 @@ namespace MapAMilepost.Models
     {
         private string? _referenceDate;
 
-        public string? ReferenceDate
+        public string? ReferenceDate //reassigned by main viewmodel
         {
             get { return _referenceDate; }
             set
@@ -24,9 +24,20 @@ namespace MapAMilepost.Models
             }
         }
 
+        private string? _responseDate;
+        public string? ResponseDate //reassigned by main viewmodel
+        {
+            get { return _responseDate; }
+            set
+            {
+                _referenceDate = value;
+                OnPropertyChanged(nameof(ResponseDate));
+            }
+        }
+
         private string? _searchRadius;
 
-        public string? SearchRadius
+        public string? SearchRadius //reassigned by main viewmodel
         {
             get { return _searchRadius; }
             set
@@ -38,7 +49,7 @@ namespace MapAMilepost.Models
 
         private long _sR;
 
-        public long SR//spatial reference
+        public long SR//spatial reference - reassigned by main viewmodel
         {
             get { return _sR; }
             set
@@ -50,7 +61,7 @@ namespace MapAMilepost.Models
 
         private string? _searchRadiusUnits = "feet";
 
-        public string? SearchRadiusUnits
+        public string? SearchRadiusUnits//reassigned by main viewmodel
         {
             get { return _searchRadiusUnits; }
             set
@@ -62,7 +73,7 @@ namespace MapAMilepost.Models
 
         private double _x = 0;
 
-        public double X
+        public double X//assigned when a point is clicked (mapped) on a map
         {
             get { return _x; }
             set
@@ -74,7 +85,7 @@ namespace MapAMilepost.Models
 
         private double _y = 0;
 
-        public double Y
+        public double Y//assigned when a point is clicked (mapped) on a map
         {
             get { return _y; }
             set
@@ -83,10 +94,22 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Y));
             }
         }
+        private double _zoomScale = 0;
+
+        public double ZoomScale //reassigned by main viewmodel
+        {
+            get { return _zoomScale; }
+            set
+            {
+                _zoomScale = value;
+                OnPropertyChanged(nameof(Y));
+            }
+        }
 
         public PointArgsModel(string searchRadius = null)//set default values in constructor
         {
             this._referenceDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
+            this._responseDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
             this._searchRadius = "2000";
             if (searchRadius!= null)
             {

@@ -81,10 +81,11 @@ namespace MapAMilepost.Utils
                     GraphicsLayer graphicsLayer = LayerFactory.Instance.CreateLayer<GraphicsLayer>(gl_param, map);
 
                     CIMBaseLayer newDefinition = graphicsLayer.GetDefinition();
-                    CIMStringMap[] CustomLayerProps = new CIMStringMap[]//hidden ID for map layer
-                    {
-                    new() { Key = "MilepostMappingLayer", Value = "true" },
-                    };
+                    CIMStringMap[] CustomLayerProps =
+                    //hidden ID for map layer
+                    [
+                        new() { Key = "MilepostMappingLayer", Value = "true" },
+                    ];
                     newDefinition.CustomProperties = CustomLayerProps;
                     graphicsLayer.SetDefinition(newDefinition);//add custom prop to layer
                 });

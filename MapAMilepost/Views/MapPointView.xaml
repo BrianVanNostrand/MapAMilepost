@@ -29,7 +29,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid x:Name="MainGrid" Background="White" IsEnabled="{Binding isEnabled}">
+    <Grid x:Name="MainGrid" Background="White">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -103,7 +103,7 @@
                 </i:Interaction.Triggers>
             </TextBox>
             <!-- The SRMP and ARM context-dependent text boxes -->
-            <TextBox Grid.Column="2" Grid.Row="2" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding PointResponse.Srmp, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}">
+            <TextBox Grid.Column="2" Grid.Row="2" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding PointResponse.Srmp, UpdateSourceTrigger=LostFocus, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="PreviewKeyDown">
                         <i:InvokeCommandAction Command="{Binding MPChangedCommand}" />
@@ -111,7 +111,7 @@
                 </i:Interaction.Triggers>
             </TextBox>
             <TextBox Grid.Column="2" Grid.Row="2" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding PointResponse.Srmp, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="2" Grid.Row="3" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding PointResponse.Arm, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected, Converter={StaticResource BooleanInverter}}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}">
+            <TextBox Grid.Column="2" Grid.Row="3" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Text="{Binding PointResponse.Arm, UpdateSourceTrigger=LostFocus, Mode=TwoWay}" IsEnabled="{Binding SRMPIsSelected, Converter={StaticResource BooleanInverter}}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="PreviewKeyDown">
                         <i:InvokeCommandAction Command="{Binding MPChangedCommand}" />
@@ -237,6 +237,9 @@
                     <b:Interaction.Triggers>
                         <b:EventTrigger EventName="MouseLeftButtonUp">
                             <b:InvokeCommandAction CommandParameter="{Binding ElementName=PointsGrid}" Command="{Binding UpdateSelectionCommand}"/>
+                        </b:EventTrigger>
+                        <b:EventTrigger EventName="MouseDoubleClick">
+                            <b:InvokeCommandAction CommandParameter="{Binding ElementName=PointsGrid}" Command="{Binding ZoomToRecordCommand}"/>
                         </b:EventTrigger>
                     </b:Interaction.Triggers>
                 </DataGrid>

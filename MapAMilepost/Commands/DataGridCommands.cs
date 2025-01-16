@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using static MapAMilepost.Models.PointResponseModel;
 
 namespace MapAMilepost.Commands
 {
@@ -38,12 +39,11 @@ namespace MapAMilepost.Commands
                 await GraphicsCommands.DeleteUnsavedGraphics();
                 VM.PointArgs.X = 0;
                 VM.PointArgs.Y = 0;
-                DataGrid myGrid = grid as DataGrid;
-                var selItems = myGrid.SelectedItems;
+                var selItems = grid.SelectedItems;
                 bool dataGridRowSelected = false;
                 foreach (var item in selItems)
                 {
-                    DataGridRow dgr = myGrid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
+                    DataGridRow dgr = grid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
                     if (dgr.IsMouseOver)
                     {
                         dataGridRowSelected = true;
@@ -64,7 +64,7 @@ namespace MapAMilepost.Commands
                     //clear selected items
                     VM.SelectedPoints.Clear();
                     //clear selected rows
-                    myGrid.SelectedItems.Clear();
+                    grid.SelectedItems.Clear();
                     //clear selected graphics
                     GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
                 }
@@ -75,7 +75,7 @@ namespace MapAMilepost.Commands
                     //clear selected graphics
                     GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
                     //update selected items
-                    VM.SelectedPoints = CastPointsToList(myGrid.SelectedItems);
+                    VM.SelectedPoints = CastPointsToList(grid.SelectedItems);
                     //update selected graphics
                     GraphicsCommands.SetPointGraphicsSelected(VM.SelectedPoints, VM.PointResponses, "point");
                     if (VM.SelectedPoints.Count == 1 && VM.IsMapMode == true)
@@ -88,7 +88,32 @@ namespace MapAMilepost.Commands
             {
                 MessageBox.Show("Please switch to a map view before attempting this selection.");
             }
-            
+        }
+
+        public static coordinatePair GetSelectedGraphicInfo(DataGrid grid, Utils.ViewModelBase VM)
+        {
+            coordinatePair coordPair = null;
+            if (MapView.Active != null && MapView.Active.Map != null)
+            {
+                var selItems = grid.SelectedItems;
+                bool dataGridRowSelected = false;
+                foreach (var item in selItems)
+                {
+                    DataGridRow dgr = grid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
+                    if (dgr.IsMouseOver)
+                    {
+                        dataGridRowSelected = true;
+                    }
+                }
+                if(dataGridRowSelected)
+                {
+                    if(VM.SelectedPoints != null && VM.SelectedPoints.Count>0) 
+                    {
+                        coordPair = VM.SelectedPoints.First().RouteGeometry;
+                    }
+                }
+            }
+            return coordPair;
         }
 
         ///// <summary>

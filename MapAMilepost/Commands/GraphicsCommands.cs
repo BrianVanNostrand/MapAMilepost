@@ -488,6 +488,7 @@ namespace MapAMilepost.Commands
                     VM.PointArgs.X = 0;
                     VM.PointArgs.Y = 0;
                     VM.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);//clear the SOE response info panel
+                    VM.MappingTool.EndSession();
                     if (VM.PointResponses.Count > 0)
                     {
                         VM.ShowResultsTable = true;
@@ -566,23 +567,38 @@ namespace MapAMilepost.Commands
                             string FeatureID = $"{VM.LineResponse.StartResponse.Route}s{VM.LineResponse.StartResponse.Srmp}e{VM.LineResponse.EndResponse.Srmp}";
                             VM.LineResponses.Add(new LineResponseModel()
                             {
-                                StartResponse = VM.LineResponse.StartResponse,
-                                EndResponse = VM.LineResponse.EndResponse,
+                                StartResponse = new PointResponseModel()
+                                {
+                                    Arm = VM.LineResponse.StartResponse.Arm,
+                                    Back = VM.LineResponse.StartResponse.Back,
+                                    Decrease = VM.LineResponse.StartResponse.Decrease,
+                                    Route = VM.LineResponse.StartResponse.Route,
+                                    RouteGeometry = VM.LineResponse.StartResponse.RouteGeometry,
+                                    Srmp = VM.LineResponse.StartResponse.Srmp,
+                                    RealignmentDate = VM.LineResponse.StartResponse.RealignmentDate,
+                                    ResponseDate = VM.LineResponse.StartResponse.ResponseDate
+                                },
+                                EndResponse = new PointResponseModel()
+                                {
+                                    Arm = VM.LineResponse.EndResponse.Arm,
+                                    Back = VM.LineResponse.EndResponse.Back,
+                                    Decrease = VM.LineResponse.EndResponse.Decrease,
+                                    Route = VM.LineResponse.EndResponse.Route,
+                                    RouteGeometry = VM.LineResponse.EndResponse.RouteGeometry,
+                                    Srmp = VM.LineResponse.EndResponse.Srmp,
+                                    RealignmentDate = VM.LineResponse.EndResponse.RealignmentDate,
+                                    ResponseDate = VM.LineResponse.EndResponse.ResponseDate
+                                },
                                 LineFeatureID = FeatureID
                             });
                             CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
                             UpdateSaveGraphicInfos(customPointSymbols, FeatureID);
                             await DeleteUnsavedGraphics();
                             VM.LineArgs = new LineArgsModel(VM.LineArgs.StartArgs.SearchRadius, VM.LineArgs.EndArgs.SearchRadius);
-                            if(VM.IsMapMode)
-                            {
-                                VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
-                            }
-                            else
-                            {
-                                VM.LineResponse.StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);
-                                VM.LineResponse.EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);
-                            }
+                            VM.LineResponse = new LineResponseModel() { 
+                                StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM),
+                                EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM)
+                            };//clear the SOE response info panel
                             VM.MappingTool.EndSession();
                             if (VM.LineResponses.Count > 0)
                             {
@@ -631,13 +647,6 @@ namespace MapAMilepost.Commands
                         VM.MapLineVM.ShowResultsTable = false;
                     }
                 }
-                VM.SyncComplete = true;
-                if (MapView.Active!=null&&MapView.Active.IsReady)//if mapview is drawn, enable add in
-                {
-                    VM.MapPointVM.isEnabled = true;
-                    VM.MapLineVM.isEnabled = true;
-                }
-                
             });
         }
 
