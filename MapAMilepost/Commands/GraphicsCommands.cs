@@ -336,10 +336,13 @@ namespace MapAMilepost.Commands
             GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
             await QueuedTask.Run(() =>
             {
-                var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == sessionType);
-                if(SelectedItems.Count > 0) //if items are selected
+                if (graphicsLayer != null)
                 {
-                   for (int i = graphics.Count() - 1; i >= 0; i--)
+                    }
+                    var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == sessionType);
+                if (SelectedItems.Count > 0) //if items are selected
+                {
+                    for (int i = graphics.Count() - 1; i >= 0; i--)
                     {
                         if (SelectedIndices.Contains(i))
                         {
@@ -488,7 +491,7 @@ namespace MapAMilepost.Commands
                     VM.PointArgs.X = 0;
                     VM.PointArgs.Y = 0;
                     VM.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);//clear the SOE response info panel
-                    VM.MappingTool.EndSession();
+                   // VM.MappingTool.EndSession();
                     if (VM.PointResponses.Count > 0)
                     {
                         VM.ShowResultsTable = true;
@@ -600,6 +603,8 @@ namespace MapAMilepost.Commands
                                 EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM)
                             };//clear the SOE response info panel
                             VM.MappingTool.EndSession();
+                            await Utils.MapToolUtils.DeactivateSession(VM, "end");
+                            await Utils.MapToolUtils.DeactivateSession(VM, "start");
                             if (VM.LineResponses.Count > 0)
                             {
                                 VM.ShowResultsTable = true;
@@ -650,6 +655,27 @@ namespace MapAMilepost.Commands
             });
         }
 
+        public async static Task<ArcGIS.Core.Geometry.Envelope> GetLineGeometryFromSelection(LineResponseModel SelectedLine)
+        {
+            ArcGIS.Core.Geometry.Envelope envelope = null;
+            GraphicsLayer gl = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
+            if (gl != null)
+            {
+                await QueuedTask.Run(() =>
+                {
+                    var graphics = gl.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMLineGraphic);
+                    foreach (var line in graphics)
+                    {
+                        if (line.CustomProperties != null && line.GetCustomProperty("FeatureID") == SelectedLine.LineFeatureID)
+                        {
+                            envelope = line.GetGeometry().Extent;
+
+                        }
+                    }
+                });
+            }
+            return envelope;
+        }
 
         /// <summary>
         /// 

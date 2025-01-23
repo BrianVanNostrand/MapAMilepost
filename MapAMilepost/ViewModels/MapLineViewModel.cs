@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 using ArcGIS.Core.Data;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using System.Linq;
+using ArcGIS.Core.CIM;
+using ArcGIS.Desktop.Internal.Mapping;
+using ArcGIS.Core.Geometry;
 
 namespace MapAMilepost.ViewModels
 {
@@ -26,7 +29,7 @@ namespace MapAMilepost.ViewModels
         private bool _srmpIsSelected = true;
         public MapLineViewModel()//constructor
         {
-            MappingTool = new MapAMilepostMaptool();
+            MappingTool = new();//initialize map tool here or it won't run on first click. Weird bug? This should be intitializing in the base class, but alas...
         }
         public bool SRMPIsSelected
         {
@@ -99,7 +102,18 @@ namespace MapAMilepost.ViewModels
         public override List<LineResponseModel> SelectedLines { get; set; } = new List<LineResponseModel>();
 
         public Commands.RelayCommand<object> UpdateSelectionCommand => new (async(grid) => await Commands.DataGridCommands.UpdateLineSelection(grid as DataGrid, this));
-
+        public Commands.RelayCommand<object> ZoomToRecordCommand => new(async (grid) =>
+        {
+            if(SelectedLines.Count > 0 && MapView.Active!=null && MapView.Active.Map!=null)
+            {
+                ArcGIS.Core.Geometry.Envelope envelope = await Commands.GraphicsCommands.GetLineGeometryFromSelection(SelectedLines.First());
+                if(envelope != null)
+                {
+                    Geometry buffer = GeometryEngine.Instance.Buffer(envelope, envelope.Width>envelope.Length ? envelope.Width * .2: envelope.Length * .2);
+                    await MapView.Active.ZoomToAsync(buffer, TimeSpan.FromSeconds(.5));
+                };
+            }
+        });
         public Commands.RelayCommand<object> DeleteItemsCommand => new (async(parms) => await Commands.DataGridCommands.DeleteLineItems(this));
 
         public Commands.RelayCommand<object> ChangeModeCommand => new(async(param) =>
@@ -182,7 +196,7 @@ namespace MapAMilepost.ViewModels
                     if (lineGeometryResponse.Count > 0)
                     {
                         await Commands.GraphicsCommands.CreateLineGraphics(LineResponse.StartResponse, LineResponse.EndResponse, lineGeometryResponse);
-                        await CameraUtils.ZoomToCoords(lineGeometryResponse.First()[0], lineGeometryResponse.Last()[1]);
+                        await CameraUtils.ZoomToEnvelope(lineGeometryResponse);
                     }
                 }
             }
@@ -237,7 +251,10 @@ namespace MapAMilepost.ViewModels
 
         public Commands.RelayCommand<object> DirectionChangedCommand => new((startEnd) =>
         {
-            LineResponse.EndResponse.Decrease = LineResponse.StartResponse.Decrease;
+            if(!IsMapMode)
+            {
+                LineResponse.EndResponse.Decrease = LineResponse.StartResponse.Decrease;
+            }
         });
 
          private async Task<PointResponseModel> ProcessPoint(PointResponseModel Point, PointArgsModel Args, string startEnd)

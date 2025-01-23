@@ -22,6 +22,7 @@
         <ResourceDictionary>
             <BooleanToVisibilityConverter x:Key="BoolToVis" />
             <valueConverters:VisibilityConverter x:Key="VisibilityConverter"/>
+            <valueConverters:SettingsButtonLabelConverter x:Key="SettingsButtonLabelConverter"/>
             <viewmodels:MainViewModel x:Key="MainViewModel" d:IsDataSource="True"/>
             <views:MapLineView x:Key="MapLineView"/>
             <views:MapPointView x:Key="MapPointView"/>
@@ -160,7 +161,7 @@
                         <RowDefinition Height="25px"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <Button Grid.Row="0" Grid.Column="0" Width="20" Command="{Binding ToggleSettingsVisibleCommand}">+</Button>
+                    <Button Grid.Row="0" Grid.Column="0" Width="25" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Command="{Binding ToggleSettingsVisibleCommand}" Background="White" Content="{Binding SettingsMenuVisible, Converter={StaticResource SettingsButtonLabelConverter}}"></Button>
                     <TextBlock Grid.Row="0" Grid.Column="1" Text="Settings" VerticalAlignment="Center"/>
                     <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Visibility="{Binding SettingsMenuVisible, Converter={StaticResource BoolToVis}}">
                         <Grid.ColumnDefinitions>
@@ -172,16 +173,13 @@
                             <RowDefinition />
                             <RowDefinition />
                             <RowDefinition />
-                            <RowDefinition />
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Column="0" Grid.Row="0" Text="Response Date" HorizontalAlignment="Right" Margin="0 0 10 0" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                        <DatePicker Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px" SelectedDate="{Binding ResponseDate, Mode=TwoWay, StringFormat='M/d/yyyy'}"/>
+                       <!-- <TextBlock Grid.Column="0" Grid.Row="0" Text="Response Date" HorizontalAlignment="Right" Margin="0 0 10 0" VerticalAlignment="Center" TextWrapping="Wrap"/>-->
+                        <!--<DatePicker Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px" SelectedDate="{Binding ResponseDate, Mode=TwoWay, StringFormat='M/d/yyyy', UpdateSourceTrigger=PropertyChanged}"/>-->
                         <TextBlock Grid.Column="0" Grid.Row="1" Text="Reference Date" HorizontalAlignment="Right" Margin="0 0 10 0" VerticalAlignment="Center"/>
-                        <DatePicker Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px" SelectedDate="{Binding ReferenceDate, Mode=TwoWay, StringFormat='M/d/yyyy'}"/>
-                        <TextBlock Grid.Column="0" Grid.Row="2" Text="Zoom Scale" HorizontalAlignment="Right" Margin="0 0 10 0" VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px" Text="{Binding ZoomScale, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                        <TextBlock Grid.Column="0" Grid.Row="3" Text="Search Distance" HorizontalAlignment="Right" Margin="0 0 10 0" VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px" Text="{Binding SearchRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <DatePicker Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px" SelectedDate="{Binding ReferenceDate, Mode=TwoWay, StringFormat='M/d/yyyy', UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Column="0" Grid.Row="2" Text="Search Distance" HorizontalAlignment="Right" Margin="0 0 10 0" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px" Text="{Binding SearchRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </Grid>
                 </Grid>
             </Border>

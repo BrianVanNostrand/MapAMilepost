@@ -1,6 +1,7 @@
 ﻿using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
+using ArcGIS.Desktop.Mapping;
 using MapAMilepost.Models;
 using MapAMilepost.ViewModels;
 using System;
@@ -22,7 +23,7 @@ namespace MapAMilepost.Utils
         /// <param name="VM">the target viewmodel</param>
         public static async Task InitializeSession(Utils.ViewModelBase VM, string sessionType)
         {
-            if (MapViewUtils.CheckMapView())
+            if ((MapView.Active != null && MapView.Active.Map != null))
             {
                 if (sessionType == "point"|| sessionType == "start")//if point mapping
                 {
@@ -45,6 +46,7 @@ namespace MapAMilepost.Utils
         /// <param name="VM">the target viewmodel</param>
         public static async Task DeactivateSession(Utils.ViewModelBase VM, string sessionType = null)
         {
+            VM.SRMPIsSelected = true;
             if (sessionType == "point")//if start session or point session
             {
                 VM.SessionActive = false;
@@ -90,7 +92,8 @@ namespace MapAMilepost.Utils
         public static async Task<List<List<double>>> GetLine(PointResponseModel startPoint, PointResponseModel endPoint, long SR, string ReferenceDate)
         {
             List<List<double>> lineGeometryResponse = new();
-            if(endPoint != null && startPoint != null)
+            if(endPoint==null||startPoint==null) { return lineGeometryResponse; }
+            if(endPoint.Srmp != null && startPoint.Srmp != null)//ensure that start and endpoints have more than just route and direction, which are assigned immediately after http request resolves.
             {
                 if (endPoint.Route == startPoint.Route)
                 {

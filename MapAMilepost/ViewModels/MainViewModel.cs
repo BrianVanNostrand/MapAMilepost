@@ -93,6 +93,9 @@ namespace MapAMilepost.ViewModels
             set
             {
                 _responseDate = value;
+                this.MapLineVM.LineArgs.StartArgs.ResponseDate = value;
+                this.MapLineVM.LineArgs.EndArgs.ResponseDate = value;
+                this.MapPointVM.PointArgs.ResponseDate = value;
                 OnPropertyChanged(nameof(ResponseDate));
             }
         }
@@ -103,6 +106,9 @@ namespace MapAMilepost.ViewModels
             set
             {
                 _referenceDate = value;
+                this.MapLineVM.LineArgs.StartArgs.ReferenceDate = value;
+                this.MapLineVM.LineArgs.EndArgs.ReferenceDate = value;
+                this.MapPointVM.PointArgs.ReferenceDate = value;
                 OnPropertyChanged(nameof(ReferenceDate));
             }
         }
@@ -143,7 +149,7 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(SettingsMenuVisible));
             }
         }
-        public bool LayerVisible { get; set; } = false;
+        public bool? LayerVisible { get; set; } = null;
 
         /// <summary>
         /// Command used to change the selected viewmodel.
@@ -240,10 +246,6 @@ namespace MapAMilepost.ViewModels
                 {
                     await ResetLayer();
                     AddInReady = true;
-                    await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
-                    await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
-                    await Utils.MapToolUtils.DeactivateSession(this.MapPointVM, "point");
-                    await Utils.MapToolUtils.DeactivateSession(this.MapLineVM, "line");
                 }
             }
         });
@@ -364,15 +366,17 @@ namespace MapAMilepost.ViewModels
                 {
                     AddInReady = false;
                     SetModalSettings("layerOff");
+                    await ResetLayer();
+                    this.MapLineVM.LineResponse = new();
+                    this.MapPointVM.PointResponse = new();
                     LayerVisible = false;
                 }
                 else
                 {
-                    if(LayerVisible == false)
+                    if(LayerVisible == false)//if layer is being turned on (if this part is left out, this will execute constantly as different layers draw different features asyncronously)
                     {
                         AddInReady = false;
                         SetModalSettings("load");
-                        await ResetLayer();
                         await GraphicsCommands.SynchronizeGraphicsToAddIn(this, await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map));
                         AddInReady = true;
                         LayerVisible = true;//prevents loading from happening every time every layer draws

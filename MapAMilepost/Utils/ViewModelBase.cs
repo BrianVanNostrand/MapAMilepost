@@ -24,6 +24,7 @@ namespace MapAMilepost.Utils
         public ObservableCollection<bool> AheadBack { get; set; }
         public virtual bool IsMapMode { get; set; } 
         public MapAMilepostMaptool MappingTool { get; set; }
+        public virtual bool SRMPIsSelected { get; set; }
         public virtual bool SessionActive { get; set; }
         public virtual bool SessionEndActive { get; set; }
         public virtual bool ShowResultsTable { get; set; }

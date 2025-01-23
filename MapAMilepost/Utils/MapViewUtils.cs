@@ -19,34 +19,6 @@ namespace MapAMilepost.Utils
 {
     class MapViewUtils
     {
-        public static bool CheckMapView()
-        {
-            bool MapViewActive = false;
-            if (MapView.Active != null && MapView.Active.Map != null)
-            {
-                MapViewActive = true;
-            }
-            else
-            {
-                if (LayoutView.Active != null)
-                {
-                    ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Map view is not active.");
-                }
-                else
-                {
-                    var projectMapItems = Project.Current.GetItems<MapProjectItem>();
-                    if(projectMapItems != null && (projectMapItems.Count()==0)) {
-                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please create a map to use with the tool.");
-                    }
-                    else
-                    {
-                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please wait for map to finish loading.");
-                    }
-                }
-            }
-            return MapViewActive;
-        }
-
         public static async Task<GraphicsLayer> GetMilepostMappingLayer(Map map)
         {
             GraphicsLayer targetLayer = null;

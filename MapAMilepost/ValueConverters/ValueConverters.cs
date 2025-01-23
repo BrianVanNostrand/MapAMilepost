@@ -27,6 +27,23 @@ namespace MapAMilepost.ValueConverters
             throw new NotSupportedException();
         }
     }
+    public class RadioBooleanConverter : IValueConverter // returns the inverse of a boolean
+    {
+        public object Convert(object value, Type targetType, object parameter,
+            System.Globalization.CultureInfo culture)
+        {
+            if (parameter == null)
+            {
+                return value.ToString();
+            }
+            return (!(bool)value).ToString();
+        }
+        public object ConvertBack(object value, Type targetType, object parameter,
+            System.Globalization.CultureInfo culture)
+        {
+            return value;
+        }
+    }
     public class DirectionConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -232,6 +249,28 @@ namespace MapAMilepost.ValueConverters
                 }
             }
             return "test";
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+    public class SettingsButtonLabelConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value != null)
+            {
+                if ((bool)value)//if is Map Mode
+                {
+                    return "-";
+                }
+                if (!(bool)value)//if session not active
+                {
+                    return "+";
+                }
+            }
+            return "";
         }
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {

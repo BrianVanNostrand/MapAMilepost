@@ -29,8 +29,9 @@ namespace MapAMilepost.ViewModels
         private bool _srmpIsSelected = true;
         public MapPointViewModel()//constructor
         {
+            MappingTool = new();//initialize map tool here or it won't run on first click. Weird bug?
         }
-        public bool SRMPIsSelected
+        public override bool SRMPIsSelected
         {
             get { return _srmpIsSelected; }
             set
@@ -74,7 +75,10 @@ namespace MapAMilepost.ViewModels
         public override PointArgsModel PointArgs
         {
             get { return _pointArgs; }
-            set { _pointArgs = value; OnPropertyChanged(nameof(PointArgs)); }
+            set { 
+                _pointArgs = value; 
+                OnPropertyChanged(nameof(PointArgs)); 
+            }
         }
 
         /// <summary>
@@ -105,7 +109,7 @@ namespace MapAMilepost.ViewModels
 
         public Commands.RelayCommand<object> ZoomToRecordCommand => new(async(grid) =>
         {
-            PointResponseModel.coordinatePair coordPair = Commands.DataGridCommands.GetSelectedGraphicInfo(grid as DataGrid, this);
+            PointResponseModel.coordinatePair coordPair = Commands.DataGridCommands.GetSelectedGraphicInfoPoint(grid as DataGrid, this);
             if(coordPair != null)
             {
                 await CameraUtils.ZoomToCoords(coordPair.x, coordPair.y, PointArgs.ZoomScale);

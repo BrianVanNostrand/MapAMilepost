@@ -11,6 +11,7 @@ using ArcGIS.Desktop.Framework.Contracts;
 using ArcGIS.Desktop.Framework.Dialogs;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Internal.Mapping;
+using ArcGIS.Desktop.Internal.Mapping.CommonControls;
 using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
 using MapAMilepost.Commands;
@@ -77,13 +78,35 @@ namespace MapAMilepost
                     List<List<double>> lineGeometryResponse = new();
                     if (MapToolSessionType == "start")
                     {
-                        CurrentViewModel.LineResponse.StartResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint,CurrentViewModel.LineArgs.StartArgs) as PointResponseModel);
+                        if(CurrentViewModel.LineResponse.EndResponse != null && CurrentViewModel.LineResponse.EndResponse.Route!=null && CurrentViewModel.LineResponse.EndResponse.Decrease != null)//if end point already exists, use its route
+                        {
+                            CurrentViewModel.LineResponse.StartResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.StartArgs, CurrentViewModel.LineResponse.EndResponse.Route) as PointResponseModel);
+                        }
+                        else
+                        {
+                            CurrentViewModel.LineResponse.StartResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint,CurrentViewModel.LineArgs.StartArgs) as PointResponseModel);
+                            if (CurrentViewModel.LineResponse != null && CurrentViewModel.LineResponse.StartResponse != null && CurrentViewModel.LineResponse.StartResponse.Route != null)
+                            {
+                                CurrentViewModel.LineResponse.EndResponse.Route = CurrentViewModel.LineResponse.StartResponse.Route;
+                            }
+                        }
                         lineGeometryResponse = await Utils.MapToolUtils.GetLine(CurrentViewModel.LineResponse.StartResponse, CurrentViewModel.LineResponse.EndResponse, CurrentViewModel.LineArgs.StartArgs.SR, CurrentViewModel.LineArgs.StartArgs.ReferenceDate);
                         await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.StartArgs, CurrentViewModel.LineResponse.StartResponse, MapToolSessionType);
                     }
                     else if (MapToolSessionType == "end")
                     {
-                        CurrentViewModel.LineResponse.EndResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.EndArgs) as PointResponseModel);
+                        if (CurrentViewModel.LineResponse.StartResponse!=null && CurrentViewModel.LineResponse.StartResponse.Route != null && CurrentViewModel.LineResponse.StartResponse.Decrease != null)//if start point already exists, use its route
+                        {
+                            CurrentViewModel.LineResponse.EndResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.EndArgs, CurrentViewModel.LineResponse.StartResponse.Route) as PointResponseModel);
+                        }
+                        else
+                        {
+                            CurrentViewModel.LineResponse.EndResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.EndArgs) as PointResponseModel);
+                            if (CurrentViewModel.LineResponse != null && CurrentViewModel.LineResponse.EndResponse != null && CurrentViewModel.LineResponse.EndResponse.Route != null)
+                            {
+                                CurrentViewModel.LineResponse.StartResponse.Route = CurrentViewModel.LineResponse.EndResponse.Route;
+                            }
+                        }
                         lineGeometryResponse = await Utils.MapToolUtils.GetLine(CurrentViewModel.LineResponse.StartResponse, CurrentViewModel.LineResponse.EndResponse, CurrentViewModel.LineArgs.StartArgs.SR, CurrentViewModel.LineArgs.StartArgs.ReferenceDate);
                         await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.EndArgs, CurrentViewModel.LineResponse.EndResponse, MapToolSessionType);
                     }
@@ -124,6 +147,11 @@ namespace MapAMilepost
             {
                 MapView.Active.Map.TargetGraphicsLayer = graphicsLayer;
                 await FrameworkApplication.SetCurrentToolAsync("MapAMilepost_MapTool");
+                string currentTool = FrameworkApplication.CurrentTool;
+                if (FrameworkApplication.CurrentTool != "MapAMilepost_MapTool")
+                {
+                    await FrameworkApplication.SetCurrentToolAsync("MapAMilepost_MapTool");
+                }
             }
             else // else create layer
             {
