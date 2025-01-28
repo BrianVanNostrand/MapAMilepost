@@ -483,6 +483,7 @@ namespace MapAMilepost.Commands
                         Srmp = VM.PointResponse.Srmp,
                         RealignmentDate = VM.PointResponse.RealignmentDate,
                         ResponseDate = VM.PointResponse.ResponseDate,
+                        ReferenceDate = VM.PointResponse.ReferenceDate,
                         PointFeatureID = FeatureID
                     });
                     CustomGraphics customPointSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();

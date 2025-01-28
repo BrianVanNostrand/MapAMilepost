@@ -78,7 +78,7 @@ namespace MapAMilepost
                     List<List<double>> lineGeometryResponse = new();
                     if (MapToolSessionType == "start")
                     {
-                        if(CurrentViewModel.LineResponse.EndResponse != null && CurrentViewModel.LineResponse.EndResponse.Route!=null && CurrentViewModel.LineResponse.EndResponse.Decrease != null)//if end point already exists, use its route
+                        if(CurrentViewModel.LineResponse.EndResponse != null && CurrentViewModel.LineResponse.EndResponse.Route!=null)//if end point already exists, use its route
                         {
                             CurrentViewModel.LineResponse.StartResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.StartArgs, CurrentViewModel.LineResponse.EndResponse.Route) as PointResponseModel);
                         }
@@ -95,7 +95,7 @@ namespace MapAMilepost
                     }
                     else if (MapToolSessionType == "end")
                     {
-                        if (CurrentViewModel.LineResponse.StartResponse!=null && CurrentViewModel.LineResponse.StartResponse.Route != null && CurrentViewModel.LineResponse.StartResponse.Decrease != null)//if start point already exists, use its route
+                        if (CurrentViewModel.LineResponse.StartResponse!=null && CurrentViewModel.LineResponse.StartResponse.Route != null)//if start point already exists, use its route
                         {
                             CurrentViewModel.LineResponse.EndResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.EndArgs, CurrentViewModel.LineResponse.StartResponse.Route) as PointResponseModel);
                         }

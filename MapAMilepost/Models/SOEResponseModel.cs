@@ -175,13 +175,6 @@ namespace MapAMilepost.Models
         public bool? Back { get; set; }
         public string? ReferenceDate { get; set; }
         public string? ResponseDate { get; set; }
-       // public bool? EndBack { get; set; }
-        //public coordinatePair? EventPoint { get; set; }
-        //public class coordinatePair
-        //{
-        //    public double? x { get; set; }
-        //    public double? y { get; set; }
-        //}
 
         /// <summary>
         /// -   Constructor to automatically assign the properties of the response object returned by the

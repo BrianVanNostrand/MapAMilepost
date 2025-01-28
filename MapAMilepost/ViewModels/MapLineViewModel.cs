@@ -186,6 +186,8 @@ namespace MapAMilepost.ViewModels
             }
             else
             {
+                LineResponse.StartResponse.RouteGeometry = null;
+                LineResponse.EndResponse.RouteGeometry = null;
                 List<List<double>> lineGeometryResponse = new();
                 await Commands.GraphicsCommands.DeleteUnsavedGraphics();//delete unsaved lines
                 LineResponse.StartResponse = await ProcessPoint(LineResponse.StartResponse, LineArgs.StartArgs, "start");

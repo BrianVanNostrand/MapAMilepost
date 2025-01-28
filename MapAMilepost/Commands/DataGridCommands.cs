@@ -240,7 +240,8 @@ namespace MapAMilepost.Commands
                         {
                             VM.ShowResultsTable = false;
                         };
-                        VM.LineResponse = new LineResponseModel();
+                        VM.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);
+                        VM.SelectedPoints.Clear();
                     }
                 }
             }
@@ -284,7 +285,9 @@ namespace MapAMilepost.Commands
                         {
                             VM.ShowResultsTable = false;
                         };
-                        VM.LineResponse = new LineResponseModel();
+                        VM.LineResponse.StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);
+                        VM.LineResponse.EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);
+                        VM.SelectedLines.Clear();
                     }
                 }
             }

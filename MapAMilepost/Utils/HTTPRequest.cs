@@ -141,6 +141,7 @@ namespace MapAMilepost.Utils
                         {
                             if (PointResponses.First().RouteGeometry.x != 0 && PointResponses.First().RouteGeometry.y != 0)
                             {
+                                PointResponses.First().ReferenceDate = args.ReferenceDate;
                                 routeLocation = PointResponses.First();
                             }
                             else

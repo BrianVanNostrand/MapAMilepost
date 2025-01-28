@@ -105,10 +105,10 @@ namespace MapAMilepost.ViewModels
             get { return _referenceDate; }
             set
             {
-                _referenceDate = value;
-                this.MapLineVM.LineArgs.StartArgs.ReferenceDate = value;
-                this.MapLineVM.LineArgs.EndArgs.ReferenceDate = value;
-                this.MapPointVM.PointArgs.ReferenceDate = value;
+                _referenceDate = DateTime.Parse(value).Date.ToShortDateString();
+                this.MapLineVM.LineArgs.StartArgs.ReferenceDate = _referenceDate;
+                this.MapLineVM.LineArgs.EndArgs.ReferenceDate = _referenceDate;
+                this.MapPointVM.PointArgs.ReferenceDate = _referenceDate;
                 OnPropertyChanged(nameof(ReferenceDate));
             }
         }

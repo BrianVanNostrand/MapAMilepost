@@ -78,8 +78,10 @@
                 <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/><!-->Y<-->
                 <RowDefinition/><!-->Direction<-->
                 <RowDefinition /><!-->Back<-->
-                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/><!-->Realignment<-->
-                <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/><!-->Response<-->
+                <RowDefinition /><!-->Realignment<-->
+                <RowDefinition /><!-->Response<-->
+                <RowDefinition />
+                <!-->Response<-->
             </Grid.RowDefinitions>
             <!--Header-->
             <TextBox Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" HorizontalContentAlignment="Center" ToolTip="Information about the route location found." Background="#cfd8ff" Style="{StaticResource SelectableTextBox}">Results</TextBox>
@@ -95,7 +97,8 @@
             <TextBox Grid.Column="1" Grid.Row="6" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location is in the decreasing direction of the roadway (Southbound or Westbound)." Style="{StaticResource SelectableTextBox}">Direction</TextBox>
             <TextBox Grid.Column="1" Grid.Row="7" HorizontalContentAlignment="Center" ToolTip="Whether or not the route location represent back mileage." Style="{StaticResource SelectableTextBox}">Back</TextBox>
             <TextBox Grid.Column="1" Grid.Row="8" HorizontalContentAlignment="Center" ToolTip="Realignment date of the route location." Style="{StaticResource SelectableTextBox}">Realignment Date</TextBox>
-            <TextBox Grid.Column="1" Grid.Row="9" HorizontalContentAlignment="Center" ToolTip="Response date of the route location found." Style="{StaticResource SelectableTextBox}">Response Date</TextBox>
+            <TextBox Grid.Column="1" Grid.Row="9" HorizontalContentAlignment="Center" ToolTip="Response date of the route location found." Style="{StaticResource SelectableTextBox}">Reference Date</TextBox>
+            <TextBox Grid.Column="1" Grid.Row="10" HorizontalContentAlignment="Center" ToolTip="Response date of the route location found." Style="{StaticResource SelectableTextBox}">Response Date</TextBox>
             <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding PointResponse.Route, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}" IsReadOnly="{Binding IsMapMode}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="PreviewKeyDown">
@@ -144,7 +147,8 @@
             <TextBox Grid.Column="2" Grid.Row="7"  Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding PointResponse.Back, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}"/>
             <!---->
             <TextBox Grid.Column="2" Grid.Row="8" Text="{Binding PointResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="2" Grid.Row="9" Text="{Binding PointResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="9" Text="{Binding PointResponse.ReferenceDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="10" Text="{Binding PointResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
             
             <Border Grid.ColumnSpan="3" Grid.Row="2" BorderBrush="#b3c1fc" BorderThickness="0,1,0,0" Background="{x:Null}" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}"/>
             <Border Grid.ColumnSpan="3" Grid.Row="3" BorderBrush="#b3c1fc" BorderThickness="0,1,0,0" Background="{x:Null}" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}"/>
@@ -154,8 +158,9 @@
             <Border Grid.ColumnSpan="3" Grid.Row="7" BorderBrush="#b3c1fc" BorderThickness="0,1,0,0" Background="{x:Null}" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}"/>
             <Border Grid.ColumnSpan="3" Grid.Row="8" BorderBrush="#b3c1fc" BorderThickness="0,1,0,0" Background="{x:Null}" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}"/>
             <Border Grid.ColumnSpan="3" Grid.Row="9" BorderBrush="#b3c1fc" BorderThickness="0,1,0,0" Background="{x:Null}" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}"/>
+            <Border Grid.ColumnSpan="3" Grid.Row="10" BorderBrush="#b3c1fc" BorderThickness="0,1,0,0" Background="{x:Null}" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}"/>
 
-            <Border Grid.RowSpan="9" Grid.Column="2" Grid.Row="1" BorderBrush="#b3c1fc" BorderThickness="1,0,0,0" Background="{x:Null}" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}"/>
+            <Border Grid.RowSpan="10" Grid.Column="2" Grid.Row="1" BorderBrush="#b3c1fc" BorderThickness="1,0,0,0" Background="{x:Null}" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}"/>
         </Grid>
         <Grid x:Name="MapToolControlsGrid" Grid.Row="2">
             <Grid.ColumnDefinitions>
@@ -236,6 +241,9 @@
                         <DataGridTextColumn Header="Back" Binding="{Binding Back,Mode=OneWay}"/>
                         <DataGridTextColumn Header="X" Binding="{Binding RouteGeometry.x, Converter={StaticResource NumberConverter}, Mode=OneWay}"/>
                         <DataGridTextColumn Header="Y" Binding="{Binding RouteGeometry.y, Converter={StaticResource NumberConverter}, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Realignment Date" Binding="{Binding RealignmentDate,Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Reference Date" Binding="{Binding ReferenceDate,Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Response Date" Binding="{Binding ResponseDate,Mode=OneWay}"/>
                     </DataGrid.Columns>
                     <b:Interaction.Triggers>
                         <b:EventTrigger EventName="MouseLeftButtonUp">
