@@ -1,0 +1,122 @@
+﻿<UserControl x:Class="MapAMilepost.Views.MapTableView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:valueConverters="clr-namespace:MapAMilepost.ValueConverters"
+             xmlns:local="clr-namespace:MapAMilepost.Views"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             mc:Ignorable="d" 
+             d:DesignWidth="364">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <valueConverters:DirectionConverter x:Key="DirectionConverter"/>
+            <valueConverters:ElementHeightConverter x:Key="ElementHeightConverter"/>
+            <valueConverters:VisibilityConverter x:Key="VisibilityConverter"/>
+            <valueConverters:VisibilityConverterDataGrid x:Key="VisibilityConverterDataGrid"/>
+            <valueConverters:BooleanInverter x:Key="BooleanInverter"/>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Themes/ButtonTheme.xaml" />
+                <ResourceDictionary Source="../Themes/DataGridRowTheme.xaml" />
+                <ResourceDictionary Source="../Themes/SelectableTextStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid x:Name="MainGrid" Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="filepicker" Height="20px"/>
+            <RowDefinition x:Name="processsettings"/>
+            <RowDefinition x:Name="datagridrow" Height="{Binding DataLoaded, Converter={StaticResource ElementHeightConverter}}"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" x:Name="filepickergrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50px"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="50px"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" FontSize="7pt" HorizontalAlignment="Center" VerticalAlignment="Center">CSV FIle</TextBlock>
+            <TextBox Grid.Row="0" Grid.Column="1" BorderBrush="Gray" Background="LightGray" BorderThickness="1px" Text="{Binding SelectedFile, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="TextChanged">
+                        <i:InvokeCommandAction Command="{Binding FileNameChanged}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </TextBox>
+            <Button Grid.Row="0" Grid.Column="2" Command="{Binding OpenFileCommand}">Open</Button>
+        </Grid>
+        <Border BorderBrush="LightGray" BorderThickness="1px" Grid.Row="1">
+            <Grid IsEnabled="{Binding DataLoaded, Converter={StaticResource BooleanInverter}}" x:Name="ColumnDefinitions" Margin="10 10 10 10" Visibility="{Binding FileSelected, Converter={StaticResource VisibilityConverter}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition x:Name="Route"/>
+                    <RowDefinition x:Name="ARM"/>
+                    <RowDefinition x:Name="SRMP"/>
+                    <RowDefinition x:Name="Back"/>
+                    <RowDefinition x:Name="Direction"/>
+                    <RowDefinition x:Name="ReferenceDate"/>
+                    <RowDefinition x:Name="ResponseDate"/>
+                    <RowDefinition x:Name="LoadButton"/>
+                    <RowDefinition x:Name="WarningText"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20px"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="100px"/>
+                </Grid.ColumnDefinitions>
+                <!--Route--><TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Route Column</TextBlock>
+                <ComboBox SelectedItem="{Binding FormInfo.RouteColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center"/>
+                <!--SRMP--><RadioButton Grid.Column="0" Grid.Row="1" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="SRMP" IsChecked="True"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">SRMP Column</TextBlock>
+                <ComboBox SelectedItem="{Binding FormInfo.SRMPColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" IsEnabled="{Binding SRMPIsSelected}" Width="100px" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center"/>
+                <!--ARM-->
+                <RadioButton Grid.Column="0" Grid.Row="2" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="ARM"/>
+                <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">ARM Column</TextBlock>
+                <ComboBox SelectedItem="{Binding FormInfo.ARMColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" IsEnabled="{Binding SRMPIsSelected, Converter={StaticResource BooleanInverter}}" Width="100px" Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center"/>
+                <!--Back--><TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Back Column (True/False)</TextBlock>
+                <ComboBox SelectedItem="{Binding FormInfo.BackColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="3" Grid.Column="2" HorizontalAlignment="Center"/>
+                <!--Direction--><TextBlock Grid.Row="4" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Lane Direction Column (Increasing/Decreasing)</TextBlock>
+                <ComboBox SelectedItem="{Binding FormInfo.DirectionColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="4" Grid.Column="2" HorizontalAlignment="Center"/>
+                <!--ReferenceDate--><TextBlock Grid.Row="5" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Reference Date</TextBlock>
+                <ComboBox SelectedItem="{Binding FormInfo.ReferenceDateColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="5" Grid.Column="2" HorizontalAlignment="Center"/>
+                <!--ResponseDate--><TextBlock Grid.Row="6" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Response Date</TextBlock>
+                <ComboBox SelectedItem="{Binding FormInfo.ResponseDateColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="6" Grid.Column="2" HorizontalAlignment="Center"/>
+                <Button Grid.Row="7" Grid.Column="3" Width="50" Margin="0 10 0 0" Command="{Binding LoadFileCommand}">Load</Button>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" Foreground="#007ac1" Text="{Binding WarningMessage}" Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3"/>
+            </Grid>
+        </Border>
+        <Grid Grid.Row="2" x:Name="datagrid">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer Grid.Row="0" Grid.ColumnSpan="3">
+                <DataGrid Padding="10,10,10,10" CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False" ItemsSource="{Binding PointInfos}" CellStyle="{DynamicResource DataGridCellStyle}">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#007ac1" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Route" Binding="{Binding Route, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="ARM" Visibility="{Binding SRMPIsSelected, Converter={StaticResource VisibilityConverterDataGrid}}" Binding="{Binding Arm, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="SRMP" Visibility="{Binding SRMPIsSelected, Converter={StaticResource VisibilityConverterDataGrid}, ConverterParameter='true'}" Binding="{Binding Srmp, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="Direction" Binding="{Binding Decrease, Mode=TwoWay, Converter={StaticResource DirectionConverter}}"/>
+                        <DataGridTextColumn Header="Back" Binding="{Binding Back, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="Reference Date" Binding="{Binding ReferenceDate,Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="Response Date" Binding="{Binding ResponseDate,Mode=TwoWay}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </ScrollViewer>
+            <Button Grid.Row="1" Grid.Column="0">Clear</Button>
+            <TextBlock Grid.Row="1" Grid.Column="1" Padding="5,0,0,0">10 Errors</TextBlock>
+        </Grid>
+    </Grid>
+</UserControl>

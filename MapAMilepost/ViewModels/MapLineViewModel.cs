@@ -1,6 +1,5 @@
 ﻿using MapAMilepost.Models;
 using MapAMilepost.Utils;
-using System.Windows.Input;
 using System.Windows;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
@@ -8,11 +7,7 @@ using System.Windows.Controls;
 using ArcGIS.Desktop.Mapping;
 using System;
 using System.Threading.Tasks;
-using ArcGIS.Core.Data;
-using ArcGIS.Desktop.Framework.Threading.Tasks;
 using System.Linq;
-using ArcGIS.Core.CIM;
-using ArcGIS.Desktop.Internal.Mapping;
 using ArcGIS.Core.Geometry;
 
 namespace MapAMilepost.ViewModels
@@ -31,7 +26,7 @@ namespace MapAMilepost.ViewModels
         {
             MappingTool = new();//initialize map tool here or it won't run on first click. Weird bug? This should be intitializing in the base class, but alas...
         }
-        public bool SRMPIsSelected
+        public override bool SRMPIsSelected
         {
             get { return _srmpIsSelected; }
             set

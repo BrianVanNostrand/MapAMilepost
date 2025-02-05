@@ -8,6 +8,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows;
 using ArcGIS.Desktop.Internal.Mapping.Symbology;
+using MapAMilepost.ViewModels;
 
 namespace MapAMilepost.ValueConverters
 {
@@ -25,23 +26,6 @@ namespace MapAMilepost.ValueConverters
             System.Globalization.CultureInfo culture)
         {
             throw new NotSupportedException();
-        }
-    }
-    public class RadioBooleanConverter : IValueConverter // returns the inverse of a boolean
-    {
-        public object Convert(object value, Type targetType, object parameter,
-            System.Globalization.CultureInfo culture)
-        {
-            if (parameter == null)
-            {
-                return value.ToString();
-            }
-            return (!(bool)value).ToString();
-        }
-        public object ConvertBack(object value, Type targetType, object parameter,
-            System.Globalization.CultureInfo culture)
-        {
-            return value;
         }
     }
     public class DirectionConverter : IValueConverter
@@ -153,6 +137,19 @@ namespace MapAMilepost.ValueConverters
             throw new NotImplementedException();
         }
     }
+    public class SettingsEnabledConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return (!(value.GetType() == typeof(MapTableViewModel))) ? true : false;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class MapButtonLabelConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -313,6 +310,58 @@ namespace MapAMilepost.ValueConverters
             else
             {
                 return Visibility.Collapsed;
+            }
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var back = ((value is Visibility) && (((Visibility)value) == Visibility.Visible));
+            if (parameter != null)
+            {
+                if ((bool)parameter)
+                {
+                    back = !back;
+                }
+            }
+            return back;
+        }
+    }
+    public class VisibilityConverterDataGrid : IValueConverter
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="targetType"></param>
+        /// <param name="parameter">string version of a boolean determining whether or not the visibility should be inverted.</param>
+        /// <param name="culture"></param>
+        /// <returns></returns>
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var flag = false;
+            if (value is bool)
+            {
+                flag = (bool)value;
+            }
+            else if (value is bool?)
+            {
+                var nullable = (bool?)value;
+                flag = nullable.GetValueOrDefault();
+            }
+            if (parameter != null)
+            {
+                if (bool.Parse((string)parameter))
+                {
+                    flag = !flag;
+                }
+            }
+            if (flag)
+            {
+                return Visibility.Visible;
+            }
+            else
+            {
+                return Visibility.Hidden;
             }
         }
 

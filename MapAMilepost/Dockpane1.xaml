@@ -22,6 +22,7 @@
         <ResourceDictionary>
             <BooleanToVisibilityConverter x:Key="BoolToVis" />
             <valueConverters:VisibilityConverter x:Key="VisibilityConverter"/>
+            <valueConverters:SettingsEnabledConverter x:Key="SettingsEnabledConverter"/>
             <valueConverters:SettingsButtonLabelConverter x:Key="SettingsButtonLabelConverter"/>
             <viewmodels:MainViewModel x:Key="MainViewModel" d:IsDataSource="True"/>
             <views:MapLineView x:Key="MapLineView"/>
@@ -134,6 +135,13 @@
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </TabItem>
+                    <TabItem  x:Name="MapTableTab" Height="50" Width="80" Header="Map a Table">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseDown">
+                                <i:InvokeCommandAction Command="{Binding SelectPageCommand}" CommandParameter="{Binding ElementName=MapTableTab}"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </TabItem>
                 </TabControl>
             </DockPanel>
             <Border  x:Name="ViewmodelHandler" Visibility="{Binding AddInReady, Converter={StaticResource BoolToVis}}" DataContext="{DynamicResource MainViewModel}" Grid.Row="1" BorderBrush="{StaticResource SolidBorderBrush}"  Background="White">
@@ -146,11 +154,14 @@
                             <DataTemplate DataType="{x:Type viewmodels:MapLineViewModel}">
                                 <views:MapLineView/>
                             </DataTemplate>
+                            <DataTemplate DataType="{x:Type viewmodels:MapTableViewModel}">
+                                <views:MapTableView/>
+                            </DataTemplate>
                         </ContentControl.Resources>
                     </ContentControl>
                 </ScrollViewer>
             </Border>
-            <Border x:Name="Settings" Visibility="{Binding AddInReady, Converter={StaticResource BoolToVis}}" DataContext="{DynamicResource MainViewModel}" Grid.Row="2" Grid.Column="0" Background="White" BorderThickness="1px">
+            <Border x:Name="Settings" IsEnabled="{Binding SelectedViewModel, Converter={StaticResource SettingsEnabledConverter}}" Visibility="{Binding AddInReady, Converter={StaticResource BoolToVis}}" DataContext="{DynamicResource MainViewModel}" Grid.Row="2" Grid.Column="0" Background="White" BorderThickness="1px" Padding="0,10,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="50"/>

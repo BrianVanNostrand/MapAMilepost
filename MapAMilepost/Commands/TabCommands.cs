@@ -32,6 +32,9 @@ namespace MapAMilepost.Commands
                     case "MapLineTab":
                         VM.SelectedViewModel = VM.MapLineVM;
                         break;
+                    case "MapTableTab":
+                        VM.SelectedViewModel = VM.MapTableVM;
+                        break;
                     default:
                         throw new ArgumentException("Control name not found");
                 }

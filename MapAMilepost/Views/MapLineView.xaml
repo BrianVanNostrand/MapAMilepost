@@ -293,7 +293,7 @@
                         <Style TargetType="DataGridRow">
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="LightBlue" />
+                                    <Setter Property="Background" Value="#cfd8ff" />
                                 </Trigger>
                             </Style.Triggers>
                         </Style>

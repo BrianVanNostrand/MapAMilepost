@@ -71,7 +71,7 @@ namespace MapAMilepost.Utils
                     VM.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);//clear the SOE response info panel or set the default parameters for form
                     await DeactivateSession(VM, "point");
                 }
-                else
+                if (VM.GetType() == typeof(MapLineViewModel))
                 {
                     if (VM.IsMapMode)
                     {

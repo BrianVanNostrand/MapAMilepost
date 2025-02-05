@@ -36,6 +36,7 @@ namespace MapAMilepost.ViewModels
         private ViewModelBase _selectedViewModel;
         private MapPointViewModel _mapPointVM;
         private MapLineViewModel _mapLineVM;
+        private MapTableViewModel _mapTableVM;
         bool _addInReady = false;
         private bool _settingsMenuVisible = false;
         private bool _isPaused = false;
@@ -140,6 +141,15 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(MapLineVM));
             }
         }
+        public MapTableViewModel MapTableVM
+        {
+            get { return _mapTableVM; }
+            set
+            {
+                _mapTableVM = value;
+                OnPropertyChanged(nameof(MapTableVM));
+            }
+        }
         public bool SettingsMenuVisible
         {
             get { return _settingsMenuVisible; }
@@ -169,11 +179,16 @@ namespace MapAMilepost.ViewModels
                     this.SelectedViewModel.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(this.MapPointVM);
                     parentControl.SelectedIndex = 0;
                 }
-                else
+                if (this.SelectedViewModel == this.MapLineVM)
                 {
                     this.SelectedViewModel.LineResponse.StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(this.MapLineVM);
                     this.SelectedViewModel.LineResponse.EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(this.MapLineVM);
                     parentControl.SelectedIndex = 1;
+                }
+                if (this.SelectedViewModel == this.MapTableVM)
+                {
+                    SettingsMenuVisible = false;
+                    parentControl.SelectedIndex = 2;
                 }
             }
             AddInReady = true;
@@ -489,6 +504,7 @@ namespace MapAMilepost.ViewModels
                     ZoomScale = this.ZoomScale,
                 }
             };
+            MapTableVM = new();
             SelectedViewModel = MapPointVM;
             LayersRemovedEvent.Subscribe(OnLayerRemoved);
             DrawStartedEvent.Subscribe(OnDrawEventStarted);

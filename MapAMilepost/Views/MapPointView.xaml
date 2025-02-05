@@ -13,7 +13,6 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <valueConverters:BorderConverter x:Key="BorderConverter"/>
-            <valueConverters:RadioBooleanConverter x:Key="RadioBooleanConverter"/>
             <valueConverters:BooleanInverter x:Key="BooleanInverter"/>
             <valueConverters:DirectionConverter x:Key="DirectionConverter"/>
             <valueConverters:NumberConverter x:Key="NumberConverter"/>
@@ -86,8 +85,8 @@
             <!--Header-->
             <TextBox Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" HorizontalContentAlignment="Center" ToolTip="Information about the route location found." Background="#cfd8ff" Style="{StaticResource SelectableTextBox}">Results</TextBox>
             <!--MP Type Radio Buttons-->
-            <RadioButton Grid.Column="0" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="SRMP" Grid.Row="2" IsChecked="{Binding SRMPIsSelected, Converter={StaticResource RadioBooleanConverter}}"/>
-            <RadioButton Grid.Column="0" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="ARM" Grid.Row="3" IsChecked="{Binding SRMPIsSelected, Converter={StaticResource RadioBooleanConverter}, ConverterParameter='true'}"/>
+            <RadioButton Grid.Column="0" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="SRMP" Grid.Row="2" IsChecked="True"/>
+            <RadioButton Grid.Column="0" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="ARM" Grid.Row="3"/>
             <!--Labels-->
             <TextBox Grid.Column="1" Grid.Row="1" HorizontalContentAlignment="Center" ToolTip="The route that the location belongs to."  Style="{StaticResource SelectableTextBox}">Route</TextBox>
             <TextBox Grid.Column="1" Grid.Row="2" HorizontalContentAlignment="Center" ToolTip="SRMP measure of the route location found." Style="{StaticResource SelectableTextBox}">SRMP</TextBox>
@@ -228,7 +227,7 @@
                         <Style TargetType="DataGridRow">
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="LightBlue" />
+                                    <Setter Property="Background" Value="#007ac1" />
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
