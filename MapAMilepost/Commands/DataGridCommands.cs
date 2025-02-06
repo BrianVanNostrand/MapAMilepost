@@ -115,35 +115,6 @@ namespace MapAMilepost.Commands
             }
             return coordPair;
         }
-        //public static LineResponseModel GetSelectedGraphicInfoLine(DataGrid grid, Utils.ViewModelBase VM)
-        //{
-        //    LineResponseModel line;
-        //    if (MapView.Active != null && MapView.Active.Map != null)
-        //    {
-        //        var selItems = grid.SelectedItems;
-        //        bool dataGridRowSelected = false;
-        //        foreach (var item in selItems)
-        //        {
-        //            DataGridRow dgr = grid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
-        //            if (dgr.IsMouseOver)
-        //            {
-        //                dataGridRowSelected = true;
-        //            }
-        //        }
-        //        if (dataGridRowSelected)
-        //        {
-        //            if (VM.SelectedLines != null && VM.SelectedLines.Count > 0)
-        //            {
-        //                line = VM.SelectedLines.First();
-        //            }
-        //        }
-        //    }
-        //    return coordPair;
-        //}
-
-        ///// <summary>
-        ///// -   Update the selected items array based on the rows selected in the DataGrid in ResultsView.xaml via data binding.
-        ///// </summary>
         public static async Task UpdateLineSelection(DataGrid grid, Utils.ViewModelBase VM)
         {
             if (MapView.Active!=null && MapView.Active.Map != null)

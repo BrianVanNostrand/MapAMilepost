@@ -444,6 +444,12 @@ namespace MapAMilepost.Commands
                 (newCimDefinition.Symbol.Symbol as CIMPointSymbol).HaloSize = 1;
                 (newCimDefinition.Symbol.Symbol as CIMPointSymbol).HaloSymbol = null;
             }
+            else
+            {
+                (newCimDefinition.Symbol.Symbol as CIMLineSymbol).SetSize(4);
+                (newCimDefinition.Symbol.Symbol as CIMLineSymbol).SetColor(ColorFactory.Instance.CreateRGBColor(52, 146, 217));
+
+            }
             targetGraphic.SetGraphic(newCimDefinition);
         }
 

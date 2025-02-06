@@ -187,6 +187,7 @@ namespace MapAMilepost.ViewModels
                 }
                 if (this.SelectedViewModel == this.MapTableVM)
                 {
+                    this.MapTableVM.WarningMessage = "";
                     SettingsMenuVisible = false;
                     parentControl.SelectedIndex = 2;
                 }

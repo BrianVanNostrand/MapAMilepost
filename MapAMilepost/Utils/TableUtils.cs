@@ -41,14 +41,19 @@ namespace MapAMilepost.Utils
                 "true",
                 "t",
                 "y",
-                "yes"
+                "yes",
+                "b",
+                "back"
             };
             List<string> FalseTerms = new List<string>
             {
                 "false",
                 "f",
                 "n",
-                "no"
+                "no",
+                "a",
+                "ahead"
+                
             };
             if (TrueTerms.Contains(back.Trim().ToLower()))
             {
@@ -91,12 +96,12 @@ namespace MapAMilepost.Utils
                 "eastbound",
                 "e"
             };
-            if (DirectionTermsIncrease.Contains(direction.Trim()))
+            if (DirectionTermsIncrease.Contains(direction.Trim().ToLower()))
             {
                 returnVal.BoolVal = true;
                 returnVal.Error = false;
             }
-            if (DirectionTermsDecrease.Contains(direction.Trim()))
+            if (DirectionTermsDecrease.Contains(direction.Trim().ToLower()))
             {
                 returnVal.BoolVal = false;
                 returnVal.Error = false;

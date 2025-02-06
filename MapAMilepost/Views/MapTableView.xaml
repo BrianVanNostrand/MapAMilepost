@@ -64,11 +64,11 @@
                 </Grid.ColumnDefinitions>
                 <!--Route--><TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Route Column</TextBlock>
                 <ComboBox SelectedItem="{Binding FormInfo.RouteColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center"/>
-                <!--SRMP--><RadioButton Grid.Column="0" Grid.Row="1" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="SRMP" IsChecked="True"/>
+                <!--SRMP--><RadioButton x:Name="SRMPCheck" Grid.Column="0" Grid.Row="1" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="SRMP" IsChecked="True"/>
                 <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">SRMP Column</TextBlock>
                 <ComboBox SelectedItem="{Binding FormInfo.SRMPColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" IsEnabled="{Binding SRMPIsSelected}" Width="100px" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center"/>
                 <!--ARM-->
-                <RadioButton Grid.Column="0" Grid.Row="2" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="ARM"/>
+                <RadioButton x:Name="ARMCheck" Grid.Column="0" Grid.Row="2" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="ARM"/>
                 <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">ARM Column</TextBlock>
                 <ComboBox SelectedItem="{Binding FormInfo.ARMColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" IsEnabled="{Binding SRMPIsSelected, Converter={StaticResource BooleanInverter}}" Width="100px" Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center"/>
                 <!--Back--><TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Back Column (True/False)</TextBlock>
@@ -106,8 +106,8 @@
                     </DataGrid.RowStyle>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Route" Binding="{Binding Route, Mode=TwoWay}"/>
-                        <DataGridTextColumn Header="ARM" Visibility="{Binding SRMPIsSelected, Converter={StaticResource VisibilityConverterDataGrid}}" Binding="{Binding Arm, Mode=TwoWay}"/>
-                        <DataGridTextColumn Header="SRMP" Visibility="{Binding SRMPIsSelected, Converter={StaticResource VisibilityConverterDataGrid}, ConverterParameter='true'}" Binding="{Binding Srmp, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="ARM" Visibility="{Binding Source={x:Reference ARMCheck}, Path=IsChecked, Converter={StaticResource VisibilityConverterDataGrid}}" Binding="{Binding Arm, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="SRMP" Visibility="{Binding Source={x:Reference SRMPCheck}, Path=IsChecked, Converter={StaticResource VisibilityConverterDataGrid}}" Binding="{Binding Srmp, Mode=TwoWay}"/>
                         <DataGridTextColumn Header="Direction" Binding="{Binding Decrease, Mode=TwoWay, Converter={StaticResource DirectionConverter}}"/>
                         <DataGridTextColumn Header="Back" Binding="{Binding Back, Mode=TwoWay}"/>
                         <DataGridTextColumn Header="Reference Date" Binding="{Binding ReferenceDate,Mode=TwoWay}"/>
@@ -115,7 +115,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </ScrollViewer>
-            <Button Grid.Row="1" Grid.Column="0">Clear</Button>
+            <Button Grid.Row="1" Grid.Column="0" Command="{Binding ClearCommand}">Clear</Button>
             <TextBlock Grid.Row="1" Grid.Column="1" Padding="5,0,0,0">10 Errors</TextBlock>
         </Grid>
     </Grid>

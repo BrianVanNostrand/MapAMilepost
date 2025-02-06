@@ -143,6 +143,7 @@ namespace MapAMilepost.ViewModels
         });
         public Commands.RelayCommand<object> ClearCommand => new((p) =>
         {
+            WarningMessage = "";
             PointInfos.Clear();
             DataLoaded = false;
         });
@@ -167,6 +168,7 @@ namespace MapAMilepost.ViewModels
         });
         public Commands.RelayCommand<object> FileNameChanged => new((p) =>
         {
+            WarningMessage = "";
             DataLoaded = false;
             if (File.Exists(SelectedFile))
             {
