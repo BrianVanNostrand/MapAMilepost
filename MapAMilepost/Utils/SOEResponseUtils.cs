@@ -78,7 +78,7 @@ namespace MapAMilepost.Utils
                 {
                     string value = (string)pi.GetValue(myObject);
                     Console.WriteLine(pi.Name);
-                    List<string> excludeList = new List<string> {"ReferenceDate", "PointFeatureID"};//list of keys not expected to be present in the Find Route Locations response.
+                    List<string> excludeList = new List<string> {"ReferenceDate", "PointFeatureID", "Error"};//list of keys not expected to be present in the Find Route Locations response.
                     if (string.IsNullOrEmpty(value)&&!excludeList.Contains(pi.Name))
                     {
                         return false;

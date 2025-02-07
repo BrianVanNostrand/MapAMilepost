@@ -175,10 +175,6 @@ namespace MapAMilepost.ViewModels
             else
             {
                 await Commands.GraphicsCommands.DeleteUnsavedGraphics();//delete all unsaved graphics
-                if (PointArgs.SR == 0)
-                {
-                    PointArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
-                }
                 PointResponse.ReferenceDate = PointArgs.ReferenceDate;
                 bool formDataValid = HTTPRequest.CheckFormData(PointResponse);
                 if (formDataValid)
@@ -205,6 +201,13 @@ namespace MapAMilepost.ViewModels
                         PointResponse = newPointResponse;
                         await Commands.GraphicsCommands.CreatePointGraphics(PointArgs, PointResponse, "point");
                         await CameraUtils.ZoomToCoords(PointResponse.RouteGeometry.x, PointResponse.RouteGeometry.y);
+                    }
+                    else
+                    {
+                        if (newPointResponse.Error != null)
+                        {
+                            ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(newPointResponse.Error);
+                        }
                     }
                    
                 }

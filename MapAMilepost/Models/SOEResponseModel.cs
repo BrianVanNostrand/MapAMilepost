@@ -19,6 +19,7 @@ namespace MapAMilepost.Models
         private double? _arm;
         private bool? _back;
         private bool? _decrease;
+        private string _error;
         private string _route;
         private double? _srmp;
         private string _referenceDate;
@@ -34,7 +35,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(PointFeatureID));
             }
         }
-        public  double? Arm
+        public double? Arm
         {
             get { return _arm; }
             set
@@ -59,6 +60,15 @@ namespace MapAMilepost.Models
             {
                 _decrease = value;
                 OnPropertyChanged(nameof(Decrease));
+            }
+        }
+        public string Error
+        {
+            get { return _error; }
+            set
+            {
+                _error = value;
+                OnPropertyChanged(nameof(Error));
             }
         }
         public  string Route

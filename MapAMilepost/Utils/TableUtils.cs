@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ArcGIS.Desktop.Framework.Dialogs;
 using MapAMilepost.Models;
 
 namespace MapAMilepost.Utils
@@ -15,6 +16,14 @@ namespace MapAMilepost.Utils
         {
             var dt = new DataTable();
             // Creating the columns
+            try
+            {
+                File.ReadLines(filePath);
+            }
+            catch(IOException exception){
+                MessageBox.Show(exception.Message);
+                return null;
+            }
             foreach (var headerLine in File.ReadLines(filePath).Take(1))
             {
                 foreach (var headerItem in headerLine.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))

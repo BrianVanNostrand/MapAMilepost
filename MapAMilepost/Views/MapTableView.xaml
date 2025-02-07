@@ -116,7 +116,8 @@
                 </DataGrid>
             </ScrollViewer>
             <Button Grid.Row="1" Grid.Column="0" Command="{Binding ClearCommand}">Clear</Button>
-            <TextBlock Grid.Row="1" Grid.Column="1" Padding="5,0,0,0">10 Errors</TextBlock>
+            <Button Grid.Row="1" Grid.Column="1" Command="{Binding CreatePointsCommand}">Create Points</Button>
+            <TextBlock Grid.Row="1" Grid.Column="2" Padding="5,0,0,0">X Errors</TextBlock>
         </Grid>
     </Grid>
 </UserControl>

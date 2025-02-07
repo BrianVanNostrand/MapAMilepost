@@ -58,6 +58,7 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(AddInReady));
             }
         }
+
         public bool IsPaused
         {
             get { return _isPaused; }
@@ -187,7 +188,7 @@ namespace MapAMilepost.ViewModels
                 }
                 if (this.SelectedViewModel == this.MapTableVM)
                 {
-                    this.MapTableVM.WarningMessage = "";
+                    this.MapTableVM.WarningMessage = String.Empty;
                     SettingsMenuVisible = false;
                     parentControl.SelectedIndex = 2;
                 }
@@ -399,6 +400,31 @@ namespace MapAMilepost.ViewModels
                     }
                 }
             }
+            //set spatial reference to new map view
+            if (
+                MapPointVM.PointArgs.SR!= MapView.Active.Map.SpatialReference.Wkid
+            )
+            {
+                MapPointVM.PointArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+            }
+            if (
+                MapLineVM.LineArgs.StartArgs.SR != MapView.Active.Map.SpatialReference.Wkid||
+                MapLineVM.LineArgs.EndArgs.SR != MapView.Active.Map.SpatialReference.Wkid
+            )
+            {
+                MapLineVM.LineArgs.StartArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+                MapLineVM.LineArgs.EndArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+            }
+            if(
+                MapTableVM.PointArgs.SR != MapView.Active.Map.SpatialReference.Wkid ||
+                MapTableVM.LineArgs.StartArgs.SR != MapView.Active.Map.SpatialReference.Wkid ||
+                MapTableVM.LineArgs.EndArgs.SR != MapView.Active.Map.SpatialReference.Wkid
+            )
+            {
+                MapTableVM.PointArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+                MapTableVM.LineArgs.StartArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+                MapTableVM.LineArgs.EndArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+            }
         }
        
         private async void OnElementSelectionChanged(ElementSelectionChangedEventArgs obj)
@@ -505,7 +531,33 @@ namespace MapAMilepost.ViewModels
                     ZoomScale = this.ZoomScale,
                 }
             };
-            MapTableVM = new();
+            MapTableVM = new()
+            {
+                LineArgs = new()
+                {
+                    StartArgs = new()
+                    {
+                        SearchRadius = this.SearchRadius,
+                        ReferenceDate = this.ReferenceDate,
+                        ResponseDate = this.ResponseDate,
+                        ZoomScale = this.ZoomScale,
+                    },
+                    EndArgs = new()
+                    {
+                        SearchRadius = this.SearchRadius,
+                        ReferenceDate = this.ReferenceDate,
+                        ResponseDate = this.ResponseDate,
+                        ZoomScale = this.ZoomScale,
+                    }
+                },
+                PointArgs = new()
+                {
+                    SearchRadius = this.SearchRadius,
+                    ReferenceDate = this.ReferenceDate,
+                    ResponseDate = this.ResponseDate,
+                    ZoomScale = this.ZoomScale,
+                }
+            };
             SelectedViewModel = MapPointVM;
             LayersRemovedEvent.Subscribe(OnLayerRemoved);
             DrawStartedEvent.Subscribe(OnDrawEventStarted);

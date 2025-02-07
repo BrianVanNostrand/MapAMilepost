@@ -256,10 +256,6 @@ namespace MapAMilepost.ViewModels
 
          private async Task<PointResponseModel> ProcessPoint(PointResponseModel Point, PointArgsModel Args, string startEnd)
         {
-            if (Args.SR == 0)
-            {
-                Args.SR = MapView.Active.Map.SpatialReference.Wkid;
-            }
             Point.ReferenceDate = Args.ReferenceDate;
             var errorDialog = startEnd == "start" ? "Start point" : "End point";
             bool formDataValid = HTTPRequest.CheckFormData(Point, errorDialog);
@@ -286,6 +282,13 @@ namespace MapAMilepost.ViewModels
                 {
                     Point = newPointResponse;
                     await Commands.GraphicsCommands.CreatePointGraphics(Args, Point, startEnd);
+                }
+                else
+                {
+                    if(newPointResponse.Error != null)
+                    {
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(newPointResponse.Error);
+                    }
                 }
             }
             return Point;

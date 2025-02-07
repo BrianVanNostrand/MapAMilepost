@@ -1,7 +1,10 @@
 ﻿using ArcGIS.Desktop.Catalog;
 using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Framework.Dialogs;
+using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Internal.Framework;
+using ArcGIS.Desktop.Internal.Mapping.Locate;
+using ArcGIS.Desktop.Mapping;
 using MapAMilepost.Models;
 using MapAMilepost.Utils;
 using Microsoft.Win32;
@@ -143,7 +146,7 @@ namespace MapAMilepost.ViewModels
         });
         public Commands.RelayCommand<object> ClearCommand => new((p) =>
         {
-            WarningMessage = "";
+            WarningMessage = string.Empty;
             PointInfos.Clear();
             DataLoaded = false;
         });
@@ -168,17 +171,19 @@ namespace MapAMilepost.ViewModels
         });
         public Commands.RelayCommand<object> FileNameChanged => new((p) =>
         {
-            WarningMessage = "";
+            WarningMessage = String.Empty;
             DataLoaded = false;
             if (File.Exists(SelectedFile))
             {
                 ColumnTitles = [];
-                FileSelected = true;
                 DataTable file = Utils.TableUtils.readCSV(SelectedFile);
-                Console.Write(file);
-                foreach (DataColumn column in file.Columns)
+                if(file!=null&&file.Columns.Count > 0)
                 {
-                    ColumnTitles.Add((column.ColumnName).ToString());
+                    foreach (DataColumn column in file.Columns)
+                    {
+                        ColumnTitles.Add((column.ColumnName).ToString());
+                    }
+                    FileSelected = true;
                 }
             }
             else
@@ -188,7 +193,7 @@ namespace MapAMilepost.ViewModels
         });
         public Commands.RelayCommand<object> LoadFileCommand => new((p) =>
         {
-            WarningMessage = "";
+            WarningMessage = String.Empty;
             DataLoaded = false;
             PointInfos.Clear();
             List<string> missingHeadersRequired = new List<string>();
@@ -202,7 +207,7 @@ namespace MapAMilepost.ViewModels
             {
                 missingHeadersRequired.Add("Milepost (SRMP or ARM)");
             }
-            if(missingHeadersRequired.Count > 0)
+            if (missingHeadersRequired.Count > 0)
             {
                 ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"The following columns must be defined in order to load this file:\n{string.Join(", ", missingHeadersRequired)}");
                 return;
@@ -211,11 +216,11 @@ namespace MapAMilepost.ViewModels
             {
                 WarningMessage = "- Back column undefined. Milepost values will be assumed to be forward miles.";
             }
-            if(FormInfo.DirectionColumn == null)
+            if (FormInfo.DirectionColumn == null)
             {
                 WarningMessage = WarningMessage + "\n- Direction column undefined. All milepost values will be placed on increasing lane.";
             }
-            if(FormInfo.ReferenceDateColumn == null)
+            if (FormInfo.ReferenceDateColumn == null)
             {
                 WarningMessage = WarningMessage + "\n- Reference Date column undefined. Today's date will be used.";
             }
@@ -232,17 +237,17 @@ namespace MapAMilepost.ViewModels
             foreach (DataRow row in file.Rows)
             {
                 PointResponseModel pointInfo = new();
-            #region Milepost value parsing
+                #region Milepost value parsing
                 if (SRMPIsSelected)
                 {
                     int SRMPIndex = file.Columns[FormInfo.SRMPColumn].Ordinal;
-                    if(double.TryParse(row.ItemArray[SRMPIndex].ToString(),out double result)) 
+                    if (double.TryParse(row.ItemArray[SRMPIndex].ToString(), out double result))
                     {
                         pointInfo.Srmp = result;
                     }
-                    else 
-                    { 
-                        invalidMilepostRows.Add(file.Rows.IndexOf(row)); 
+                    else
+                    {
+                        invalidMilepostRows.Add(file.Rows.IndexOf(row));
                     }
                 }
                 else
@@ -257,12 +262,20 @@ namespace MapAMilepost.ViewModels
                         invalidMilepostRows.Add(file.Rows.IndexOf(row));
                     }
                 }
-            #endregion
-            #region Route ID Parsing
+                #endregion
+                #region Route ID Parsing
                 int RouteIndex = file.Columns[FormInfo.RouteColumn].Ordinal;
-                pointInfo.Route = row.ItemArray[RouteIndex].ToString().Trim();
-            #endregion
-            #region Back parsing
+                string routeString = row.ItemArray[RouteIndex].ToString().Trim();
+                if (routeString.Length < 3)
+                {
+                    while (routeString.Length < 3)
+                    {
+                        routeString = "0" + routeString;
+                    }
+                }
+                pointInfo.Route = routeString;
+                #endregion
+                #region Back parsing
                 if (FormInfo.BackColumn != null)
                 {
                     int BackIndex = file.Columns[FormInfo.BackColumn].Ordinal;
@@ -280,8 +293,8 @@ namespace MapAMilepost.ViewModels
                 {
                     pointInfo.Back = false; //default value
                 }
-            #endregion
-            #region Direction Parsing
+                #endregion
+                #region Direction Parsing
                 if (FormInfo.DirectionColumn != null)
                 {
                     int DirectionIndex = file.Columns[FormInfo.DirectionColumn].Ordinal;
@@ -299,13 +312,13 @@ namespace MapAMilepost.ViewModels
                 {
                     pointInfo.Decrease = false; //default value
                 }
-            #endregion
-            #region Reference Date Parsing
+                #endregion
+                #region Reference Date Parsing
                 if (FormInfo.ReferenceDateColumn != null)
                 {
                     int RefDateIndex = file.Columns[FormInfo.ReferenceDateColumn].Ordinal;
                     StringWithError val = TableUtils.getDate(row.ItemArray[RefDateIndex].ToString());
-                    if(val.Error == false)
+                    if (val.Error == false)
                     {
                         pointInfo.ReferenceDate = val.StringVal;
                     }
@@ -341,6 +354,54 @@ namespace MapAMilepost.ViewModels
                 PointInfos.Add(pointInfo);
                 DataLoaded = true;
             }
+        });
+        public Commands.RelayCommand<object> CreatePointsCommand => new(async(p) => {
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);//look for layer
+            List<GraphicInfoModel> graphicInfos = new List<GraphicInfoModel>();
+            for(int i = PointInfos.Count - 1; i >= 0; i--)
+            {
+                LocationInfo Location = new(PointInfos[i]);
+                var newPointResponse = await Utils.HTTPRequest.FindRouteLocation(Location, PointArgs) as PointResponseModel;
+                if (newPointResponse != null && newPointResponse.RouteGeometry != null)
+                {
+                    PointResponse = newPointResponse;
+                    GraphicInfoModel graphicInfo = await Commands.GraphicsCommands.CreatePointGraphics(PointArgs, PointResponse, "point");
+                    graphicInfos.Add(graphicInfo);
+                    string FeatureID = $"{PointResponse.Route}{(PointResponse.Decrease == true ? "Decrease" : "Increase")}{PointResponse.Srmp}";
+                    PointResponses.Add(new PointResponseModel()
+                    {
+                        Arm = PointResponse.Arm,
+                        Back = PointResponse.Back,
+                        Decrease = PointResponse.Decrease,
+                        Route = PointResponse.Route,
+                        RouteGeometry = PointResponse.RouteGeometry,
+                        Srmp = PointResponse.Srmp,
+                        RealignmentDate = PointResponse.RealignmentDate,
+                        ResponseDate = PointResponse.ResponseDate,
+                        ReferenceDate = PointResponse.ReferenceDate,
+                        PointFeatureID = FeatureID
+                    });
+                    PointInfos.RemoveAt(i);
+                }
+            }
+            if(graphicInfos.Count > 0)
+            {
+                await QueuedTask.Run(() =>
+                {
+                    graphicInfos.ForEach(graphicInfo =>
+                    {
+                        graphicsLayer.AddElement(cimGraphic: graphicInfo.CGraphic, elementInfo: graphicInfo.EInfo, select: false);
+                    });
+                });
+            }
+            if (PointInfos.Count == 0)
+            {
+                DataLoaded = false;
+                WarningMessage = string.Empty;
+            }
+        });
+        public Commands.RelayCommand<object> CreateLinesCommand => new((p) => {
+            Console.Write(LineInfos);
         });
         public MapTableViewModel()
         {

@@ -66,6 +66,7 @@ namespace MapAMilepost
         /// <param name="e"></param>
         protected override async void OnToolMouseDown(MapViewMouseButtonEventArgs e)
         {
+            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);//look for layer
             if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
             {
                 MapPoint mapPoint = await QueuedTask.Run(() =>
@@ -91,7 +92,14 @@ namespace MapAMilepost
                             }
                         }
                         lineGeometryResponse = await Utils.MapToolUtils.GetLine(CurrentViewModel.LineResponse.StartResponse, CurrentViewModel.LineResponse.EndResponse, CurrentViewModel.LineArgs.StartArgs.SR, CurrentViewModel.LineArgs.StartArgs.ReferenceDate);
-                        await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.StartArgs, CurrentViewModel.LineResponse.StartResponse, MapToolSessionType);
+                        GraphicInfoModel gInfo = await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.StartArgs, CurrentViewModel.LineResponse.StartResponse, MapToolSessionType);
+                        if(gInfo.CGraphic != null && gInfo.EInfo != null) 
+                        {
+                            await QueuedTask.Run(() =>
+                            {
+                                graphicsLayer.AddElement(cimGraphic: gInfo.CGraphic, elementInfo: gInfo.EInfo, select: false);
+                            });
+                        }
                     }
                     else if (MapToolSessionType == "end")
                     {
@@ -108,12 +116,26 @@ namespace MapAMilepost
                             }
                         }
                         lineGeometryResponse = await Utils.MapToolUtils.GetLine(CurrentViewModel.LineResponse.StartResponse, CurrentViewModel.LineResponse.EndResponse, CurrentViewModel.LineArgs.StartArgs.SR, CurrentViewModel.LineArgs.StartArgs.ReferenceDate);
-                        await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.EndArgs, CurrentViewModel.LineResponse.EndResponse, MapToolSessionType);
+                        GraphicInfoModel gInfo =  await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.EndArgs, CurrentViewModel.LineResponse.EndResponse, MapToolSessionType);
+                        if (gInfo.CGraphic != null && gInfo.EInfo != null)
+                        {
+                            await QueuedTask.Run(() =>
+                            {
+                                graphicsLayer.AddElement(cimGraphic: gInfo.CGraphic, elementInfo: gInfo.EInfo, select: false);
+                            });
+                        }
                     }
                     else//point session
                     {
                         CurrentViewModel.PointResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.PointArgs) as PointResponseModel);
-                        await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.PointArgs, CurrentViewModel.PointResponse, MapToolSessionType);
+                        GraphicInfoModel gInfo = await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.PointArgs, CurrentViewModel.PointResponse, MapToolSessionType);
+                        if (gInfo.CGraphic != null && gInfo.EInfo != null)
+                        {
+                            await QueuedTask.Run(() =>
+                            {
+                                graphicsLayer.AddElement(cimGraphic: gInfo.CGraphic, elementInfo: gInfo.EInfo, select: false);
+                            });
+                        }
                     }
                     if (lineGeometryResponse.Count > 0)
                     {

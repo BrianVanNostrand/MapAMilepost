@@ -19,7 +19,6 @@ namespace MapAMilepost.Commands
 {
     class GraphicsCommands
     {
-
         /// <summary>
         /// -   Update the graphics on the map, converting a newly mapped route graphic instance to a persisting
         ///     saved graphic (a green point).
@@ -87,33 +86,32 @@ namespace MapAMilepost.Commands
         /// </summary>
         /// <param name="SoeArgs"></param>
         /// <param name="PointResponse"></param>
-        public static async Task CreatePointGraphics(PointArgsModel SoeArgs, PointResponseModel PointResponse, string sessionType)
+        public static async Task<GraphicInfoModel> CreatePointGraphics(PointArgsModel SoeArgs, PointResponseModel PointResponse, string sessionType)
         {
+            GraphicInfoModel graphicInfo = new();
             if (PointResponse != null)
             {
                 CustomGraphics CustomSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
-                GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);//look for layer
-                IEnumerable<GraphicElement> graphicItems = graphicsLayer.GetElementsAsFlattenedList();
-                await QueuedTask.Run(() =>
+                 await QueuedTask.Run(() =>
                 {
                     //GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
                     #region create and add click point graphic
-                    var clickedPtGraphic = new CIMPointGraphic() { 
-                        Symbol = (CustomSymbols.SymbolsLibrary["ClickPoint"] as CIMPointSymbol).MakeSymbolReference(),
-                        Location = (MapPointBuilderEx.CreateMapPoint(SoeArgs.X, SoeArgs.Y))
-                    };
+                    //var clickedPtGraphic = new CIMPointGraphic() { 
+                    //    Symbol = (CustomSymbols.SymbolsLibrary["ClickPoint"] as CIMPointSymbol).MakeSymbolReference(),
+                    //    Location = (MapPointBuilderEx.CreateMapPoint(SoeArgs.X, SoeArgs.Y))
+                    //};
                     //create custom click point props
-                    var clickPtElemInfo = new ArcGIS.Desktop.Layouts.ElementInfo()
-                    {
-                        CustomProperties = new List<CIMStringMap>()
-                        {
-                            new() { Key = "saved", Value = "false" },
-                            new() { Key = "eventType", Value = "click" },
-                            new() { Key = "sessionType", Value = sessionType == "point" ? "point" : "line"},
-                            new() { Key = "startEnd", Value = sessionType }
-                        }
-                    };
-                    graphicsLayer.AddElement(cimGraphic: clickedPtGraphic, elementInfo: clickPtElemInfo, select: false);
+                    //var clickPtElemInfo = new ArcGIS.Desktop.Layouts.ElementInfo()
+                    //{
+                    //    CustomProperties = new List<CIMStringMap>()
+                    //    {
+                    //        new() { Key = "saved", Value = "false" },
+                    //        new() { Key = "eventType", Value = "click" },
+                    //        new() { Key = "sessionType", Value = sessionType == "point" ? "point" : "line"},
+                    //        new() { Key = "startEnd", Value = sessionType }
+                    //    }
+                    //};
+                    //graphicsLayer.AddElement(cimGraphic: clickedPtGraphic, elementInfo: clickPtElemInfo, select: false);
                     #endregion
 
                     #region create and add route point graphic
@@ -148,11 +146,14 @@ namespace MapAMilepost.Commands
                             new() { Key = "startEnd", Value = sessionType }
                         }
                     };
-                    graphicsLayer.AddElement(cimGraphic: soePtGraphic, elementInfo: routePtElemInfo, select: false);
+                    graphicInfo.CGraphic = soePtGraphic;
+                    graphicInfo.EInfo = routePtElemInfo;
+                    //graphicsLayer.AddElement(cimGraphic: soePtGraphic, elementInfo: routePtElemInfo, select: false);
                     // IDisposable graphicLabel = CreateLabel(PointResponse, SoeArgs);
                     #endregion
                 });
             }
+            return graphicInfo;
         }
 
         /// <summary>
