@@ -1,17 +1,22 @@
-﻿using ArcGIS.Desktop.Catalog;
+﻿using ArcGIS.Core.CIM;
+using ArcGIS.Core.Data;
+using ArcGIS.Desktop.Catalog;
 using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Framework.Dialogs;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Internal.Framework;
 using ArcGIS.Desktop.Internal.Mapping.Locate;
+using ArcGIS.Desktop.Layouts;
 using ArcGIS.Desktop.Mapping;
 using MapAMilepost.Models;
 using MapAMilepost.Utils;
 using Microsoft.Win32;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -19,6 +24,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Security;
 using System.Windows;
+using static ArcGIS.Desktop.Internal.Mapping.Symbology.SymbolUtil;
 
 namespace MapAMilepost.ViewModels
 {
@@ -35,7 +41,17 @@ namespace MapAMilepost.ViewModels
         private bool _srmpIsSelected = true;
         private bool _dataLoaded = false;
         private TableFormInfoModel _formInfo = new();
+        private LoadFileRowError _fileLoadError = new();
 
+        public LoadFileRowError FileLoadError
+        {
+            get { return _fileLoadError; }
+            set
+            {
+                _fileLoadError = value;
+                OnPropertyChanged(nameof(FileLoadError));
+            }
+        }
         public string WarningMessage
         {
             get { return _warningMessage; }
@@ -176,12 +192,12 @@ namespace MapAMilepost.ViewModels
             if (File.Exists(SelectedFile))
             {
                 ColumnTitles = [];
-                DataTable file = Utils.TableUtils.readCSV(SelectedFile);
-                if(file!=null&&file.Columns.Count > 0)
+                string[] headers = Utils.TableUtils.getCSVHeaders(SelectedFile);
+                if(headers!=null&& headers.Length > 0)
                 {
-                    foreach (DataColumn column in file.Columns)
+                    foreach (string header in headers)
                     {
-                        ColumnTitles.Add((column.ColumnName).ToString());
+                        ColumnTitles.Add(header);
                     }
                     FileSelected = true;
                 }
@@ -228,171 +244,157 @@ namespace MapAMilepost.ViewModels
             {
                 WarningMessage = WarningMessage + "\n- Response Date column undefined. Today's date will be used.";
             }
-            DataTable file = Utils.TableUtils.readCSV(SelectedFile);
-            List<double> invalidMilepostRows = new();
-            List<double> invalidBackRows = new();
-            List<double> invalidDirectionRows = new();
-            List<double> invalidRefDateRows = new();
-            List<double> invalidResponseDateRows = new();
-            foreach (DataRow row in file.Rows)
+            List<TableFormInfoModel> records = Utils.TableUtils.loadCSV(SelectedFile,FormInfo);
+            FileLoadError = new();
+            int rowIndex = 0;
+            foreach (var record in records)
             {
                 PointResponseModel pointInfo = new();
-                #region Milepost value parsing
-                if (SRMPIsSelected)
+                if (record != null)
                 {
-                    int SRMPIndex = file.Columns[FormInfo.SRMPColumn].Ordinal;
-                    if (double.TryParse(row.ItemArray[SRMPIndex].ToString(), out double result))
+                    if (SRMPIsSelected)
                     {
-                        pointInfo.Srmp = result;
+                        if (double.TryParse(record.SRMPColumn, out double result))
+                        {
+                            pointInfo.Srmp = result;
+                        }
+                        else
+                        {
+                            FileLoadError.SRMPRows.Add(rowIndex);
+                        }
                     }
                     else
                     {
-                        invalidMilepostRows.Add(file.Rows.IndexOf(row));
+                        if (double.TryParse(record.ARMColumn, out double result))
+                        {
+                            pointInfo.Arm = result;
+                        }
+                        else
+                        {
+                            FileLoadError.ARMRows.Add(rowIndex);
+                        }
                     }
-                }
-                else
-                {
-                    int ARMIndex = file.Columns[FormInfo.ARMColumn].Ordinal;
-                    if (double.TryParse(row.ItemArray[ARMIndex].ToString(), out double result))
+                    string routeString = record.RouteColumn;
+                    if (routeString.Length < 3)
                     {
-                        pointInfo.Arm = result;
+                        while (routeString.Length < 3)
+                        {
+                            routeString = "0" + routeString;
+                        }
+                    }
+                    pointInfo.Route = routeString;
+                    #region back parsing
+                    if (FormInfo.BackColumn != null)
+                    {
+                        BooleanWithError val = TableUtils.getBack(record.BackColumn);
+                        if (val.Error == false)
+                        {
+                            pointInfo.Back = val.BoolVal;
+                        }
+                        else
+                        {
+                            FileLoadError.BackRows.Add(rowIndex);
+                        }
                     }
                     else
                     {
-                        invalidMilepostRows.Add(file.Rows.IndexOf(row));
+                        pointInfo.Back = false; //default value
                     }
-                }
-                #endregion
-                #region Route ID Parsing
-                int RouteIndex = file.Columns[FormInfo.RouteColumn].Ordinal;
-                string routeString = row.ItemArray[RouteIndex].ToString().Trim();
-                if (routeString.Length < 3)
-                {
-                    while (routeString.Length < 3)
+                    #endregion
+                    #region Direction Parsing
+                    if (FormInfo.DirectionColumn != null)
                     {
-                        routeString = "0" + routeString;
-                    }
-                }
-                pointInfo.Route = routeString;
-                #endregion
-                #region Back parsing
-                if (FormInfo.BackColumn != null)
-                {
-                    int BackIndex = file.Columns[FormInfo.BackColumn].Ordinal;
-                    BooleanWithError val = TableUtils.getBack(row.ItemArray[BackIndex].ToString());
-                    if (val.Error == false)
-                    {
-                        pointInfo.Back = val.BoolVal;
+                        BooleanWithError val = TableUtils.getDirection(record.DirectionColumn);
+                        if (val.Error == false)
+                        {
+                            pointInfo.Decrease = val.BoolVal;
+                        }
+                        else
+                        {
+                            FileLoadError.DirectionRows.Add(rowIndex);
+                        }
                     }
                     else
                     {
-                        invalidBackRows.Add(file.Rows.IndexOf(row));
+                        pointInfo.Decrease = false; //default value
                     }
-                }
-                else
-                {
-                    pointInfo.Back = false; //default value
-                }
-                #endregion
-                #region Direction Parsing
-                if (FormInfo.DirectionColumn != null)
-                {
-                    int DirectionIndex = file.Columns[FormInfo.DirectionColumn].Ordinal;
-                    BooleanWithError val = TableUtils.getDirection(row.ItemArray[DirectionIndex].ToString());
-                    if (val.Error == false)
+                    #endregion
+                    #region Reference Date Parsing
+                    if (FormInfo.ReferenceDateColumn != null)
                     {
-                        pointInfo.Decrease = val.BoolVal;
+                        StringWithError val = TableUtils.getDate(record.ReferenceDateColumn);
+                        if (val.Error == false)
+                        {
+                            pointInfo.ReferenceDate = val.StringVal;
+                        }
+                        else
+                        {
+                            FileLoadError.RefDateRows.Add(rowIndex);
+                        }
                     }
                     else
                     {
-                        invalidDirectionRows.Add(file.Rows.IndexOf(row));
+                        pointInfo.ReferenceDate = DateTime.Now.ToString("MM/dd/yyyy"); //default value
                     }
-                }
-                else
-                {
-                    pointInfo.Decrease = false; //default value
-                }
-                #endregion
-                #region Reference Date Parsing
-                if (FormInfo.ReferenceDateColumn != null)
-                {
-                    int RefDateIndex = file.Columns[FormInfo.ReferenceDateColumn].Ordinal;
-                    StringWithError val = TableUtils.getDate(row.ItemArray[RefDateIndex].ToString());
-                    if (val.Error == false)
+                    #endregion
+                    #region Response Date Parsing
+                    if (FormInfo.ResponseDateColumn != null)
                     {
-                        pointInfo.ReferenceDate = val.StringVal;
+                        StringWithError val = TableUtils.getDate(record.ResponseDateColumn);
+                        if (val.Error == false)
+                        {
+                            pointInfo.ResponseDate = val.StringVal;
+                        }
+                        else
+                        {
+                            FileLoadError.ResDateRows.Add(rowIndex);
+                        }
                     }
                     else
                     {
-                        invalidRefDateRows.Add(file.Rows.IndexOf(row));
+                        pointInfo.ResponseDate = DateTime.Now.ToString("MM/dd/yyyy"); //default value
                     }
+                    #endregion
                 }
-                else
-                {
-                    pointInfo.ReferenceDate = DateTime.Now.ToString("MM/dd/yyyy"); //default value
-                }
-                #endregion
-                #region Response Date Parsing
-                if (FormInfo.ResponseDateColumn != null)
-                {
-                    int ResponseDateIndex = file.Columns[FormInfo.ResponseDateColumn].Ordinal;
-                    StringWithError val = TableUtils.getDate(row.ItemArray[ResponseDateIndex].ToString());
-                    if (val.Error == false)
-                    {
-                        pointInfo.ResponseDate = val.StringVal;
-                    }
-                    else
-                    {
-                        invalidResponseDateRows.Add(file.Rows.IndexOf(row));
-                    }
-                }
-                else
-                {
-                    pointInfo.ResponseDate = DateTime.Now.ToString("MM/dd/yyyy"); //default value
-                }
-                #endregion
                 PointInfos.Add(pointInfo);
-                DataLoaded = true;
             }
+            DataLoaded = true;
         });
+        private static void getTableValue(dynamic record, string columnName)
+        {
+            var test = JObject.Parse(record);
+            string value1 = record[columnName];
+            var propertyInfo = record.GetType().GetProperty(columnName);
+            var value = propertyInfo.GetValue(record, null);
+        }
+        public Commands.RelayCommand<object> RowEditEnding => new(async (p) => {
+            Console.Write(FileLoadError);
+            Console.Write(p);
+        });
+
         public Commands.RelayCommand<object> CreatePointsCommand => new(async(p) => {
             GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);//look for layer
-            List<GraphicInfoModel> graphicInfos = new List<GraphicInfoModel>();
-            for(int i = PointInfos.Count - 1; i >= 0; i--)
+            List<CIMGraphic> SavedPointGraphics = new();
+            List<ElementInfo> ElementInfos = new();
+            for (int i = PointInfos.Count - 1; i >= 0; i--)
             {
                 LocationInfo Location = new(PointInfos[i]);
-                var newPointResponse = await Utils.HTTPRequest.FindRouteLocation(Location, PointArgs) as PointResponseModel;
+                PointResponseModel newPointResponse = await Utils.HTTPRequest.FindRouteLocation(Location, PointArgs);
                 if (newPointResponse != null && newPointResponse.RouteGeometry != null)
                 {
-                    PointResponse = newPointResponse;
-                    GraphicInfoModel graphicInfo = await Commands.GraphicsCommands.CreatePointGraphics(PointArgs, PointResponse, "point");
-                    graphicInfos.Add(graphicInfo);
-                    string FeatureID = $"{PointResponse.Route}{(PointResponse.Decrease == true ? "Decrease" : "Increase")}{PointResponse.Srmp}";
-                    PointResponses.Add(new PointResponseModel()
-                    {
-                        Arm = PointResponse.Arm,
-                        Back = PointResponse.Back,
-                        Decrease = PointResponse.Decrease,
-                        Route = PointResponse.Route,
-                        RouteGeometry = PointResponse.RouteGeometry,
-                        Srmp = PointResponse.Srmp,
-                        RealignmentDate = PointResponse.RealignmentDate,
-                        ResponseDate = PointResponse.ResponseDate,
-                        ReferenceDate = PointResponse.ReferenceDate,
-                        PointFeatureID = FeatureID
-                    });
+                    GraphicInfoModel graphicInfo = await Commands.GraphicsCommands.CreateTablePointGraphic(PointArgs, newPointResponse,"point");
+                    SavedPointGraphics.Add(graphicInfo.CGraphic);
+                    ElementInfos.Add(graphicInfo.EInfo);
                     PointInfos.RemoveAt(i);
                 }
             }
-            if(graphicInfos.Count > 0)
+            if(SavedPointGraphics.Count > 0)
             {
                 await QueuedTask.Run(() =>
-                {
-                    graphicInfos.ForEach(graphicInfo =>
                     {
-                        graphicsLayer.AddElement(cimGraphic: graphicInfo.CGraphic, elementInfo: graphicInfo.EInfo, select: false);
-                    });
-                });
+                        graphicsLayer.AddElements(graphics:SavedPointGraphics, elementInfos:ElementInfos,select:false);
+                    }
+                );
             }
             if (PointInfos.Count == 0)
             {

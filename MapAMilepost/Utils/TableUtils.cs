@@ -1,43 +1,66 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ArcGIS.Core.Data;
 using ArcGIS.Desktop.Framework.Dialogs;
+using CsvHelper.Configuration;
+using CsvHelper;
 using MapAMilepost.Models;
+using static ArcGIS.Desktop.Internal.Mapping.Symbology.SymbolUtil;
+using System.Formats.Asn1;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.Xaml.Behaviors.Core;
+using System.Reflection;
 
 namespace MapAMilepost.Utils
 {
     class TableUtils
     {
-        public static DataTable readCSV(string filePath)
+        public sealed class CSVMap : ClassMap<TableFormInfoModel>
         {
-            var dt = new DataTable();
-            // Creating the columns
+            public CSVMap(TableFormInfoModel formInfo)
+            {
+                Map(m => m.RouteColumn).Name(formInfo.RouteColumn);
+                Map(m => m.SRMPColumn).Name(formInfo.SRMPColumn);
+            }
+        }
+        public static string[] getCSVHeaders(string filePath)
+        {
+            var reader = new StreamReader(filePath);
+            string[] csvHeaders;
             try
             {
-                File.ReadLines(filePath);
+                using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                {
+                    csv.Read();
+                    csv.ReadHeader();
+                    csvHeaders = csv.HeaderRecord;
+                }
             }
             catch(IOException exception){
                 MessageBox.Show(exception.Message);
-                return null;
+                return [];
             }
-            foreach (var headerLine in File.ReadLines(filePath).Take(1))
+            return csvHeaders;
+        }
+        public static List<TableFormInfoModel> loadCSV(string filePath,TableFormInfoModel formInfo)
+        {
+            List<TableFormInfoModel> records = new List<TableFormInfoModel>();
+            using (var reader = new StreamReader(filePath))
+            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
-                foreach (var headerItem in headerLine.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    dt.Columns.Add(headerItem.Trim());
-                }
+                CSVMap map = new(formInfo);
+                csv.Context.RegisterClassMap(new CSVMap(formInfo));
+                records = csv.GetRecords<TableFormInfoModel>().ToList();
             }
-
-            // Adding the rows
-            foreach (var line in File.ReadLines(filePath).Skip(1))
-            {
-                dt.Rows.Add(line.Split(','));
-            }
-            return dt;
+           
+            return records;
         }
         public static BooleanWithError getBack(string back)
         {

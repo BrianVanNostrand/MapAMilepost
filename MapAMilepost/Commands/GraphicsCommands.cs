@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows;
 using ArcGIS.Core.Data.UtilityNetwork.Trace;
+using ArcGIS.Desktop.Internal.Catalog.DistributedGeodatabase.ManageReplicas;
+using ArcGIS.Core.Data;
 namespace MapAMilepost.Commands
 {
     class GraphicsCommands
@@ -86,32 +88,36 @@ namespace MapAMilepost.Commands
         /// </summary>
         /// <param name="SoeArgs"></param>
         /// <param name="PointResponse"></param>
-        public static async Task<GraphicInfoModel> CreatePointGraphics(PointArgsModel SoeArgs, PointResponseModel PointResponse, string sessionType)
+        public static async Task<GraphicInfoModel> CreatePointGraphics(PointArgsModel SoeArgs, PointResponseModel PointResponse, string sessionType, bool IsMapMode)
         {
             GraphicInfoModel graphicInfo = new();
             if (PointResponse != null)
             {
                 CustomGraphics CustomSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
-                 await QueuedTask.Run(() =>
+                await QueuedTask.Run(() =>
                 {
-                    //GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
+                    GraphicsLayer graphicsLayer = MapView.Active.Map.FindLayer("CIMPATH=map/milepostmappinglayer.json") as GraphicsLayer;//look for layer
                     #region create and add click point graphic
-                    //var clickedPtGraphic = new CIMPointGraphic() { 
-                    //    Symbol = (CustomSymbols.SymbolsLibrary["ClickPoint"] as CIMPointSymbol).MakeSymbolReference(),
-                    //    Location = (MapPointBuilderEx.CreateMapPoint(SoeArgs.X, SoeArgs.Y))
-                    //};
-                    //create custom click point props
-                    //var clickPtElemInfo = new ArcGIS.Desktop.Layouts.ElementInfo()
-                    //{
-                    //    CustomProperties = new List<CIMStringMap>()
-                    //    {
-                    //        new() { Key = "saved", Value = "false" },
-                    //        new() { Key = "eventType", Value = "click" },
-                    //        new() { Key = "sessionType", Value = sessionType == "point" ? "point" : "line"},
-                    //        new() { Key = "startEnd", Value = sessionType }
-                    //    }
-                    //};
-                    //graphicsLayer.AddElement(cimGraphic: clickedPtGraphic, elementInfo: clickPtElemInfo, select: false);
+                    if (IsMapMode)
+                    {
+                        var clickedPtGraphic = new CIMPointGraphic()
+                        {
+                            Symbol = (CustomSymbols.SymbolsLibrary["ClickPoint"] as CIMPointSymbol).MakeSymbolReference(),
+                            Location = (MapPointBuilderEx.CreateMapPoint(SoeArgs.X, SoeArgs.Y))
+                        };
+                        //create custom click point props
+                        var clickPtElemInfo = new ArcGIS.Desktop.Layouts.ElementInfo()
+                        {
+                            CustomProperties = new List<CIMStringMap>()
+                            {
+                                new() { Key = "saved", Value = "false" },
+                                new() { Key = "eventType", Value = "click" },
+                                new() { Key = "sessionType", Value = sessionType == "point" ? "point" : "line"},
+                                new() { Key = "startEnd", Value = sessionType }
+                            }
+                        };
+                        graphicsLayer.AddElement(cimGraphic: clickedPtGraphic, elementInfo: clickPtElemInfo, select: false);
+                    }
                     #endregion
 
                     #region create and add route point graphic
@@ -153,6 +159,55 @@ namespace MapAMilepost.Commands
                     #endregion
                 });
             }
+            return graphicInfo;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="VM"></param>
+        /// <param name="myGrid"></param>
+        public static async Task<GraphicInfoModel> CreateTablePointGraphic(PointArgsModel PointArgs, PointResponseModel PointResponse, string sessionType)
+        {
+            string FeatureID = $"{PointResponse.Route}{(PointResponse.Decrease == true ? "Decrease" : "Increase")}{PointResponse.Srmp}";
+            CustomGraphics CustomSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
+            GraphicInfoModel graphicInfo = new();
+            await QueuedTask.Run(() => {
+                CIMSymbolReference routePointSymbol = (
+                        sessionType == "start" ? (CustomSymbols.SymbolsLibrary["SavedStartRoutePoint"] as CIMPointSymbol).MakeSymbolReference() :
+                        sessionType == "end" ? (CustomSymbols.SymbolsLibrary["SavedEndRoutePoint"] as CIMPointSymbol).MakeSymbolReference() :
+                        (CustomSymbols.SymbolsLibrary["SavedRoutePoint"] as CIMPointSymbol).MakeSymbolReference()
+                    );
+                var soePtGraphic = new CIMPointGraphic()
+                {
+                    Symbol = routePointSymbol,
+                    Location = MapPointBuilderEx.CreateMapPoint(PointResponse.RouteGeometry.x, PointResponse.RouteGeometry.y)
+                };
+                //create custom route point props
+                var routePtElemInfo = new ElementInfo()
+                {
+                    CustomProperties = new List<CIMStringMap>()
+                        {
+                            new() { Key = "Route",Value = PointResponse.Route},
+                            new() { Key = "Decrease",Value = PointResponse.Decrease.ToString()},
+                            new() { Key = "Arm",Value = PointResponse.Arm.ToString()},
+                            new() { Key = "Srmp",Value = PointResponse.Srmp.ToString()},
+                            new() { Key = "Back",Value = PointResponse.Back.ToString()},
+                            new() { Key = "ResponseDate",Value = PointResponse.ResponseDate.ToString()},
+                            new() { Key = "ReferenceDate",Value = PointResponse.ReferenceDate.ToString()},
+                            new() { Key = "x",Value = PointResponse.RouteGeometry.x.ToString()},
+                            new() { Key = "y",Value = PointResponse.RouteGeometry.y.ToString()},
+                            new() { Key = "RealignmentDate",Value = PointResponse.RealignmentDate},
+                            new() { Key = "ResponseDate",Value = PointResponse.ResponseDate},
+                            new() { Key = "saved", Value="true"},
+                            new() { Key = "eventType", Value="route"},
+                            new() { Key = "sessionType", Value = sessionType == "point" ? "point" : "line"},
+                            new() { Key = "startEnd", Value = sessionType }
+                        }
+                };
+                graphicInfo.CGraphic = soePtGraphic;
+                graphicInfo.EInfo = routePtElemInfo;
+            });
             return graphicInfo;
         }
 
@@ -339,23 +394,29 @@ namespace MapAMilepost.Commands
             {
                 if (graphicsLayer != null)
                 {
-                    }
-                    var graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == sessionType);
-                if (SelectedItems.Count > 0) //if items are selected
-                {
-                    for (int i = graphics.Count() - 1; i >= 0; i--)
+                    List<string> selectedFeatureIDs = SelectedItems.Select(x => x.PointFeatureID).ToList();
+                    List<GraphicElement> graphics = graphicsLayer.GetElementsAsFlattenedList().Where(elem => elem.GetGraphic() is CIMPointGraphic && elem.GetCustomProperty("sessionType") == sessionType).ToList();
+                    List<GraphicElement> selectedGraphics = graphics.Where(x => selectedFeatureIDs.Contains(x.GetCustomProperty("FeatureID"))).ToList();
+                    if (selectedGraphics.Count > 0) //if items are selected
                     {
-                        if (SelectedIndices.Contains(i))
+                        //foreach (GraphicElement graphicsElement in selectedGraphics) 
+                        //{
+                        //    SetGraphicSelected(graphicsElement);
+                        //}
+                        for (int i = graphics.Count() - 1; i >= 0; i--)
                         {
-                            SetGraphicSelected(graphics.ElementAt(i));
+                            if (SelectedIndices.Contains(i))
+                            {
+                                SetGraphicSelected(graphics.ElementAt(i));
+                            }
                         }
                     }
-                }
-                else //if no items are selected
-                {
-                    for (int i = graphics.Count() - 1; i >= 0; i--)
+                    else //if no items are selected
                     {
-                        SetGraphicDelesected(graphics.ElementAt(i));
+                        for (int i = graphics.Count() - 1; i >= 0; i--)
+                        {
+                            SetGraphicDelesected(graphics.ElementAt(i));
+                        }
                     }
                 }
             });
@@ -511,6 +572,7 @@ namespace MapAMilepost.Commands
                 ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Create a point to save it to the results tab.", "Save error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
 
         /// <summary>
         /// -   Check if the line has already been saved to the saved responses array, and if so,
@@ -706,6 +768,7 @@ namespace MapAMilepost.Commands
                         Back = Convert.ToBoolean(item.GetCustomProperty("Back")),
                         Decrease = Convert.ToBoolean(item.GetCustomProperty("Decrease")),
                         ResponseDate = item.GetCustomProperty("ResponseDate"),
+                        ReferenceDate = item.GetCustomProperty("ReferenceDate"),
                         RealignmentDate = item.GetCustomProperty("RealignmentDate"),
                         PointFeatureID = item.GetCustomProperty("FeatureID"),
                         RouteGeometry = new PointResponseModel.coordinatePair

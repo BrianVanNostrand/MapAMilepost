@@ -17,6 +17,80 @@ namespace MapAMilepost.Models
         public string StringVal { get; set; }
         public bool Error { get; set; }
     }
+    public class LoadFileRowError : ObservableObject
+    {
+        private List<int> _routeRows = new();
+        private List<int> _srmpRows = new();
+        private List<int> _armRows = new();
+        private List<int> _backRows = new();
+        private List<int> _directionRows = new();
+        private List<int> _refDateRows = new();
+        private List<int> _resDateRows = new();
+
+        public List<int> RouteRows
+        {
+            get { return _routeRows; }
+            set 
+            { 
+                _routeRows = value;
+                OnPropertyChanged(nameof(RouteRows));
+            }
+        }
+        public List<int> SRMPRows
+        {
+            get { return _srmpRows; }
+            set
+            {
+                _srmpRows = value;
+                OnPropertyChanged(nameof(SRMPRows));
+            }
+        }
+        public List<int> ARMRows
+        {
+            get { return _armRows; }
+            set
+            {
+                _armRows = value;
+                OnPropertyChanged(nameof(ARMRows));
+            }
+        }
+        public List<int> BackRows
+        {
+            get { return _backRows; }
+            set
+            {
+                _backRows = value;
+                OnPropertyChanged(nameof(BackRows));
+            }
+        }
+        public List<int> DirectionRows
+        {
+            get { return _directionRows; }
+            set
+            {
+                _directionRows = value;
+                OnPropertyChanged(nameof(DirectionRows));
+            }
+        }
+        public List<int> RefDateRows
+        {
+            get { return _refDateRows; }
+            set
+            {
+                _refDateRows = value;
+                OnPropertyChanged(nameof(RefDateRows));
+            }
+        }
+        public List<int> ResDateRows
+        {
+            get { return _resDateRows; }
+            set
+            {
+                _resDateRows = value;
+                OnPropertyChanged(nameof(ResDateRows));
+            }
+        }
+    }
     public class TableFormInfoModel : ObservableObject
     {
         private string _routeColumn;

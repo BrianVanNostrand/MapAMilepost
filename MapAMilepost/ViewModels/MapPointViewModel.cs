@@ -27,6 +27,7 @@ namespace MapAMilepost.ViewModels
         private bool _sessionActive = false;
         private bool _isMapMode = true;
         private bool _srmpIsSelected = true;
+        private List<RouteIDInfo> _routeIDInfos;
         public MapPointViewModel()//constructor
         {
             MappingTool = new();//initialize map tool here or it won't run on first click. Weird bug?
@@ -99,6 +100,15 @@ namespace MapAMilepost.ViewModels
             set { _isMapMode = value; OnPropertyChanged(nameof(IsMapMode)); }
         }
 
+        public override List<RouteIDInfo> RouteIDInfos
+        {
+            get { return _routeIDInfos; }
+            set
+            {
+                _routeIDInfos = value;
+                OnPropertyChanged(nameof(RouteIDInfos));
+            }
+        }
         /// <summary>
         /// -   Array of selected saved SOE response data objects in the DataGrid in ResultsView.xaml. Updated when a row is clicked in he DataGrid
         ///     via data binding.
@@ -138,6 +148,10 @@ namespace MapAMilepost.ViewModels
                     PointResponse = new PointResponseModel();
                 }
             };
+            if (IsMapMode == false && RouteIDInfos==null)
+            {
+                await Utils.HTTPRequest.SetVMRouteLists(this);
+            }
         });
 
         public Commands.RelayCommand<object> ClearItemsCommand => new(async (parms) => {
@@ -166,7 +180,7 @@ namespace MapAMilepost.ViewModels
                 this.PointResponse.Srmp = null;
             }
         });
-
+        public Commands.RelayCommand<object> getitems => new(async (p) => { });
         public Commands.RelayCommand<object> InteractionCommand => new (async(p) => {
             if (IsMapMode)
             {
@@ -199,7 +213,7 @@ namespace MapAMilepost.ViewModels
                     var newPointResponse = await Utils.HTTPRequest.FindRouteLocation(formLocation, PointArgs) as PointResponseModel;
                     if (newPointResponse != null && newPointResponse.RouteGeometry != null) {
                         PointResponse = newPointResponse;
-                        await Commands.GraphicsCommands.CreatePointGraphics(PointArgs, PointResponse, "point");
+                        await Commands.GraphicsCommands.CreatePointGraphics(PointArgs, PointResponse, "point", IsMapMode);
                         await CameraUtils.ZoomToCoords(PointResponse.RouteGeometry.x, PointResponse.RouteGeometry.y);
                     }
                     else

@@ -44,6 +44,7 @@ namespace MapAMilepost.ViewModels
         private string _searchRadius = "3000";
         private string _responseDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
         private string _referenceDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
+        private List<RouteIDInfo> _routeIDInfos;
         /// <summary>
         /// -   The currently selected viewmodel, used when a tab is selected in the controlsGrid in MilepostDockpane.xaml
         ///     via data binding.
@@ -160,6 +161,17 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(SettingsMenuVisible));
             }
         }
+        public List<RouteIDInfo> RouteIDInfos
+        {
+            get { return _routeIDInfos; }
+            set
+            {
+                _routeIDInfos = value;
+                OnPropertyChanged(nameof(RouteIDInfos));
+                this.MapPointVM.RouteIDInfos = value;
+                this.MapLineVM.RouteIDInfos = value;
+            }
+        }
         public bool? LayerVisible { get; set; } = null;
 
         /// <summary>
@@ -172,6 +184,7 @@ namespace MapAMilepost.ViewModels
             parentControl.SelectedIndex = -1;
             await GraphicsCommands.DeselectAllGraphics();//remove all graphic selections
             await MapToolUtils.DeactivateSession(this.SelectedViewModel);//deactivate any active map tool sessions
+            await GraphicsCommands.SynchronizeGraphicsToAddIn(this, await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map));
             TabCommands.SwitchTab(button, this);//switch the selected viewmodel
             if (this.SelectedViewModel != null)
             {
@@ -267,7 +280,6 @@ namespace MapAMilepost.ViewModels
             }
         });
 
-        
         private async void OnActivePaneChanging(PaneEventArgs e)
         {
             LayerVisible = false;
@@ -496,6 +508,10 @@ namespace MapAMilepost.ViewModels
             await Utils.MapToolUtils.DeactivateSession(this.MapPointVM, "point");
             await Utils.MapToolUtils.DeactivateSession(this.MapLineVM, "line");
             await GraphicsCommands.DeselectAllGraphics();
+        }
+        private void TableGraphicsChanged(object Graphics)
+        {
+            Console.WriteLine(Graphics.ToString());
         }
 
         public MainViewModel()

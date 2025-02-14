@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
+using System.Security.Policy;
 
 namespace MapAMilepost.Utils
 {
@@ -36,7 +37,7 @@ namespace MapAMilepost.Utils
         public virtual ObservableCollection<LineResponseModel> LineResponses { get; set; }
         public virtual List<PointResponseModel> SelectedPoints { get; set; }
         public virtual List<LineResponseModel> SelectedLines { get; set; }
-
+        public virtual List<RouteIDInfo> RouteIDInfos { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {

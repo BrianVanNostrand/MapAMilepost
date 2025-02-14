@@ -25,7 +25,9 @@
     <Grid x:Name="MainGrid" Background="White">
         <Grid.RowDefinitions>
             <RowDefinition x:Name="filepicker" Height="20px"/>
-            <RowDefinition x:Name="processsettings"/>
+            <RowDefinition x:Name="requiredparams"/>
+            <RowDefinition x:Name="optionalparams"/>
+            <RowDefinition x:Name="LoadButton"/>
             <RowDefinition x:Name="datagridrow" Height="{Binding DataLoaded, Converter={StaticResource ElementHeightConverter}}"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" x:Name="filepickergrid">
@@ -44,18 +46,13 @@
             </TextBox>
             <Button Grid.Row="0" Grid.Column="2" Command="{Binding OpenFileCommand}">Open</Button>
         </Grid>
-        <Border BorderBrush="LightGray" BorderThickness="1px" Grid.Row="1">
-            <Grid IsEnabled="{Binding DataLoaded, Converter={StaticResource BooleanInverter}}" x:Name="ColumnDefinitions" Margin="10 10 10 10" Visibility="{Binding FileSelected, Converter={StaticResource VisibilityConverter}}">
+        <Border BorderBrush="LightGray" BorderThickness="1 1 1 0" Grid.Row="1">
+            <Grid IsEnabled="{Binding DataLoaded, Converter={StaticResource BooleanInverter}}" x:Name="ColumnDefinitionsReq" Margin="10 10 10 10" Visibility="{Binding FileSelected, Converter={StaticResource VisibilityConverter}}">
                 <Grid.RowDefinitions>
+                    <RowDefinition x:Name="Title"/>
                     <RowDefinition x:Name="Route"/>
                     <RowDefinition x:Name="ARM"/>
                     <RowDefinition x:Name="SRMP"/>
-                    <RowDefinition x:Name="Back"/>
-                    <RowDefinition x:Name="Direction"/>
-                    <RowDefinition x:Name="ReferenceDate"/>
-                    <RowDefinition x:Name="ResponseDate"/>
-                    <RowDefinition x:Name="LoadButton"/>
-                    <RowDefinition x:Name="WarningText"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="20px"/>
@@ -71,19 +68,52 @@
                 <RadioButton x:Name="ARMCheck" Grid.Column="0" Grid.Row="2" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="ARM"/>
                 <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">ARM Column</TextBlock>
                 <ComboBox SelectedItem="{Binding FormInfo.ARMColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" IsEnabled="{Binding SRMPIsSelected, Converter={StaticResource BooleanInverter}}" Width="100px" Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center"/>
-                <!--Back--><TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Back Column (True/False)</TextBlock>
-                <ComboBox SelectedItem="{Binding FormInfo.BackColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="3" Grid.Column="2" HorizontalAlignment="Center"/>
-                <!--Direction--><TextBlock Grid.Row="4" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Lane Direction Column (Increasing/Decreasing)</TextBlock>
-                <ComboBox SelectedItem="{Binding FormInfo.DirectionColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="4" Grid.Column="2" HorizontalAlignment="Center"/>
-                <!--ReferenceDate--><TextBlock Grid.Row="5" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Reference Date</TextBlock>
-                <ComboBox SelectedItem="{Binding FormInfo.ReferenceDateColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="5" Grid.Column="2" HorizontalAlignment="Center"/>
-                <!--ResponseDate--><TextBlock Grid.Row="6" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Response Date</TextBlock>
-                <ComboBox SelectedItem="{Binding FormInfo.ResponseDateColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="6" Grid.Column="2" HorizontalAlignment="Center"/>
-                <Button Grid.Row="7" Grid.Column="3" Width="50" Margin="0 10 0 0" Command="{Binding LoadFileCommand}">Load</Button>
-                <TextBlock TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" Foreground="#007ac1" Text="{Binding WarningMessage}" Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3"/>
             </Grid>
         </Border>
-        <Grid Grid.Row="2" x:Name="datagrid">
+        <Border Background="AliceBlue" BorderBrush="LightGray" BorderThickness="1 0 1 1" Grid.Row="2">
+            <Grid IsEnabled="{Binding DataLoaded, Converter={StaticResource BooleanInverter}}" x:Name="ColumnDefinitionsOpt" Margin="10 10 10 10" Visibility="{Binding FileSelected, Converter={StaticResource VisibilityConverter}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition x:Name="TitleOpt"/>
+                    <RowDefinition x:Name="Back"/>
+                    <RowDefinition x:Name="Direction"/>
+                    <RowDefinition x:Name="ReferenceDate"/>
+                    <RowDefinition x:Name="ResponseDate"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20px"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="100px"/>
+                </Grid.ColumnDefinitions>
+                <!--Title-->
+                <TextBlock Margin="0 0 0 5" Foreground="#007ac1" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">
+                    Optional Columns
+                </TextBlock>
+                <!--Back-->
+                <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Back Column (True/False)</TextBlock>
+                <ComboBox SelectedItem="{Binding FormInfo.BackColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center"/>
+                <!--Direction-->
+                <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Lane Direction Column (Increasing/Decreasing)</TextBlock>
+                <ComboBox SelectedItem="{Binding FormInfo.DirectionColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center"/>
+                <!--ReferenceDate-->
+                <TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Reference Date</TextBlock>
+                <ComboBox SelectedItem="{Binding FormInfo.ReferenceDateColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="3" Grid.Column="2" HorizontalAlignment="Center"/>
+                <!--ResponseDate-->
+                <TextBlock Grid.Row="4" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap">Response Date</TextBlock>
+                <ComboBox SelectedItem="{Binding FormInfo.ResponseDateColumn, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding ColumnTitles}" Width="100px" Grid.Row="4" Grid.Column="2" HorizontalAlignment="Center"/>
+                
+            </Grid>
+        </Border>
+        <Border Grid.Row="3" x:Name="LoadButtonAndWarningMessage">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Button Grid.Row="0" Width="50" Margin="0 10 0 0" Command="{Binding LoadFileCommand}">Load</Button>
+                <TextBlock TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" Foreground="#007ac1" Text="{Binding WarningMessage}" Grid.Row="1" Grid.Column="0"/>
+            </Grid>
+        </Border>
+        <Grid Grid.Row="4" x:Name="datagrid">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition/>
@@ -94,7 +124,12 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <ScrollViewer Grid.Row="0" Grid.ColumnSpan="3">
-                <DataGrid Padding="10,10,10,10" CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False" ItemsSource="{Binding PointInfos}" CellStyle="{DynamicResource DataGridCellStyle}">
+                <DataGrid Padding="10,10,10,10" CanUserAddRows="False" CanUserDeleteRows="True" AutoGenerateColumns="False" ItemsSource="{Binding PointInfos}" CellStyle="{DynamicResource DataGridCellStyle}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="RowEditEnding">
+                            <i:InvokeCommandAction Command="{Binding RowEditEnding}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow">
                             <Style.Triggers>
@@ -105,7 +140,17 @@
                         </Style>
                     </DataGrid.RowStyle>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Route" Binding="{Binding Route, Mode=TwoWay}"/>
+                        <DataGridTextColumn Header="Route" Binding="{Binding Route, Mode=TwoWay}">
+                            <DataGridTextColumn.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Property}" Value="True">
+                                            <Setter Property="Background" Value="Red"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.CellStyle>
+                        </DataGridTextColumn>
                         <DataGridTextColumn Header="ARM" Visibility="{Binding Source={x:Reference ARMCheck}, Path=IsChecked, Converter={StaticResource VisibilityConverterDataGrid}}" Binding="{Binding Arm, Mode=TwoWay}"/>
                         <DataGridTextColumn Header="SRMP" Visibility="{Binding Source={x:Reference SRMPCheck}, Path=IsChecked, Converter={StaticResource VisibilityConverterDataGrid}}" Binding="{Binding Srmp, Mode=TwoWay}"/>
                         <DataGridTextColumn Header="Direction" Binding="{Binding Decrease, Mode=TwoWay, Converter={StaticResource DirectionConverter}}"/>

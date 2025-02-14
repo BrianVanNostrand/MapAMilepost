@@ -22,6 +22,7 @@ namespace MapAMilepost.ViewModels
         private bool _sessionEndActive = false;
         private bool _isMapMode = true;
         private bool _srmpIsSelected = true;
+        private List<RouteIDInfo> _routeIDInfos;
         public MapLineViewModel()//constructor
         {
             MappingTool = new();//initialize map tool here or it won't run on first click. Weird bug? This should be intitializing in the base class, but alas...
@@ -95,6 +96,15 @@ namespace MapAMilepost.ViewModels
         ///     via data binding.
         /// </summary>
         public override List<LineResponseModel> SelectedLines { get; set; } = new List<LineResponseModel>();
+        public override List<RouteIDInfo> RouteIDInfos
+        {
+            get { return _routeIDInfos; }
+            set
+            {
+                _routeIDInfos = value;
+                OnPropertyChanged(nameof(RouteIDInfos));
+            }
+        }
 
         public Commands.RelayCommand<object> UpdateSelectionCommand => new (async(grid) => await Commands.DataGridCommands.UpdateLineSelection(grid as DataGrid, this));
         public Commands.RelayCommand<object> ZoomToRecordCommand => new(async (grid) =>
@@ -136,6 +146,10 @@ namespace MapAMilepost.ViewModels
 
                 };
             };
+            if (IsMapMode == false && RouteIDInfos==null)
+            {
+                await Utils.HTTPRequest.SetVMRouteLists(this);
+            }
         });
 
         public Commands.RelayCommand<object> ClearItemsCommand => new(async (parms) => {
@@ -281,7 +295,7 @@ namespace MapAMilepost.ViewModels
                 if (newPointResponse != null && newPointResponse.RouteGeometry != null)
                 {
                     Point = newPointResponse;
-                    await Commands.GraphicsCommands.CreatePointGraphics(Args, Point, startEnd);
+                    await Commands.GraphicsCommands.CreatePointGraphics(Args, Point, startEnd, IsMapMode);
                 }
                 else
                 {

@@ -13,8 +13,9 @@
              xmlns:fa="http://schemas.fontawesome.io/icons/"
              mc:Ignorable="d"
              d:DesignHeight="600" 
-             x:Name="MainUserControl">
-    
+             x:Name="MainUserControl"
+             >
+
     <UserControl.DataContext>
         <viewmodels:MainViewModel/>
     </UserControl.DataContext>
@@ -185,7 +186,7 @@
                             <RowDefinition />
                             <RowDefinition />
                         </Grid.RowDefinitions>
-                       <!-- <TextBlock Grid.Column="0" Grid.Row="0" Text="Response Date" HorizontalAlignment="Right" Margin="0 0 10 0" VerticalAlignment="Center" TextWrapping="Wrap"/>-->
+                        <!-- <TextBlock Grid.Column="0" Grid.Row="0" Text="Response Date" HorizontalAlignment="Right" Margin="0 0 10 0" VerticalAlignment="Center" TextWrapping="Wrap"/>-->
                         <!--<DatePicker Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px" SelectedDate="{Binding ResponseDate, Mode=TwoWay, StringFormat='M/d/yyyy', UpdateSourceTrigger=PropertyChanged}"/>-->
                         <TextBlock Grid.Column="0" Grid.Row="1" Text="Reference Date" HorizontalAlignment="Right" Margin="0 0 10 0" VerticalAlignment="Center"/>
                         <DatePicker Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="left" Width="110px" SelectedDate="{Binding ReferenceDate, Mode=TwoWay, StringFormat='M/d/yyyy', UpdateSourceTrigger=PropertyChanged}"/>

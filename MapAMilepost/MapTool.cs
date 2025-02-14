@@ -92,7 +92,7 @@ namespace MapAMilepost
                             }
                         }
                         lineGeometryResponse = await Utils.MapToolUtils.GetLine(CurrentViewModel.LineResponse.StartResponse, CurrentViewModel.LineResponse.EndResponse, CurrentViewModel.LineArgs.StartArgs.SR, CurrentViewModel.LineArgs.StartArgs.ReferenceDate);
-                        GraphicInfoModel gInfo = await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.StartArgs, CurrentViewModel.LineResponse.StartResponse, MapToolSessionType);
+                        GraphicInfoModel gInfo = await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.StartArgs, CurrentViewModel.LineResponse.StartResponse, MapToolSessionType, true);
                         if(gInfo.CGraphic != null && gInfo.EInfo != null) 
                         {
                             await QueuedTask.Run(() =>
@@ -116,7 +116,7 @@ namespace MapAMilepost
                             }
                         }
                         lineGeometryResponse = await Utils.MapToolUtils.GetLine(CurrentViewModel.LineResponse.StartResponse, CurrentViewModel.LineResponse.EndResponse, CurrentViewModel.LineArgs.StartArgs.SR, CurrentViewModel.LineArgs.StartArgs.ReferenceDate);
-                        GraphicInfoModel gInfo =  await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.EndArgs, CurrentViewModel.LineResponse.EndResponse, MapToolSessionType);
+                        GraphicInfoModel gInfo =  await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.LineArgs.EndArgs, CurrentViewModel.LineResponse.EndResponse, MapToolSessionType, true);
                         if (gInfo.CGraphic != null && gInfo.EInfo != null)
                         {
                             await QueuedTask.Run(() =>
@@ -128,7 +128,7 @@ namespace MapAMilepost
                     else//point session
                     {
                         CurrentViewModel.PointResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.PointArgs) as PointResponseModel);
-                        GraphicInfoModel gInfo = await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.PointArgs, CurrentViewModel.PointResponse, MapToolSessionType);
+                        GraphicInfoModel gInfo = await Commands.GraphicsCommands.CreatePointGraphics(CurrentViewModel.PointArgs, CurrentViewModel.PointResponse, MapToolSessionType, true);
                         if (gInfo.CGraphic != null && gInfo.EInfo != null)
                         {
                             await QueuedTask.Run(() =>
