@@ -18,6 +18,7 @@ using MapAMilepost.ViewModels;
 using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Framework.Dialogs;
 using static System.Net.Mime.MediaTypeNames;
+using System.Runtime.CompilerServices;
 
 namespace MapAMilepost.Utils
 {
@@ -278,120 +279,22 @@ namespace MapAMilepost.Utils
             public int Ordinal { get; set; }
         }
 
-        public static async Task SetVMRouteLists(ViewModelBase VM)
+        public static async Task<Dictionary<string,int>> GetVMRouteLists(ViewModelBase VM)
         {
             var RotuesRequestURL = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/routes?f=json");
             var FRLresponse = await RotuesRequestURL.GetAsync();
+            Dictionary<string, int> RouteResponses = null;
             List<RouteIDInfo> RouteInfos = new();
             if(FRLresponse.StatusCode == 200)
             {
                 string responseString = await FRLresponse.ResponseMessage.Content.ReadAsStringAsync();
-                Dictionary<string,int> RouteResponses = JsonSerializer.Deserialize<RouteResponseInfo>(responseString).Current;
-                foreach(var routeResponse in RouteResponses)
-                {
-                    populateInfos(routeResponse, RouteInfos);
-                }
+                RouteResponses = JsonSerializer.Deserialize<RouteResponseInfo>(responseString).Current;
             }
             else
             {
                 ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Network issue found. Please check your network connection and try again.");
             }
-            VM.RouteIDInfos = RouteInfos;
-        }
-        private static void populateInfos(KeyValuePair<string,int> routeResponse, List<RouteIDInfo> RouteInfos)//recursively create the list of route info objects
-        {
-            var test = routeResponse.Key;
-            string RouteNumberTitle = routeResponse.Key.Substring(0, 3);
-            string RRTTitle = routeResponse.Key.Length>=5?routeResponse.Key.Substring(3, 2):null;
-            string RRQTitle = routeResponse.Key.Length==10?routeResponse.Key.Substring(5):null;
-
-            List<string> allRouteIDs = RouteInfos.Select(x => x.Title).ToList();
-            if (allRouteIDs.Contains(RouteNumberTitle))
-            {
-                RouteIDInfo routeIDInfo = RouteInfos.Where(x => x.Title == RouteNumberTitle).FirstOrDefault();//get the object for this route
-                if (routeIDInfo.RelatedRouteTypes == null)
-                {
-                    routeIDInfo.RelatedRouteTypes = new();
-                }
-                List<string> allRRTs = routeIDInfo.RelatedRouteTypes.Select(x => x.Title).ToList();
-                if(allRRTs.Contains(RRTTitle))
-                {
-                    RRTInfo rrtInfo = routeIDInfo.RelatedRouteTypes.Where(x => x.Title == RRTTitle).FirstOrDefault();
-                    if (rrtInfo.RelatedRouteQualifiers == null)
-                    {
-                        rrtInfo.RelatedRouteQualifiers = new();
-                    }
-                    if (rrtInfo.RelatedRouteQualifiers.Contains(RRQTitle))
-                    {
-                        Console.WriteLine("skip");
-                    }
-                    else
-                    {
-                        if (RRQTitle != null)
-                        {
-                            rrtInfo.RelatedRouteQualifiers.Add(RRQTitle);
-                        }
-                    }
-                }
-                else
-                {
-                    if (RRTTitle != null)
-                    {
-                        routeIDInfo.RelatedRouteTypes.Add(new() { Title = RRTTitle });
-                    }
-                }
-            }
-            else
-            {
-                RouteInfos.Add(new(){Title = RouteNumberTitle});
-            }
-            //List<string> allRouteIDs = new();
-            //allRouteIDs = RouteInfos.Select(x => x.Title).ToList();
-            //if (allRouteIDs.Contains(RouteNumberTitle))
-            //{
-            //    RouteIDInfo routeIDInfo = RouteInfos.Where(x => x.Title == RouteNumberTitle).FirstOrDefault();//get the object for this route
-            //    if (routeIDInfo.RelatedRouteTypes == null)
-            //    {
-            //        routeIDInfo.RelatedRouteTypes = new();
-            //    }
-            //    List<string> allRRTs = routeIDInfo.RelatedRouteTypes.Select(x => x.Title).ToList();
-            //    if (allRRTs.Contains(RRTTitle)){
-            //        RRTInfo relatedRouteTypeInfo = routeIDInfo.RelatedRouteTypes.Where(x=>x.Title == RRTTitle).FirstOrDefault();//get the current related route types for this route
-            //        if (relatedRouteTypeInfo.RelatedRouteQualifiers == null)
-            //        {
-            //            relatedRouteTypeInfo.RelatedRouteQualifiers = new();
-            //        }
-            //        List<string> allRRQs = relatedRouteTypeInfo.RelatedRouteQualifiers;
-            //        if (allRRQs.Contains(RRQTitle))
-            //        {
-            //            Console.Write("skipped");
-            //        }
-            //        else
-            //        {
-            //            if (RRQTitle != null)
-            //            {
-            //                relatedRouteTypeInfo.RelatedRouteQualifiers.Add(RRQTitle);
-            //            }
-            //            populateInfos(routeResponse, RouteInfos);
-            //        }
-            //    }
-            //    else
-            //    {
-            //        if (RRTTitle != null)
-            //        {
-            //            routeIDInfo.RelatedRouteTypes.Add(new RRTInfo{Title = RRTTitle });
-            //        }
-            //        populateInfos(routeResponse, RouteInfos);
-            //    }
-            //}
-            //else
-            //{
-            //    RouteInfos.Add(new()
-            //    {
-            //        Title = RouteNumberTitle
-            //    });
-            //    populateInfos(routeResponse, RouteInfos);
-            //}
+            return RouteResponses;
         }
     }
     

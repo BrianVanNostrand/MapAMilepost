@@ -44,7 +44,6 @@ namespace MapAMilepost.ViewModels
         private string _searchRadius = "3000";
         private string _responseDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
         private string _referenceDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
-        private List<RouteIDInfo> _routeIDInfos;
         /// <summary>
         /// -   The currently selected viewmodel, used when a tab is selected in the controlsGrid in MilepostDockpane.xaml
         ///     via data binding.
@@ -159,17 +158,6 @@ namespace MapAMilepost.ViewModels
             {
                 _settingsMenuVisible = value;
                 OnPropertyChanged(nameof(SettingsMenuVisible));
-            }
-        }
-        public List<RouteIDInfo> RouteIDInfos
-        {
-            get { return _routeIDInfos; }
-            set
-            {
-                _routeIDInfos = value;
-                OnPropertyChanged(nameof(RouteIDInfos));
-                this.MapPointVM.RouteIDInfos = value;
-                this.MapLineVM.RouteIDInfos = value;
             }
         }
         public bool? LayerVisible { get; set; } = null;

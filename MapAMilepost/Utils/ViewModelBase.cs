@@ -37,7 +37,8 @@ namespace MapAMilepost.Utils
         public virtual ObservableCollection<LineResponseModel> LineResponses { get; set; }
         public virtual List<PointResponseModel> SelectedPoints { get; set; }
         public virtual List<LineResponseModel> SelectedLines { get; set; }
-        public virtual List<RouteIDInfo> RouteIDInfos { get; set; }
+        public virtual ObservableCollection<RouteIDInfo> RouteIDInfos { get; set; }
+        public virtual ObservableCollection<string> RouteQualifiers { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {

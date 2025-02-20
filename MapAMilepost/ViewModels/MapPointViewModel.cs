@@ -1,5 +1,6 @@
 ﻿using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
+using ArcGIS.Desktop.Internal.Mapping;
 using ArcGIS.Desktop.Mapping;
 using MapAMilepost.Commands;
 using MapAMilepost.Models;
@@ -27,7 +28,8 @@ namespace MapAMilepost.ViewModels
         private bool _sessionActive = false;
         private bool _isMapMode = true;
         private bool _srmpIsSelected = true;
-        private List<RouteIDInfo> _routeIDInfos;
+        private ObservableCollection<RouteIDInfo> _routeIDInfos = new();
+        private ObservableCollection<string> _routeQualifiers = new();
         public MapPointViewModel()//constructor
         {
             MappingTool = new();//initialize map tool here or it won't run on first click. Weird bug?
@@ -100,7 +102,7 @@ namespace MapAMilepost.ViewModels
             set { _isMapMode = value; OnPropertyChanged(nameof(IsMapMode)); }
         }
 
-        public override List<RouteIDInfo> RouteIDInfos
+        public override ObservableCollection<RouteIDInfo> RouteIDInfos
         {
             get { return _routeIDInfos; }
             set
@@ -109,25 +111,53 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(RouteIDInfos));
             }
         }
+        public override ObservableCollection<string> RouteQualifiers
+        {
+            get { return _routeQualifiers; }
+            set
+            {
+                _routeQualifiers = value;
+                OnPropertyChanged(nameof(RouteQualifiers));
+            }
+        }
         /// <summary>
         /// -   Array of selected saved SOE response data objects in the DataGrid in ResultsView.xaml. Updated when a row is clicked in he DataGrid
         ///     via data binding.
         /// </summary>
         public override List<PointResponseModel> SelectedPoints { get; set; } = new List<PointResponseModel>();
 
-        public Commands.RelayCommand<object> UpdateSelectionCommand => new (async(grid) => await Commands.DataGridCommands.UpdatePointSelection(grid as DataGrid, this));
-
-        public Commands.RelayCommand<object> ZoomToRecordCommand => new(async(grid) =>
-        {
-            PointResponseModel.coordinatePair coordPair = Commands.DataGridCommands.GetSelectedGraphicInfoPoint(grid as DataGrid, this);
-            if(coordPair != null)
+        public Commands.RelayCommand<object> UpdateSelectionCommand => new (async(grid) => {
+            if(!IsMapMode)
             {
-                await CameraUtils.ZoomToCoords(coordPair.x, coordPair.y, PointArgs.ZoomScale);
+                Dictionary<string,int> RouteResponses = await Utils.HTTPRequest.GetVMRouteLists(this);
+                Utils.UIUtils.SetRouteInfos(RouteResponses, this);
+                RouteQualifiers = new() { };
+            }
+            await Commands.DataGridCommands.UpdatePointSelection(grid as DataGrid, this);
+        });
+        public Commands.RelayCommand<object> RouteChangedCommand => new((object selectedValue) =>
+        {
+            //RouteQualifiers.Clear();
+            RouteIDInfo val = selectedValue as RouteIDInfo;
+            if (!IsMapMode)
+            {
+                if (this.SRMPIsSelected)
+                {
+                    PointResponse.Arm = null;
+                }
+                else
+                {
+                    PointResponse.Srmp = null;
+                }
+            }
+            if (val != null)
+            {
+                PointResponse.Route = val.Title;
+                RouteQualifiers = Utils.UIUtils.GetRouteQualifiers(val);
+                //ObservableCollection<string> NewRouteQualifiers = Utils.UIUtils.GetRouteQualifiers(val);
+                //RouteQualifiers = NewRouteQualifiers;
             }
         });
-
-        public Commands.RelayCommand<object> DeleteItemsCommand => new (async(p) => await Commands.DataGridCommands.DeletePointItems(this));
-
         public Commands.RelayCommand<object> ChangeModeCommand => new(async (param) =>
         {
             IsMapMode = !IsMapMode;
@@ -148,11 +178,24 @@ namespace MapAMilepost.ViewModels
                     PointResponse = new PointResponseModel();
                 }
             };
-            if (IsMapMode == false && RouteIDInfos==null)
+            if (IsMapMode == false && RouteIDInfos.Count == 0)
             {
-                await Utils.HTTPRequest.SetVMRouteLists(this);
+                Dictionary<string, int> RouteResponses = await Utils.HTTPRequest.GetVMRouteLists(this);
+                Utils.UIUtils.SetRouteInfos(RouteResponses, this);
             }
         });
+        public Commands.RelayCommand<object> ZoomToRecordCommand => new(async(grid) =>
+        {
+            PointResponseModel.coordinatePair coordPair = Commands.DataGridCommands.GetSelectedGraphicInfoPoint(grid as DataGrid, this);
+            if(coordPair != null)
+            {
+                await CameraUtils.ZoomToCoords(coordPair.x, coordPair.y, PointArgs.ZoomScale);
+            }
+        });
+
+        public Commands.RelayCommand<object> DeleteItemsCommand => new (async(p) => await Commands.DataGridCommands.DeletePointItems(this));
+
+        
 
         public Commands.RelayCommand<object> ClearItemsCommand => new(async (parms) => {
             if (MapView.Active != null && MapView.Active.Map != null)
@@ -213,7 +256,15 @@ namespace MapAMilepost.ViewModels
                     var newPointResponse = await Utils.HTTPRequest.FindRouteLocation(formLocation, PointArgs) as PointResponseModel;
                     if (newPointResponse != null && newPointResponse.RouteGeometry != null) {
                         PointResponse = newPointResponse;
-                        await Commands.GraphicsCommands.CreatePointGraphics(PointArgs, PointResponse, "point", IsMapMode);
+                        GraphicInfoModel gInfo = await Commands.GraphicsCommands.CreatePointGraphics(PointArgs, PointResponse, "point", IsMapMode);
+                        GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);//look for layer
+                        if (gInfo.CGraphic != null && gInfo.EInfo != null)
+                        {
+                            await QueuedTask.Run(() =>
+                            {
+                                graphicsLayer.AddElement(cimGraphic: gInfo.CGraphic, elementInfo: gInfo.EInfo, select: false);
+                            });
+                        }
                         await CameraUtils.ZoomToCoords(PointResponse.RouteGeometry.x, PointResponse.RouteGeometry.y);
                     }
                     else
@@ -228,20 +279,21 @@ namespace MapAMilepost.ViewModels
             }
         });
 
-        public Commands.RelayCommand<object> RouteChangedCommand => new((startEnd) =>
+      
+        public Commands.RelayCommand<object> RouteQualifierChangedCommand => new((object selectedValue) =>
         {
-            if (!IsMapMode)
+            ComboBox cBox = (selectedValue as ComboBox);
+            if (cBox.SelectedItem != null && cBox.SelectedItem.ToString() != "Mainline")
             {
-                if (this.SRMPIsSelected)
-                {
-                    PointResponse.Arm = null;
-                }
-                else
-                {
-                    PointResponse.Srmp = null;
-                }
+                PointResponse.Route = $"{PointResponse.Route}{(selectedValue as ComboBox).SelectedItem}";
             }
+            else
+            {
+                cBox.SelectedIndex = 0;
+            }
+            (selectedValue as ComboBox).UpdateLayout();
         });
+
 
         public Commands.RelayCommand<object> MPChangedCommand => new((startEnd) =>
         {

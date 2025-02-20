@@ -22,7 +22,8 @@ namespace MapAMilepost.ViewModels
         private bool _sessionEndActive = false;
         private bool _isMapMode = true;
         private bool _srmpIsSelected = true;
-        private List<RouteIDInfo> _routeIDInfos;
+        private ObservableCollection<RouteIDInfo> _routeIDInfos = new();
+        private ObservableCollection<string> _routeQualifiers = new();
         public MapLineViewModel()//constructor
         {
             MappingTool = new();//initialize map tool here or it won't run on first click. Weird bug? This should be intitializing in the base class, but alas...
@@ -96,7 +97,7 @@ namespace MapAMilepost.ViewModels
         ///     via data binding.
         /// </summary>
         public override List<LineResponseModel> SelectedLines { get; set; } = new List<LineResponseModel>();
-        public override List<RouteIDInfo> RouteIDInfos
+        public override ObservableCollection<RouteIDInfo> RouteIDInfos
         {
             get { return _routeIDInfos; }
             set
@@ -148,7 +149,8 @@ namespace MapAMilepost.ViewModels
             };
             if (IsMapMode == false && RouteIDInfos==null)
             {
-                await Utils.HTTPRequest.SetVMRouteLists(this);
+                Dictionary<string, int> RouteResponses = await Utils.HTTPRequest.GetVMRouteLists(this);
+                Utils.UIUtils.SetRouteInfos(RouteResponses, this);
             }
         });
 

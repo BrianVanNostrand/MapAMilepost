@@ -92,7 +92,8 @@ namespace MapAMilepost.Utils
         {
             PointResponseModel Point = new PointResponseModel()
             {
-                Srmp = VM.IsMapMode ? null : 0,
+                Srmp = VM.IsMapMode ? null : VM.SRMPIsSelected ? 0 : null,
+                Arm = VM.IsMapMode ? null : !VM.SRMPIsSelected ? 0 : null,
                 Decrease = VM.IsMapMode ? null : false,
                 Back = VM.IsMapMode ? null : false,
             };
