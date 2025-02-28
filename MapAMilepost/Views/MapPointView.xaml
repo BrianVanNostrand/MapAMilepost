@@ -57,7 +57,15 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <TextBox Grid.Column="0" Grid.Row="0" Style="{StaticResource SelectableTextBox}" HorizontalContentAlignment="Center">Mode</TextBox>
-                <Button Grid.Column="1" Grid.Row="0" Command="{Binding ChangeModeCommand}" FontSize="7pt" HorizontalContentAlignment="Center"  Height="20" VerticalAlignment="Top" Content="{Binding IsMapMode, Converter={StaticResource InputModeButtonLabelConverter}}"/> 
+                <Button Grid.Column="1" Grid.Row="0" FontSize="7pt" HorizontalContentAlignment="Center"  Height="20" VerticalAlignment="Top" Content="{Binding IsMapMode, Converter={StaticResource InputModeButtonLabelConverter}}">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="PreviewMouseDown">
+                            <i:InvokeCommandAction Command="{Binding ResetCombobox}" CommandParameter="{Binding ElementName=RouteIDCombo}"/>
+                            <i:InvokeCommandAction Command="{Binding ResetCombobox}" CommandParameter="{Binding ElementName=RouteQualCombo}"/>
+                            <i:InvokeCommandAction Command="{Binding ChangeModeCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Button>
             </Grid>
             </Grid>
         <Grid x:Name="SOEResultsGrid" Grid.Row="1" Margin="0 0 0 10">
@@ -76,7 +84,7 @@
                 <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/><!-->X<-->
                 <RowDefinition Height="{Binding IsMapMode, Converter={StaticResource ElementHeightConverter}}"/><!-->Y<-->
                 <RowDefinition/><!-->Direction<-->
-                <RowDefinition /><!-->Back<-->
+                <RowDefinition Height="{Binding SRMPIsSelected, Converter={StaticResource ElementHeightConverter}}"/><!-->Back<-->
                 <RowDefinition /><!-->Realignment<-->
                 <RowDefinition /><!-->Response<-->
                 <RowDefinition />
@@ -85,8 +93,8 @@
             <!--Header-->
             <TextBox Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" HorizontalContentAlignment="Center" ToolTip="Information about the route location found." Background="#cfd8ff" Style="{StaticResource SelectableTextBox}">Results</TextBox>
             <!--MP Type Radio Buttons-->
-            <RadioButton Grid.Column="0" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="SRMP" Grid.Row="3" IsChecked="True"/>
-            <RadioButton Grid.Column="0" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="ARM" Grid.Row="4"/>
+            <RadioButton Grid.Column="0" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="SRMP" Grid.Row="3" IsChecked="{Binding SRMPIsSelected}"/>
+            <RadioButton Grid.Column="0" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" Command="{Binding ChangeMPTypeCommand}" GroupName="milepostType" CommandParameter="ARM" Grid.Row="4" IsChecked="{Binding SRMPIsSelected, Converter={StaticResource BooleanInverter}}"/>
             <!--Labels-->
             <TextBox Grid.Column="1" Grid.Row="1" HorizontalContentAlignment="Center" ToolTip="The route that the location belongs to."  Style="{StaticResource SelectableTextBox}">Route</TextBox>
             <TextBox Grid.Column="1" Grid.Row="2" HorizontalContentAlignment="Center" ToolTip="Related Route Type"  Style="{StaticResource SelectableTextBox}">RRT/RRQ</TextBox>
@@ -165,9 +173,9 @@
             />
             <TextBox Grid.Column="2" Grid.Row="8"  Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding PointResponse.Back, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Style="{StaticResource SelectableTextBox}"/>
             <!---->
-            <TextBox Grid.Column="2" Grid.Row="9" Text="{Binding PointResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="2" Grid.Row="10" Text="{Binding PointResponse.ReferenceDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
-            <TextBox Grid.Column="2" Grid.Row="11" Text="{Binding PointResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="9" Text="{Binding PointResponse.RealignmentDate, UpdateSourceTrigger=PropertyChanged}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}" Focusable="false" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="10" Text="{Binding PointResponse.ReferenceDate, UpdateSourceTrigger=PropertyChanged}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}" Focusable="false" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="11" Text="{Binding PointResponse.ResponseDate,UpdateSourceTrigger=PropertyChanged}" BorderThickness="{Binding IsMapMode, Converter={StaticResource BorderConverter}}" Focusable="false" Style="{StaticResource SelectableTextBox}"/>
             
             <Border Grid.ColumnSpan="3" Grid.Row="2" BorderBrush="#b3c1fc" BorderThickness="0,1,0,0" Background="{x:Null}" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}"/>
             <Border Grid.ColumnSpan="3" Grid.Row="3" BorderBrush="#b3c1fc" BorderThickness="0,1,0,0" Background="{x:Null}" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}"/>

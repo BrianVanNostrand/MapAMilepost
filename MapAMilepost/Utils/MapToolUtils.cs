@@ -46,7 +46,7 @@ namespace MapAMilepost.Utils
         /// <param name="VM">the target viewmodel</param>
         public static async Task DeactivateSession(Utils.ViewModelBase VM, string sessionType = null)
         {
-            VM.SRMPIsSelected = true;
+           // VM.SRMPIsSelected = true;
             if (sessionType == "point")//if start session or point session
             {
                 VM.SessionActive = false;

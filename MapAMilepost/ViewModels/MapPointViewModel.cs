@@ -27,12 +27,13 @@ namespace MapAMilepost.ViewModels
         private bool _showResultsTable = false;
         private bool _sessionActive = false;
         private bool _isMapMode = true;
-        private bool _srmpIsSelected = true;
+        private bool _srmpIsSelected;
         private ObservableCollection<RouteIDInfo> _routeIDInfos = new();
         private ObservableCollection<string> _routeQualifiers = new();
         public MapPointViewModel()//constructor
         {
             MappingTool = new();//initialize map tool here or it won't run on first click. Weird bug?
+            SRMPIsSelected = true;
         }
         public override bool SRMPIsSelected
         {
@@ -125,7 +126,6 @@ namespace MapAMilepost.ViewModels
         ///     via data binding.
         /// </summary>
         public override List<PointResponseModel> SelectedPoints { get; set; } = new List<PointResponseModel>();
-
         public Commands.RelayCommand<object> UpdateSelectionCommand => new (async(grid) => {
             if(!IsMapMode)
             {
@@ -158,6 +158,21 @@ namespace MapAMilepost.ViewModels
                 //RouteQualifiers = NewRouteQualifiers;
             }
         });
+
+        public Commands.RelayCommand<object> RouteQualifierChangedCommand => new((object selectedValue) =>
+        {
+            ComboBox cBox = (selectedValue as ComboBox);
+            if (cBox.SelectedItem != null && cBox.SelectedItem.ToString() != "Mainline")
+            {
+                PointResponse.Route = $"{PointResponse.Route}{(selectedValue as ComboBox).SelectedItem}";
+            }
+            else
+            {
+                cBox.SelectedIndex = 0;
+            }
+            (selectedValue as ComboBox).UpdateLayout();
+        });
+
         public Commands.RelayCommand<object> ChangeModeCommand => new(async (param) =>
         {
             IsMapMode = !IsMapMode;
@@ -184,6 +199,10 @@ namespace MapAMilepost.ViewModels
                 Utils.UIUtils.SetRouteInfos(RouteResponses, this);
             }
         });
+        public Commands.RelayCommand<object> ResetCombobox => new((combobox) => {
+            (combobox as ComboBox).SelectedIndex = -1;
+            RouteQualifiers = new();
+        });
         public Commands.RelayCommand<object> ZoomToRecordCommand => new(async(grid) =>
         {
             PointResponseModel.coordinatePair coordPair = Commands.DataGridCommands.GetSelectedGraphicInfoPoint(grid as DataGrid, this);
@@ -194,9 +213,6 @@ namespace MapAMilepost.ViewModels
         });
 
         public Commands.RelayCommand<object> DeleteItemsCommand => new (async(p) => await Commands.DataGridCommands.DeletePointItems(this));
-
-        
-
         public Commands.RelayCommand<object> ClearItemsCommand => new(async (parms) => {
             if (MapView.Active != null && MapView.Active.Map != null)
             {
@@ -223,7 +239,6 @@ namespace MapAMilepost.ViewModels
                 this.PointResponse.Srmp = null;
             }
         });
-        public Commands.RelayCommand<object> getitems => new(async (p) => { });
         public Commands.RelayCommand<object> InteractionCommand => new (async(p) => {
             if (IsMapMode)
             {
@@ -232,7 +247,6 @@ namespace MapAMilepost.ViewModels
             else
             {
                 await Commands.GraphicsCommands.DeleteUnsavedGraphics();//delete all unsaved graphics
-                PointResponse.ReferenceDate = PointArgs.ReferenceDate;
                 bool formDataValid = HTTPRequest.CheckFormData(PointResponse);
                 if (formDataValid)
                 {
@@ -278,22 +292,6 @@ namespace MapAMilepost.ViewModels
                 }
             }
         });
-
-      
-        public Commands.RelayCommand<object> RouteQualifierChangedCommand => new((object selectedValue) =>
-        {
-            ComboBox cBox = (selectedValue as ComboBox);
-            if (cBox.SelectedItem != null && cBox.SelectedItem.ToString() != "Mainline")
-            {
-                PointResponse.Route = $"{PointResponse.Route}{(selectedValue as ComboBox).SelectedItem}";
-            }
-            else
-            {
-                cBox.SelectedIndex = 0;
-            }
-            (selectedValue as ComboBox).UpdateLayout();
-        });
-
 
         public Commands.RelayCommand<object> MPChangedCommand => new((startEnd) =>
         {

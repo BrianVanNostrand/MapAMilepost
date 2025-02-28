@@ -212,6 +212,7 @@ namespace MapAMilepost.Models
     public class FRLLineGeometryModel : ObservableObject
     {
         private PathsArray? _routeGeometry;
+        private string _locatingError;
         public PathsArray? RouteGeometry
         {
             get { return _routeGeometry; }
@@ -219,6 +220,15 @@ namespace MapAMilepost.Models
             {
                 _routeGeometry = value;
                 OnPropertyChanged(nameof(RouteGeometry));
+            }
+        }
+        public string LocatingError
+        {
+            get { return _locatingError; }
+            set
+            {
+                _locatingError = value;
+                OnPropertyChanged(nameof(LocatingError));
             }
         }
         public class PathsArray

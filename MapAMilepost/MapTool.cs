@@ -81,11 +81,11 @@ namespace MapAMilepost
                     {
                         if(CurrentViewModel.LineResponse.EndResponse != null && CurrentViewModel.LineResponse.EndResponse.Route!=null)//if end point already exists, use its route
                         {
-                            CurrentViewModel.LineResponse.StartResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.StartArgs, CurrentViewModel.LineResponse.EndResponse.Route) as PointResponseModel);
+                            CurrentViewModel.LineResponse.StartResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.StartArgs, CurrentViewModel.LineResponse.EndResponse.Route, directionText:MapToolSessionType) as PointResponseModel);
                         }
                         else
                         {
-                            CurrentViewModel.LineResponse.StartResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint,CurrentViewModel.LineArgs.StartArgs) as PointResponseModel);
+                            CurrentViewModel.LineResponse.StartResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint,CurrentViewModel.LineArgs.StartArgs,directionText:MapToolSessionType) as PointResponseModel);
                             if (CurrentViewModel.LineResponse != null && CurrentViewModel.LineResponse.StartResponse != null && CurrentViewModel.LineResponse.StartResponse.Route != null)
                             {
                                 CurrentViewModel.LineResponse.EndResponse.Route = CurrentViewModel.LineResponse.StartResponse.Route;
@@ -105,11 +105,11 @@ namespace MapAMilepost
                     {
                         if (CurrentViewModel.LineResponse.StartResponse!=null && CurrentViewModel.LineResponse.StartResponse.Route != null)//if start point already exists, use its route
                         {
-                            CurrentViewModel.LineResponse.EndResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.EndArgs, CurrentViewModel.LineResponse.StartResponse.Route) as PointResponseModel);
+                            CurrentViewModel.LineResponse.EndResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.EndArgs, CurrentViewModel.LineResponse.StartResponse.Route, directionText: MapToolSessionType) as PointResponseModel);
                         }
                         else
                         {
-                            CurrentViewModel.LineResponse.EndResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.EndArgs) as PointResponseModel);
+                            CurrentViewModel.LineResponse.EndResponse = (await Utils.HTTPRequest.QuerySOE(mapPoint, CurrentViewModel.LineArgs.EndArgs, directionText: MapToolSessionType) as PointResponseModel);
                             if (CurrentViewModel.LineResponse != null && CurrentViewModel.LineResponse.EndResponse != null && CurrentViewModel.LineResponse.EndResponse.Route != null)
                             {
                                 CurrentViewModel.LineResponse.StartResponse.Route = CurrentViewModel.LineResponse.EndResponse.Route;

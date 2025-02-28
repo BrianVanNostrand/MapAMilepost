@@ -91,7 +91,7 @@ namespace MapAMilepost.Commands
         public static async Task<GraphicInfoModel> CreatePointGraphics(PointArgsModel SoeArgs, PointResponseModel PointResponse, string sessionType, bool IsMapMode)
         {
             GraphicInfoModel graphicInfo = new();
-            if (PointResponse != null)
+            if (PointResponse != null&&PointResponse.RouteGeometry!=null)
             {
                 CustomGraphics CustomSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
                 await QueuedTask.Run(() =>

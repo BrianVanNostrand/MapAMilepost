@@ -43,26 +43,22 @@ namespace MapAMilepost.Utils
 
             }
         }
-        public static async Task<object> QuerySOE(object mapPoint, PointArgsModel args, string routeFilter=null)
+        public static async Task<object> QuerySOE(object mapPoint, PointArgsModel args, string routeFilter=null, string directionText = null)
         {
             args.X = ((MapPoint)mapPoint).X;
             args.Y = ((MapPoint)mapPoint).Y;
             args.SR = ((MapPoint)mapPoint).SpatialReference.Wkid;
-            object routeLocation = new();// assume find nearest route location fails
-            SOEResponse nearestResponse = await FindNearestRouteLocation(args, routeFilter);
+            PointResponseModel routeLocation = new();// assume find nearest route location fails
+            SOEResponse nearestResponse = await FindNearestRouteLocation(args, routeFilter,directionText:directionText);
             if (nearestResponse.Response != null)
             {
                 var locationParam = new LocationInfo(nearestResponse.Response);
                 routeLocation = await FindRouteLocation(locationParam, args, nearestResponse.Info.ArmCalcReturnMessage);
             }
-            else
-            {
-                routeLocation = null;
-            }
             return routeLocation;
         }
 
-        private static async Task<SOEResponse> FindNearestRouteLocation(PointArgsModel args, string routeFilter = null)
+        private static async Task<SOEResponse> FindNearestRouteLocation(PointArgsModel args, string routeFilter = null, string directionText = null)
         {
             var FNRLurl = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Nearest%20Route%20Locations");
             Dictionary<string, string> FNRLQueryParams = new()
@@ -100,11 +96,11 @@ namespace MapAMilepost.Utils
                     {
                         if(routeFilter != null)
                         {
-                            ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"No results found within {args.SearchRadius} feet of clicked point on route {routeFilter}.");
+                            ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"No results found{(directionText != null ? $" for {directionText}" : "")} within {args.SearchRadius} feet of clicked location on route {routeFilter}.");
                         }
                         else
                         {
-                            ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"No results found within {args.SearchRadius} feet of clicked point.");
+                            ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"No results found within {args.SearchRadius} feet of clicked {(directionText != null ? $"{directionText} location" : "location")}.");
                         }
                         ResponseInfo.Response = null;
                     }
@@ -120,8 +116,9 @@ namespace MapAMilepost.Utils
             }
             return ResponseInfo;
         }
-        public static async Task<PointResponseModel> FindRouteLocation(LocationInfo location, PointArgsModel args, string FNRLInfo = null)
+        public static async Task<PointResponseModel> FindRouteLocation(LocationInfo location, PointArgsModel args, string FNRLInfo = null, string directionText = null)
         {
+            location.ReferenceDate = args.ReferenceDate;
             var FNRLurl = new Flurl.Url("https://data.wsdot.wa.gov/arcgis/rest/services/Shared/ElcRestSOE/MapServer/exts/ElcRestSoe/Find%20Route%20Locations");
             Dictionary<string,object> FNRLQueryParams = new Dictionary<string, object> {
                 {"f", "json"},
@@ -155,24 +152,24 @@ namespace MapAMilepost.Utils
                                 //ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
                                 //    messageText: $"The nearest route, {PointResponses.First().Route}, did not return a route location."
                                 //);
-                                routeLocation.Error = $"The nearest route, {PointResponses.First().Route}, did not return a route location.";
+                                routeLocation.Error = $"The nearest route{(directionText!=null?$" for {directionText} on route":",")} {PointResponses.First().Route}, did not return a route location.";
                             }
                         }
                         else
                         {
                             //ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"Location couldn't be found. Please try again.");
-                            routeLocation.Error = $"Location couldn't be found. Please try again.";
+                            routeLocation.Error = $"{(directionText != null ? $"Location for {directionText}" : "Location")} couldn't be found. Please try again.";
                         }
                     }
                     else
                     {
                         //ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"{ArmCalcReturnInfo.First().ArmCalcReturnMessage + (FNRLInfo!=null?$"\n{FNRLInfo}":"")}");
-                        routeLocation.Error = $"{ArmCalcReturnInfo.First().ArmCalcReturnMessage + (FNRLInfo != null ? $"\n{FNRLInfo}" : "")}";
+                        routeLocation.Error = $"{(directionText != null ? $"Error processing {directionText} \n" : "")}{ArmCalcReturnInfo.First().ArmCalcReturnMessage + (FNRLInfo != null ? $"\n{FNRLInfo}" : "")}";
                     }
                 }
                 else
                 {
-                    routeLocation.Error = FRLresponse.ResponseMessage.ToString();
+                    routeLocation.Error = $"{(directionText != null ? $"Error processing {directionText} \n" : "")}{FRLresponse.ResponseMessage.ToString()}";
                     //ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(FRLresponse.ResponseMessage.ToString());
                 }
             }

@@ -15,18 +15,37 @@ namespace MapAMilepost.ValueConverters
 {
     public class BooleanInverter : IValueConverter // returns the inverse of a boolean
     {
-        public object Convert(object value, Type targetType, object parameter,
-            System.Globalization.CultureInfo culture)
-        {
-            if (targetType != typeof(bool))
-                throw new InvalidOperationException("The target must be a boolean");
+        //public object Convert(object value, Type targetType, object parameter,
+        //    System.Globalization.CultureInfo culture)
+        //{
+        //    if (targetType != typeof(bool))
+        //        throw new InvalidOperationException("The target must be a boolean");
 
-            return !(bool)value;
+        //    return !(bool)value;
+        //}
+        //public object ConvertBack(object value, Type targetType, object parameter,
+        //    System.Globalization.CultureInfo culture)
+        //{
+        //    throw new NotSupportedException();
+        //}
+        public object Convert(object value, Type targetType, object parameter,
+       System.Globalization.CultureInfo culture)
+        {
+            if (value is bool)
+            {
+                return !(bool)value;
+            }
+            return value;
         }
+
         public object ConvertBack(object value, Type targetType, object parameter,
             System.Globalization.CultureInfo culture)
         {
-            throw new NotSupportedException();
+            if (value is bool)
+            {
+                return !(bool)value;
+            }
+            return value;
         }
     }
     public class DirectionConverter : IValueConverter
