@@ -16,7 +16,7 @@ using System.Windows.Controls;
 
 namespace MapAMilepost.ViewModels
 {
-    public class MapPointViewModel:ViewModelBase
+    public class MapPointViewModel : ViewModelBase
     {
         /// <summary>
         /// Private variables with associated public variables, granting access to the INotifyPropertyChanged command via ViewModelBase.
@@ -28,12 +28,14 @@ namespace MapAMilepost.ViewModels
         private bool _sessionActive = false;
         private bool _isMapMode = true;
         private bool _srmpIsSelected;
+        private int _routeComboIndex;
         private ObservableCollection<RouteIDInfo> _routeIDInfos = new();
         private ObservableCollection<string> _routeQualifiers = new();
         public MapPointViewModel()//constructor
         {
             MappingTool = new();//initialize map tool here or it won't run on first click. Weird bug?
             SRMPIsSelected = true;
+            RouteComboIndex = -1;
         }
         public override bool SRMPIsSelected
         {
@@ -70,7 +72,7 @@ namespace MapAMilepost.ViewModels
         public override PointResponseModel PointResponse
         {
             get { return _pointResponse; }
-            set { _pointResponse = value; OnPropertyChanged(nameof(PointResponse));}
+            set { _pointResponse = value; OnPropertyChanged(nameof(PointResponse)); }
         }
 
         /// <summary>
@@ -79,9 +81,9 @@ namespace MapAMilepost.ViewModels
         public override PointArgsModel PointArgs
         {
             get { return _pointArgs; }
-            set { 
-                _pointArgs = value; 
-                OnPropertyChanged(nameof(PointArgs)); 
+            set {
+                _pointArgs = value;
+                OnPropertyChanged(nameof(PointArgs));
             }
         }
 
@@ -121,15 +123,24 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(RouteQualifiers));
             }
         }
+        public override int RouteComboIndex
+        {
+            get { return _routeComboIndex; }
+            set
+            {
+                _routeComboIndex = value;
+                OnPropertyChanged(nameof(RouteComboIndex));
+            }
+        }
         /// <summary>
         /// -   Array of selected saved SOE response data objects in the DataGrid in ResultsView.xaml. Updated when a row is clicked in he DataGrid
         ///     via data binding.
         /// </summary>
         public override List<PointResponseModel> SelectedPoints { get; set; } = new List<PointResponseModel>();
-        public Commands.RelayCommand<object> UpdateSelectionCommand => new (async(grid) => {
-            if(!IsMapMode)
+        public Commands.RelayCommand<object> UpdateSelectionCommand => new(async (grid) => {
+            if (!IsMapMode)
             {
-                Dictionary<string,int> RouteResponses = await Utils.HTTPRequest.GetVMRouteLists(this);
+                Dictionary<string, int> RouteResponses = await Utils.HTTPRequest.GetVMRouteLists(this);
                 Utils.UIUtils.SetRouteInfos(RouteResponses, this);
                 RouteQualifiers = new() { };
             }
@@ -176,6 +187,7 @@ namespace MapAMilepost.ViewModels
         public Commands.RelayCommand<object> ChangeModeCommand => new(async (param) =>
         {
             IsMapMode = !IsMapMode;
+            await Utils.UIUtils.ResetUI(this);
             await Commands.GraphicsCommands.DeleteUnsavedGraphics();
             await Utils.MapToolUtils.DeactivateSession(this, "point");
             if (!IsMapMode)
@@ -199,31 +211,24 @@ namespace MapAMilepost.ViewModels
                 Utils.UIUtils.SetRouteInfos(RouteResponses, this);
             }
         });
-        public Commands.RelayCommand<object> ResetCombobox => new((combobox) => {
-            (combobox as ComboBox).SelectedIndex = -1;
-            RouteQualifiers = new();
-        });
-        public Commands.RelayCommand<object> ZoomToRecordCommand => new(async(grid) =>
+        public Commands.RelayCommand<object> ZoomToRecordCommand => new(async (grid) =>
         {
             PointResponseModel.coordinatePair coordPair = Commands.DataGridCommands.GetSelectedGraphicInfoPoint(grid as DataGrid, this);
-            if(coordPair != null)
+            if (coordPair != null)
             {
                 await CameraUtils.ZoomToCoords(coordPair.x, coordPair.y, PointArgs.ZoomScale);
             }
         });
 
-        public Commands.RelayCommand<object> DeleteItemsCommand => new (async(p) => await Commands.DataGridCommands.DeletePointItems(this));
-        public Commands.RelayCommand<object> ClearItemsCommand => new(async (parms) => {
-            if (MapView.Active != null && MapView.Active.Map != null)
-            {
-                await Commands.DataGridCommands.ClearDataGridItems(this);
-            }
-            else
-            {
-                MessageBox.Show("Please switch to a map view before attempting to clear mileposts.");
-            }
+        public Commands.RelayCommand<object> DeleteItemsCommand => new(async (p) => {
+            await Commands.DataGridCommands.DeletePointItems(this);
+            await Utils.UIUtils.ResetUI(this);
         });
-        public Commands.RelayCommand<object> SavePointResultCommand => new ((grid) => Commands.GraphicsCommands.SavePointResult(grid as DataGrid, this));
+
+        public Commands.RelayCommand<object> SavePointResultCommand => new(async(grid) => {
+            await Commands.GraphicsCommands.SavePointResult(grid as DataGrid, this);
+            await Utils.UIUtils.ResetUI(this);
+        });
         public Commands.RelayCommand<object> ChangeMPTypeCommand => new((val) =>
         {
             if ((string)val == "SRMP")
@@ -307,8 +312,11 @@ namespace MapAMilepost.ViewModels
                 }
             }
         });
-
-        private async Task ToggleSession()
+        public Commands.RelayCommand<object> ExportFeatures => new(async (startEnd) =>
+        {
+            await Utils.ExportUtils.SelectFC();
+        });
+            private async Task ToggleSession()
         {
             if (!this.SessionActive)
             {

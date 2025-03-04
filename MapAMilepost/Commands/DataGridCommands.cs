@@ -190,29 +190,45 @@ namespace MapAMilepost.Commands
                         MessageBoxImage.Question) == MessageBoxResult.Yes
                     )
                     {
-                        if (VM != null)//if individual points are being deleted
+                        string[] FeatureIDs = VM.SelectedPoints.Select(Item => Item.PointFeatureID).ToArray();//Selected item IDs
+                        foreach (var PointResponse in VM.PointResponses.ToList())
                         {
-                            string[] FeatureIDs = VM.SelectedPoints.Select(Item => Item.PointFeatureID).ToArray();//Selected item IDs
-                            foreach (var PointResponse in VM.PointResponses.ToList())
+                            if (FeatureIDs.Contains(PointResponse.PointFeatureID))
                             {
-                                if (FeatureIDs.Contains(PointResponse.PointFeatureID))
-                                {
-                                    VM.PointResponses.Remove(PointResponse);
-                                }
+                                VM.PointResponses.Remove(PointResponse);
                             }
-                            await GraphicsCommands.DeleteGraphics("point",FeatureIDs);
                         }
-                        else//if all points are being cleared
-                        {
-                            VM.PointResponses.Clear();
-                            await GraphicsCommands.DeleteGraphics("point");
-                        }
+                        await GraphicsCommands.DeleteGraphics("point", FeatureIDs);
                         if (VM.PointResponses.Count == 0)
                         {
                             VM.ShowResultsTable = false;
                         };
                         VM.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);
                         VM.SelectedPoints.Clear();
+                    }
+                }
+                else
+                {
+                    if (VM.PointResponses.Count > 0)
+                    {
+                        if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
+                            $"Are you sure you wish to delete all {VM.PointResponses.Count} records?",
+                            "Delete Rows",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question) == MessageBoxResult.Yes
+                        )
+                        {
+                            VM.PointResponses.Clear();
+                            await GraphicsCommands.DeleteGraphics("point");
+                            VM.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);
+                            VM.ShowResultsTable = false;
+                        }
+                    }
+                    else
+                    {
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
+                            $"No saved points found.",
+                            "No Saved Points");
                     }
                 }
             }
@@ -235,23 +251,15 @@ namespace MapAMilepost.Commands
                         MessageBoxImage.Question) == MessageBoxResult.Yes
                     )
                     {
-                        if (VM != null)//if individual lines are being deleted
+                        string[] FeatureIDs = VM.SelectedLines.Select(Item => Item.LineFeatureID).ToArray();//Selected item IDs
+                        foreach (var LineResponse in VM.LineResponses.ToList())
                         {
-                            string[] FeatureIDs = VM.SelectedLines.Select(Item => Item.LineFeatureID).ToArray();//Selected item IDs
-                            foreach (var LineResponse in VM.LineResponses.ToList())
+                            if (FeatureIDs.Contains(LineResponse.LineFeatureID))
                             {
-                                if (FeatureIDs.Contains(LineResponse.LineFeatureID))
-                                {
-                                    VM.LineResponses.Remove(LineResponse);
-                                }
+                                VM.LineResponses.Remove(LineResponse);
                             }
-                            await GraphicsCommands.DeleteGraphics("line",FeatureIDs);
                         }
-                        else//if all lines are being cleared
-                        {
-                            VM.LineResponses.Clear();
-                            await Commands.GraphicsCommands.DeleteGraphics("line");
-                        }
+                        await GraphicsCommands.DeleteGraphics("line",FeatureIDs);
                         if (VM.LineResponses.Count == 0)
                         {
                             VM.ShowResultsTable = false;
@@ -261,116 +269,35 @@ namespace MapAMilepost.Commands
                         VM.SelectedLines.Clear();
                     }
                 }
+                else
+                {
+                    if (VM.LineResponses.Count > 0)
+                    {
+                        if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
+                            $"Are you sure you wish to delete all {VM.LineResponses.Count} records?",
+                            "Delete Rows",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question) == MessageBoxResult.Yes
+                        )
+                        {
+                            VM.LineResponses.Clear();
+                            await GraphicsCommands.DeleteGraphics("line");
+                            VM.LineResponse.StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);
+                            VM.LineResponse.EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);
+                            VM.ShowResultsTable = false;
+                        }
+                    }
+                    else
+                    {
+                        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
+                            $"No saved lines found.",
+                            "No Saved Lines");
+                    }
+                }
             }
             else
             {
                 MessageBox.Show("Please switch to a map view before attempting to delete.");
-            }
-        }
-
-        public static async Task ClearDataGridItems(Utils.ViewModelBase VM, bool IgnorePrompt=false)
-        {
-            if (VM.GetType() == typeof(MapPointViewModel))
-            {
-                if (VM.PointResponses.Count > 0)
-                {
-                    ResetClickPointArgs("point", VM);
-                    if (IgnorePrompt == false)//if this method was invoked from clicking the clear button
-                    {
-                        if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
-                            $"Are you sure you wish to clear all {VM.PointResponses.Count} point records?",
-                            "Clear Results",
-                            MessageBoxButton.YesNo,
-                            MessageBoxImage.Question) == MessageBoxResult.Yes
-                        )
-                        {
-                            await Commands.GraphicsCommands.DeleteGraphics("point");
-                            VM.PointResponses.Clear();
-                            if (VM.IsMapMode)
-                            {
-                                VM.PointResponse = new PointResponseModel();//clear the SOE response info panel
-                            }
-                            else
-                            {
-                                VM.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);    
-                            }
-                        }
-                    }
-                    else//if this map was invoked by a map change event
-                    {
-                        VM.PointResponses.Clear();
-                        VM.PointResponse = new PointResponseModel();//clear the SOE response info panel
-                    }
-
-                }
-                if (VM.PointResponses.Count == 0)
-                {
-                    VM.ShowResultsTable = false;
-                };
-            }
-            else
-            {
-                if (VM.LineResponses.Count > 0)
-                {
-                    ResetClickPointArgs("line", VM);
-                    if (IgnorePrompt == false)//if this method was invoked from clicking the clear button
-                    {
-                        if (ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(
-                            $"Are you sure you wish to clear all {VM.LineResponses.Count} line records?",
-                            "Clear Results",
-                            MessageBoxButton.YesNo,
-                            MessageBoxImage.Question) == MessageBoxResult.Yes
-                        )
-                        {
-                            await Commands.GraphicsCommands.DeleteGraphics("line");
-                            VM.LineResponses.Clear();
-                            if (VM.IsMapMode)
-                            {
-                                VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
-                            }
-                            else
-                            {
-                                VM.LineResponse = new LineResponseModel()
-                                {
-                                    StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM),
-                                    EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM)
-                                };
-                            }
-                        }
-                    }
-                    else//if this map was invoked by a map change event
-                    {
-                        VM.LineResponses.Clear();
-                        VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
-                    }
-                }
-                if (VM.LineResponses.Count == 0)
-                {
-                    VM.ShowResultsTable = false;
-                };
-            }
-            if (MapView.Active != null)
-            {
-                await Commands.GraphicsCommands.DeleteUnsavedGraphics();
-            }
-        }
-        
-        private static void ResetClickPointArgs(string sessionType, Utils.ViewModelBase VM)
-        {
-            if (!string.IsNullOrEmpty(sessionType))
-            {
-                if(sessionType=="line") 
-                {
-                    VM.LineArgs.StartArgs.X = 0;
-                    VM.LineArgs.StartArgs.Y = 0;
-                    VM.LineArgs.EndArgs.X = 0;
-                    VM.LineArgs.EndArgs.Y = 0;
-                }
-                else
-                {
-                    VM.PointArgs.X = 0;
-                    VM.PointArgs.Y = 0;
-                }
             }
         }
     }

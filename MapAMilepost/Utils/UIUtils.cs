@@ -1,11 +1,14 @@
 ﻿using ArcGIS.Core.Internal.Data.LinearReferencing;
+using ArcGIS.Desktop.Mapping;
 using MapAMilepost.Models;
+using MapAMilepost.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace MapAMilepost.Utils
 {
@@ -123,6 +126,69 @@ namespace MapAMilepost.Utils
                         Title = RouteNumberTitle,
                         RelatedRouteTypes = RRTs
                     });
+                }
+            }
+        }
+        public static async Task ResetUI(Utils.ViewModelBase VM)
+        {
+            VM.RouteComboIndex = -1;
+            VM.RouteQualifiers = new();
+            if (VM.GetType() == typeof(MapPointViewModel))
+            {
+                ResetClickPointArgs("point", VM);
+                if (VM.IsMapMode)
+                {
+                    VM.PointResponse = new PointResponseModel();//clear the SOE response info panel
+                }
+                else
+                {
+                    VM.PointResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);
+                }
+                if (VM.PointResponses.Count == 0)
+                {
+                    VM.ShowResultsTable = false;
+                };
+            }
+            else
+            {
+                ResetClickPointArgs("line", VM);
+                if (VM.IsMapMode)
+                {
+                    VM.LineResponse = new LineResponseModel();//clear the SOE response info panel
+                }
+                else
+                {
+                    VM.LineResponse = new LineResponseModel()
+                    {
+                        StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM),
+                        EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM)
+                    };
+                }
+                if (VM.LineResponses.Count == 0)
+                {
+                    VM.ShowResultsTable = false;
+                };
+            }
+            if (MapView.Active != null)
+            {
+                await Commands.GraphicsCommands.DeleteUnsavedGraphics();
+            }
+        }
+        private static void ResetClickPointArgs(string sessionType, Utils.ViewModelBase VM)
+        {
+            if (!string.IsNullOrEmpty(sessionType))
+            {
+                if (sessionType == "line")
+                {
+                    VM.LineArgs.StartArgs.X = 0;
+                    VM.LineArgs.StartArgs.Y = 0;
+                    VM.LineArgs.EndArgs.X = 0;
+                    VM.LineArgs.EndArgs.Y = 0;
+                }
+                else
+                {
+                    VM.PointArgs.X = 0;
+                    VM.PointArgs.Y = 0;
                 }
             }
         }

@@ -23,12 +23,14 @@ namespace MapAMilepost.ViewModels
         private bool _sessionEndActive = false;
         private bool _isMapMode = true;
         private bool _srmpIsSelected;
+        private int _routeComboIndex;
         private ObservableCollection<RouteIDInfo> _routeIDInfos = new();
         private ObservableCollection<string> _routeQualifiers = new();
         public MapLineViewModel()//constructor
         {
             MappingTool = new();//initialize map tool here or it won't run on first click. Weird bug? This should be intitializing in the base class, but alas...
             SRMPIsSelected = true;
+            RouteComboIndex = -1;
         }
         public override bool SRMPIsSelected
         {
@@ -116,6 +118,15 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(RouteQualifiers));
             }
         }
+        public override int RouteComboIndex
+        {
+            get { return _routeComboIndex; }
+            set
+            {
+                _routeComboIndex = value;
+                OnPropertyChanged(nameof(RouteComboIndex));
+            }
+        }
         public override List<LineResponseModel> SelectedLines { get; set; } = new List<LineResponseModel>();
         public Commands.RelayCommand<object> UpdateSelectionCommand => new (async(grid) => {
             if (!IsMapMode)
@@ -126,10 +137,10 @@ namespace MapAMilepost.ViewModels
             }
             await Commands.DataGridCommands.UpdateLineSelection(grid as DataGrid, this);
         });
-        public Commands.RelayCommand<object> RouteChangedCommand => new((object selectedValue) =>
+        public Commands.RelayCommand<object> RouteChangedCommand => new((object comboBox) =>
         {
-            
-            RouteIDInfo val = selectedValue as RouteIDInfo;
+            RouteComboIndex = (comboBox as ComboBox).SelectedIndex;
+            RouteIDInfo val = (comboBox as ComboBox).SelectedItem as RouteIDInfo;
             if (!IsMapMode)
             {
                 if (this.SRMPIsSelected)
@@ -169,6 +180,7 @@ namespace MapAMilepost.ViewModels
         public Commands.RelayCommand<object> ChangeModeCommand => new(async(param) =>
         {
             IsMapMode = !IsMapMode;
+            await Utils.UIUtils.ResetUI(this);
             await Commands.GraphicsCommands.DeleteUnsavedGraphics();
             await Utils.MapToolUtils.DeactivateSession(this, "start");
             await Utils.MapToolUtils.DeactivateSession(this, "end");
@@ -197,10 +209,6 @@ namespace MapAMilepost.ViewModels
                 Utils.UIUtils.SetRouteInfos(RouteResponses, this);
             }
         });
-        public Commands.RelayCommand<object> ResetCombobox => new((combobox) => {
-            (combobox as ComboBox).SelectedIndex = -1;
-            RouteQualifiers = new();
-        });
         public Commands.RelayCommand<object> ZoomToRecordCommand => new(async (grid) =>
         {
             if(SelectedLines.Count > 0 && MapView.Active!=null && MapView.Active.Map!=null)
@@ -213,19 +221,15 @@ namespace MapAMilepost.ViewModels
                 };
             }
         });
-        public Commands.RelayCommand<object> DeleteItemsCommand => new (async(parms) => await Commands.DataGridCommands.DeleteLineItems(this));
-        public Commands.RelayCommand<object> ClearItemsCommand => new(async (parms) => {
-            if (MapView.Active != null && MapView.Active.Map != null)
-            {
-                await Commands.DataGridCommands.ClearDataGridItems(this);
-            }
-            else
-            {
-                MessageBox.Show("Please switch to a map view before attempting to clear mileposts.");
-            }
+        public Commands.RelayCommand<object> DeleteItemsCommand => new (async(parms) => { 
+            await Commands.DataGridCommands.DeleteLineItems(this);
+            await Utils.UIUtils.ResetUI(this);
         });
 
-        public Commands.RelayCommand<object> SaveLineResultCommand => new ((grid) => Commands.GraphicsCommands.SaveLineResult(grid as DataGrid, this));
+        public Commands.RelayCommand<object> SaveLineResultCommand => new (async(grid) => {
+            await Commands.GraphicsCommands.SaveLineResult(grid as DataGrid, this);
+            await Utils.UIUtils.ResetUI(this);
+        });
         public Commands.RelayCommand<object> ChangeMPTypeCommand => new((val) =>
         {
             if ((string)val == "SRMP")

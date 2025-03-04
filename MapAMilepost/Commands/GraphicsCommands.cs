@@ -145,7 +145,7 @@ namespace MapAMilepost.Commands
                             new() { Key = "x",Value = PointResponse.RouteGeometry.x.ToString()},
                             new() { Key = "y",Value = PointResponse.RouteGeometry.y.ToString()},
                             new() { Key = "RealignmentDate",Value = PointResponse.RealignmentDate},
-                            new() { Key = "ResponseDate",Value = PointResponse.ResponseDate},
+                            new() { Key = "ReferenceDate",Value = PointResponse.ReferenceDate},
                             new() { Key = "saved", Value="false"},
                             new() { Key = "eventType", Value="route"},
                             new() { Key = "sessionType", Value = sessionType == "point" ? "point" : "line"},
@@ -246,6 +246,11 @@ namespace MapAMilepost.Commands
                         new() { Key = "EndSRMP",Value = endPoint.Srmp.ToString()},
                         new() { Key = "Back",Value = startPoint.Back.ToString()},
                         new() { Key = "ResponseDate",Value = startPoint.ResponseDate.ToString()},
+                        new() { Key = "EndResponseDate",Value = endPoint.ResponseDate.ToString()},
+                        new() { Key = "ReferenceDate",Value = startPoint.ReferenceDate.ToString()},
+                        new() { Key = "EndReferenceDate",Value = endPoint.ReferenceDate.ToString()},
+                        new() { Key = "RealignmentDate",Value = startPoint.RealignmentDate.ToString()},
+                        new() { Key = "EndRealignmentDate",Value = endPoint.RealignmentDate.ToString()},
                         new() { Key = "saved", Value="false"},
                         new() { Key = "eventType", Value="route"},
                         new() { Key = "sessionType", Value = "line"}
@@ -524,7 +529,7 @@ namespace MapAMilepost.Commands
         ///             duplicating the properties of the target response model, and add the new instance to the 
         ///             saved response model array.
         /// </summary>
-        public static async void SavePointResult(DataGrid myGrid, Utils.ViewModelBase VM)
+        public static async Task SavePointResult(DataGrid myGrid, Utils.ViewModelBase VM)
         {
             //if a point has been mapped
             if (Utils.SOEResponseUtils.HasBeenUpdated(VM.PointResponse))
@@ -583,7 +588,7 @@ namespace MapAMilepost.Commands
         ///             duplicating the properties of the target response model, and add the new instance to the 
         ///             saved response model array.
         /// </summary>
-        public static async void SaveLineResult(DataGrid myGrid, Utils.ViewModelBase VM)
+        public static async Task SaveLineResult(DataGrid myGrid, Utils.ViewModelBase VM)
         {
             if(VM.LineResponse.StartResponse==null || VM.LineResponse.EndResponse == null)
             {
@@ -649,7 +654,8 @@ namespace MapAMilepost.Commands
                                     RouteGeometry = VM.LineResponse.StartResponse.RouteGeometry,
                                     Srmp = VM.LineResponse.StartResponse.Srmp,
                                     RealignmentDate = VM.LineResponse.StartResponse.RealignmentDate,
-                                    ResponseDate = VM.LineResponse.StartResponse.ResponseDate
+                                    ResponseDate = VM.LineResponse.StartResponse.ResponseDate,
+                                    ReferenceDate = VM.LineResponse.StartResponse.ReferenceDate
                                 },
                                 EndResponse = new PointResponseModel()
                                 {
@@ -660,7 +666,8 @@ namespace MapAMilepost.Commands
                                     RouteGeometry = VM.LineResponse.EndResponse.RouteGeometry,
                                     Srmp = VM.LineResponse.EndResponse.Srmp,
                                     RealignmentDate = VM.LineResponse.EndResponse.RealignmentDate,
-                                    ResponseDate = VM.LineResponse.EndResponse.ResponseDate
+                                    ResponseDate = VM.LineResponse.EndResponse.ResponseDate,
+                                    ReferenceDate = VM.LineResponse.EndResponse.ReferenceDate
                                 },
                                 LineFeatureID = FeatureID
                             });

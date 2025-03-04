@@ -63,8 +63,6 @@
                 <Button Grid.Column="1" Grid.Row="0" FontSize="7pt" HorizontalContentAlignment="Center"  Height="20" VerticalAlignment="Top" Content="{Binding IsMapMode, Converter={StaticResource InputModeButtonLabelConverter}}">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="PreviewMouseDown">
-                            <i:InvokeCommandAction Command="{Binding ResetCombobox}" CommandParameter="{Binding ElementName=RouteIDCombo}"/>
-                            <i:InvokeCommandAction Command="{Binding ResetCombobox}" CommandParameter="{Binding ElementName=RouteQualCombo}"/>
                             <i:InvokeCommandAction Command="{Binding ChangeModeCommand}" />
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
@@ -119,10 +117,10 @@
             <TextBox Grid.Column="1" Grid.Row="10" HorizontalContentAlignment="Center" ToolTip="Reference date of the route location." Style="{StaticResource SelectableTextBox}">Reference Date</TextBox>
             <TextBox Grid.Column="1" Grid.Row="11" HorizontalContentAlignment="Center" ToolTip="Response date of the route location found." Style="{StaticResource SelectableTextBox}">Response Date</TextBox>
             <!--Start Point Bindings-->
-            <ComboBox Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2" x:Name="RouteIDCombo" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" HorizontalContentAlignment="Center" ItemsSource="{Binding RouteIDInfos}" DisplayMemberPath="Title">
+            <ComboBox Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2" x:Name="RouteIDCombo" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}" HorizontalContentAlignment="Center" ItemsSource="{Binding RouteIDInfos}" DisplayMemberPath="Title" SelectedIndex="{Binding RouteComboIndex, Mode=TwoWay}">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="SelectionChanged">
-                        <i:InvokeCommandAction Command="{Binding RouteChangedCommand}" CommandParameter="{Binding ElementName=RouteIDCombo, Path=SelectedItem}"/>
+                        <i:InvokeCommandAction Command="{Binding RouteChangedCommand}" CommandParameter="{Binding ElementName=RouteIDCombo}"/>
                         <i:InvokeCommandAction Command="{Binding RouteQualifierChangedCommand}" CommandParameter="{Binding ElementName=RouteQualCombo}" />
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
@@ -171,7 +169,7 @@
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </ComboBox>
-            <TextBox Grid.Column="2" Grid.Row="7" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding LineResponse.StartResponse.Decrease, ConverterParameter='PreviewPane', Converter={StaticResource DirectionConverter}}" Style="{StaticResource SelectableTextBox}"/>
+            <TextBox Grid.Column="2" Grid.Row="7" HorizontalContentAlignment="Center" Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}}" Text="{Binding LineResponse.StartResponse.Decrease, ConverterParameter='PreviewPane', Converter={StaticResource DirectionConverter}}" Style="{StaticResource SelectableTextBox}"/>
             <ComboBox 
                 HorizontalContentAlignment="Center"
                 Visibility="{Binding IsMapMode, Converter={StaticResource VisibilityConverter}, ConverterParameter='true'}"
@@ -324,17 +322,23 @@
                     </DataGrid.RowStyle>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Route" Binding="{Binding StartResponse.Route, Mode=OneWay}"/>
-                        <DataGridTextColumn Header="ARM" Binding="{Binding StartResponse.Arm, Mode=OneWay}"/>
-                        <DataGridTextColumn Header="EndARM" Binding="{Binding EndResponse.Arm, Mode=OneWay}"/>
-                        <DataGridTextColumn Header="SRMP" Binding="{Binding StartResponse.Srmp, Mode=OneWay}"/>
-                        <DataGridTextColumn Header="EndSRMP" Binding="{Binding EndResponse.Srmp, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Start ARM" Binding="{Binding StartResponse.Arm, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="End ARM" Binding="{Binding EndResponse.Arm, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Start SRMP" Binding="{Binding StartResponse.Srmp, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="End SRMP" Binding="{Binding EndResponse.Srmp, Mode=OneWay}"/>
                         <DataGridTextColumn Header="Direction" Binding="{Binding StartResponse.Decrease,Mode=OneWay, Converter={StaticResource DirectionConverter}}"/>
-                        <DataGridTextColumn Header="Back" Binding="{Binding StartResponse.Back, Mode=OneWay}"/>
-                        <DataGridTextColumn Header="EndBack" Binding="{Binding EndResponse.Back, Mode=OneWay}"/>
-                        <DataGridTextColumn Header="X" Binding="{Binding StartResponse.RouteGeometry.x, Converter={StaticResource NumberConverter}, Mode=OneWay}"/>
-                        <DataGridTextColumn Header="Y" Binding="{Binding StartResponse.RouteGeometry.y, Converter={StaticResource NumberConverter},  Mode=OneWay}"/>
-                        <DataGridTextColumn Header="EndX" Binding="{Binding EndResponse.RouteGeometry.x, Mode=OneWay}"/>
-                        <DataGridTextColumn Header="EndY" Binding="{Binding EndResponse.RouteGeometry.y, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Start Back" Binding="{Binding StartResponse.Back, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="End Back" Binding="{Binding EndResponse.Back, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Start Realignment Date" Binding="{Binding StartResponse.RealignmentDate, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="End Realignment Date" Binding="{Binding EndResponse.RealignmentDate, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Start Reference Date" Binding="{Binding StartResponse.ReferenceDate, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="End Reference Date" Binding="{Binding EndResponse.ReferenceDate, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Start Response Date" Binding="{Binding StartResponse.ResponseDate, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="End Response Date" Binding="{Binding EndResponse.ResponseDate, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Start X" Binding="{Binding StartResponse.RouteGeometry.x, Converter={StaticResource NumberConverter}, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="Start Y" Binding="{Binding StartResponse.RouteGeometry.y, Converter={StaticResource NumberConverter},  Mode=OneWay}"/>
+                        <DataGridTextColumn Header="End X" Binding="{Binding EndResponse.RouteGeometry.x, Mode=OneWay}"/>
+                        <DataGridTextColumn Header="End Y" Binding="{Binding EndResponse.RouteGeometry.y, Mode=OneWay}"/>
                     </DataGrid.Columns>
                     <b:Interaction.Triggers>
                         <b:EventTrigger EventName="MouseLeftButtonUp">
@@ -371,11 +375,8 @@
             <Button Visibility="Hidden" Grid.Row="2" Grid.Column="0" IsEnabled="False" Style="{StaticResource whiteButton}" Background="lightgray">
                 Export Data
             </Button>
-            <Button x:Name="DeleteItemsButton" Grid.Row="2" Grid.Column="1" Command="{Binding DeleteItemsCommand}" Style="{StaticResource whiteButton}" ToolTip="Delete selected saved lines from the layer.">
+            <Button x:Name="DeleteItemsButton" Grid.Row="2" Grid.Column="2" Command="{Binding DeleteItemsCommand}" Style="{StaticResource whiteButton}" ToolTip="Delete selected saved lines from the layer.">
                 Delete Record(s)
-            </Button>
-            <Button  x:Name="ClearItemsButton" Grid.Row="2" Grid.Column="2"  Command="{Binding ClearItemsCommand}" Style="{StaticResource whiteButton}" ToolTip="Delete all saved lines from the layer.">
-                Delete All
             </Button>
         </Grid>
     </Grid>

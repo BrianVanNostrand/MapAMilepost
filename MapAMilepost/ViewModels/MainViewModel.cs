@@ -170,6 +170,8 @@ namespace MapAMilepost.ViewModels
             SetModalSettings("load");
             TabControl parentControl = (button as TabItem).Parent as TabControl;
             parentControl.SelectedIndex = -1;
+            await Utils.UIUtils.ResetUI(MapLineVM);
+            await Utils.UIUtils.ResetUI(MapPointVM);
             await GraphicsCommands.DeselectAllGraphics();//remove all graphic selections
             await MapToolUtils.DeactivateSession(this.SelectedViewModel);//deactivate any active map tool sessions
             await GraphicsCommands.SynchronizeGraphicsToAddIn(this, await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map));
@@ -222,7 +224,7 @@ namespace MapAMilepost.ViewModels
                             if (MapPointVM.PointResponses.Count == 0 || MapLineVM.LineResponses.Count == 0)
                             {
                                 SetModalSettings("load");
-                                await ResetLayer();
+                                await ResetVMUI();
                                 await GraphicsCommands.SynchronizeGraphicsToAddIn(this, await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map));
                                 AddInReady = true;
                             }
@@ -262,7 +264,7 @@ namespace MapAMilepost.ViewModels
                 }
                 else
                 {
-                    await ResetLayer();
+                    await ResetVMUI();
                     AddInReady = true;
                 }
             }
@@ -334,7 +336,7 @@ namespace MapAMilepost.ViewModels
                     GraphicsLayer gl = await Utils.MapViewUtils.GetMilepostMappingLayer(obj.MapView.Map);
                     if (gl!=null)
                     {
-                        await ResetLayer();
+                        await ResetVMUI();
                         AddInReady = false;
                         SetModalSettings("load");
                         await GraphicsCommands.SynchronizeGraphicsToAddIn(this, gl);
@@ -363,7 +365,7 @@ namespace MapAMilepost.ViewModels
                     AddInReady = false;
                     SetModalSettings("load");
                     GraphicsLayer gl = await Utils.MapViewUtils.GetMilepostMappingLayer(obj.MapView.Map);
-                    await ResetLayer();
+                    await ResetVMUI();
                     await GraphicsCommands.SynchronizeGraphicsToAddIn(this, gl);
                     AddInReady = true;
                 }
@@ -383,7 +385,7 @@ namespace MapAMilepost.ViewModels
                 {
                     AddInReady = false;
                     SetModalSettings("layerOff");
-                    await ResetLayer();
+                    await ResetVMUI();
                     this.MapLineVM.LineResponse = new();
                     this.MapPointVM.PointResponse = new();
                     LayerVisible = false;
@@ -489,17 +491,13 @@ namespace MapAMilepost.ViewModels
                     break;
             }
         }
-        private async Task ResetLayer()
+        private async Task ResetVMUI()
         {
-            await DataGridCommands.ClearDataGridItems(this.MapPointVM, true);
-            await DataGridCommands.ClearDataGridItems(this.MapLineVM, true);
-            await Utils.MapToolUtils.DeactivateSession(this.MapPointVM, "point");
-            await Utils.MapToolUtils.DeactivateSession(this.MapLineVM, "line");
+            await Utils.UIUtils.ResetUI(MapPointVM);
+            await Utils.UIUtils.ResetUI(MapLineVM);
+            await Utils.MapToolUtils.DeactivateSession(MapPointVM, "point");
+            await Utils.MapToolUtils.DeactivateSession(MapLineVM, "line");
             await GraphicsCommands.DeselectAllGraphics();
-        }
-        private void TableGraphicsChanged(object Graphics)
-        {
-            Console.WriteLine(Graphics.ToString());
         }
 
         public MainViewModel()
