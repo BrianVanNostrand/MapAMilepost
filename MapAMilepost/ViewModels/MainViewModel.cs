@@ -378,54 +378,57 @@ namespace MapAMilepost.ViewModels
         }
         private async void OnDrawEventStarted(MapViewEventArgs e) //make sure layer is still on when a layer in the TOC is toggled on or off
         {
-            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
-            if(graphicsLayer != null)
+            if (MapView.Active!=null&&MapView.Active.Map != null)
             {
-                if (graphicsLayer.IsVisible == false)
+                GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
+                if(graphicsLayer != null)
                 {
-                    AddInReady = false;
-                    SetModalSettings("layerOff");
-                    await ResetVMUI();
-                    this.MapLineVM.LineResponse = new();
-                    this.MapPointVM.PointResponse = new();
-                    LayerVisible = false;
-                }
-                else
-                {
-                    if(LayerVisible == false)//if layer is being turned on (if this part is left out, this will execute constantly as different layers draw different features asyncronously)
+                    if (graphicsLayer.IsVisible == false)
                     {
                         AddInReady = false;
-                        SetModalSettings("load");
-                        await GraphicsCommands.SynchronizeGraphicsToAddIn(this, await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map));
-                        AddInReady = true;
-                        LayerVisible = true;//prevents loading from happening every time every layer draws
+                        SetModalSettings("layerOff");
+                        await ResetVMUI();
+                        this.MapLineVM.LineResponse = new();
+                        this.MapPointVM.PointResponse = new();
+                        LayerVisible = false;
+                    }
+                    else
+                    {
+                        if(LayerVisible == false)//if layer is being turned on (if this part is left out, this will execute constantly as different layers draw different features asyncronously)
+                        {
+                            AddInReady = false;
+                            SetModalSettings("load");
+                            await GraphicsCommands.SynchronizeGraphicsToAddIn(this, await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map));
+                            AddInReady = true;
+                            LayerVisible = true;//prevents loading from happening every time every layer draws
+                        }
                     }
                 }
-            }
-            //set spatial reference to new map view
-            if (
-                MapPointVM.PointArgs.SR!= MapView.Active.Map.SpatialReference.Wkid
-            )
-            {
-                MapPointVM.PointArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
-            }
-            if (
-                MapLineVM.LineArgs.StartArgs.SR != MapView.Active.Map.SpatialReference.Wkid||
-                MapLineVM.LineArgs.EndArgs.SR != MapView.Active.Map.SpatialReference.Wkid
-            )
-            {
-                MapLineVM.LineArgs.StartArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
-                MapLineVM.LineArgs.EndArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
-            }
-            if(
-                MapTableVM.PointArgs.SR != MapView.Active.Map.SpatialReference.Wkid ||
-                MapTableVM.LineArgs.StartArgs.SR != MapView.Active.Map.SpatialReference.Wkid ||
-                MapTableVM.LineArgs.EndArgs.SR != MapView.Active.Map.SpatialReference.Wkid
-            )
-            {
-                MapTableVM.PointArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
-                MapTableVM.LineArgs.StartArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
-                MapTableVM.LineArgs.EndArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+                //set spatial reference to new map view
+                if (
+                    MapPointVM.PointArgs.SR!= MapView.Active.Map.SpatialReference.Wkid
+                )
+                {
+                    MapPointVM.PointArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+                }
+                if (
+                    MapLineVM.LineArgs.StartArgs.SR != MapView.Active.Map.SpatialReference.Wkid||
+                    MapLineVM.LineArgs.EndArgs.SR != MapView.Active.Map.SpatialReference.Wkid
+                )
+                {
+                    MapLineVM.LineArgs.StartArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+                    MapLineVM.LineArgs.EndArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+                }
+                if(
+                    MapTableVM.PointArgs.SR != MapView.Active.Map.SpatialReference.Wkid ||
+                    MapTableVM.LineArgs.StartArgs.SR != MapView.Active.Map.SpatialReference.Wkid ||
+                    MapTableVM.LineArgs.EndArgs.SR != MapView.Active.Map.SpatialReference.Wkid
+                )
+                {
+                    MapTableVM.PointArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+                    MapTableVM.LineArgs.StartArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+                    MapTableVM.LineArgs.EndArgs.SR = MapView.Active.Map.SpatialReference.Wkid;
+                }
             }
         }
        

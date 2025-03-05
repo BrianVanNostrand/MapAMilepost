@@ -314,9 +314,9 @@ namespace MapAMilepost.ViewModels
         });
         public Commands.RelayCommand<object> ExportFeatures => new(async (startEnd) =>
         {
-            await Utils.ExportUtils.SelectFC();
+            await Utils.ExportUtils.CreateFC("point",PointArgs.SR);
         });
-            private async Task ToggleSession()
+        private async Task ToggleSession()
         {
             if (!this.SessionActive)
             {
