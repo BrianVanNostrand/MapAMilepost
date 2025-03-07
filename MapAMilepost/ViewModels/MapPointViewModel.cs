@@ -312,9 +312,14 @@ namespace MapAMilepost.ViewModels
                 }
             }
         });
-        public Commands.RelayCommand<object> ExportFeatures => new(async (startEnd) =>
+        public Commands.RelayCommand<object> ExportFeatures => new(async (button) =>
         {
-            await Utils.ExportUtils.CreateFC("point",PointArgs.SR);
+            FeatureClassInfo fcInfo = await Utils.ExportUtils.CreateFC("point",PointArgs.SR);
+            if (fcInfo!=null && fcInfo.FCTitle != null && fcInfo.GDBPath!=null)
+            {
+                await Utils.ExportUtils.PopulateFC(fcInfo);
+            }
+           
         });
         private async Task ToggleSession()
         {

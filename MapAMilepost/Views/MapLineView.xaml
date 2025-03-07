@@ -372,7 +372,7 @@
                     </Style.Triggers>
                 </Style>
             </Grid.Resources>
-            <Button Visibility="Hidden" Grid.Row="2" Grid.Column="0" IsEnabled="False" Style="{StaticResource whiteButton}" Background="lightgray">
+            <Button Visibility="Hidden" Grid.Row="2" Grid.Column="0" Command="{Binding ExportFeatures}" Style="{StaticResource whiteButton}" IsEnabled="True" >
                 Export Data
             </Button>
             <Button x:Name="DeleteItemsButton" Grid.Row="2" Grid.Column="2" Command="{Binding DeleteItemsCommand}" Style="{StaticResource whiteButton}" ToolTip="Delete selected saved lines from the layer.">

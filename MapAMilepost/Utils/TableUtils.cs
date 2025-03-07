@@ -44,7 +44,7 @@ namespace MapAMilepost.Utils
                 }
             }
             catch(IOException exception){
-                MessageBox.Show(exception.Message);
+                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show(exception.Message);
                 return [];
             }
             return csvHeaders;

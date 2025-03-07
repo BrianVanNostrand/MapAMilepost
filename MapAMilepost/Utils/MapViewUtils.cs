@@ -42,6 +42,22 @@ namespace MapAMilepost.Utils
             });
             return targetLayer;
         }
+        public static async Task<FeatureLayer> GetFeatureLayerByTitle(Map map, string title)
+        {
+            FeatureLayer targetLayer = null;
+            await QueuedTask.Run(() =>
+            {
+                foreach (var item in map.Layers)
+                {
+                    if(item.Name == title)
+                    {
+                        targetLayer = item as FeatureLayer;
+                    }
+
+                };
+            });
+            return targetLayer;
+        }
         public static async Task<bool> CreateMilepostMappingLayer(Map map)
         {
             string title = Interaction.InputBox("Please enter a title for your milepost graphics layer.", "Create Milepost Layer", "My Milepost Layer");

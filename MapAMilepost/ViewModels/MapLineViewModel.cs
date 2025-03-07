@@ -363,7 +363,26 @@ namespace MapAMilepost.ViewModels
             }
             return Point;
         }
-
+        public Commands.RelayCommand<object> ExportFeatures => new(async (button) =>
+        {
+            FeatureClassInfo fcInfoStart = await Utils.ExportUtils.CreateFC("line", LineArgs.StartArgs.SR);
+            //if (fcInfoStart != null && fcInfoEnd!= null)
+            //{
+            //    await Utils.ExportUtils.PopulateFC(fcInfoStart);
+            //    await Utils.ExportUtils.PopulateFC(fcInfoEnd);
+            //}
+            //else
+            //{
+            //    if(fcInfoStart == null)
+            //    {
+            //        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"Failed to create feature class at GDB path {(fcInfoStart.GDBPath != null ? fcInfoStart.GDBPath : "[null]")} \n with title {(fcInfoStart.FCTitle != null ? fcInfoStart.FCTitle : "[null]")}", "Export Task Canceled");
+            //    }
+            //    else if(fcInfoEnd == null)
+            //    {
+            //        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"Failed to create feature class at GDB path {(fcInfoEnd.GDBPath != null ? fcInfoEnd.GDBPath : "[null]")} \n with title {(fcInfoEnd.FCTitle != null ? fcInfoEnd.FCTitle : "[null]")}", "Export Task Canceled");
+            //    }
+            //}
+        });
         private async Task ToggleSession(string startEnd)
         {
             if(SelectedLines.Count > 0)

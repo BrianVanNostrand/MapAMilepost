@@ -221,13 +221,10 @@ namespace MapAMilepost.ViewModels
                         }
                         else
                         {
-                            if (MapPointVM.PointResponses.Count == 0 || MapLineVM.LineResponses.Count == 0)
-                            {
-                                SetModalSettings("load");
-                                await ResetVMUI();
-                                await GraphicsCommands.SynchronizeGraphicsToAddIn(this, await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map));
-                                AddInReady = true;
-                            }
+                            SetModalSettings("load");
+                            await ResetVMUI();
+                            await GraphicsCommands.SynchronizeGraphicsToAddIn(this, await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map));
+                            AddInReady = true;
                         }; 
                     }
                 }
@@ -297,7 +294,7 @@ namespace MapAMilepost.ViewModels
             await QueuedTask.Run(async () =>
             {
                 bool gLayerRemoved = true;
-                if(MapView.Active.Map != null && MapView.Active != null) { 
+                if(MapView.Active != null && MapView.Active != null) { 
                     foreach (var item in MapView.Active.Map.Layers)
                     {
                         CIMBaseLayer baseLayer = item.GetDefinition();

@@ -86,7 +86,7 @@ namespace MapAMilepost.Commands
             }
             else
             {
-                MessageBox.Show("Please switch to a map view before attempting this selection.");
+                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please switch to a map view before attempting this selection.");
             }
         }
 
@@ -173,7 +173,7 @@ namespace MapAMilepost.Commands
             }
             else
             {
-                MessageBox.Show("Please switch to a map view before attempting this selection.");
+                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please switch to a map view before attempting this selection.");
             }
             
         }
@@ -234,7 +234,7 @@ namespace MapAMilepost.Commands
             }
             else
             {
-                MessageBox.Show("Please switch to a map view before attempting to delete.");
+                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please switch to a map view before attempting to delete.");
             }
         }
 
@@ -297,7 +297,7 @@ namespace MapAMilepost.Commands
             }
             else
             {
-                MessageBox.Show("Please switch to a map view before attempting to delete.");
+                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please switch to a map view before attempting to delete.");
             }
         }
     }
