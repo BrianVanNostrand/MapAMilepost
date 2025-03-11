@@ -298,7 +298,7 @@ namespace MapAMilepost.ViewModels
             }
         });
 
-        public Commands.RelayCommand<object> MPChangedCommand => new((startEnd) =>
+        public Commands.RelayCommand<object> MPChangedCommand => new((StartEnd) =>
         {
             if (!IsMapMode)
             {
@@ -314,10 +314,10 @@ namespace MapAMilepost.ViewModels
         });
         public Commands.RelayCommand<object> ExportFeatures => new(async (button) =>
         {
-            FeatureClassInfo fcInfo = await Utils.ExportUtils.CreateFC("point",PointArgs.SR);
+            FeatureClassInfo fcInfo = await Utils.ExportUtils.CreatePointFC("point",PointArgs.SR);
             if (fcInfo!=null && fcInfo.FCTitle != null && fcInfo.GDBPath!=null)
             {
-                await Utils.ExportUtils.PopulateFC(fcInfo);
+                await Utils.ExportUtils.PopulateFC(fcInfo,"point", "point");//FeatureClassInfo and session type
             }
            
         });

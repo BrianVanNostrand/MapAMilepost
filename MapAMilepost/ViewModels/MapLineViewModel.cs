@@ -288,11 +288,11 @@ namespace MapAMilepost.ViewModels
             }
         });
 
-        public Commands.RelayCommand<object> MPChangedCommand => new((startEnd) =>
+        public Commands.RelayCommand<object> MPChangedCommand => new((StartEnd) =>
         {
             if (!IsMapMode)
             {
-                if ((string)startEnd == "start")
+                if ((string)StartEnd == "start")
                 {
                     if (this.SRMPIsSelected)
                     {
@@ -317,7 +317,7 @@ namespace MapAMilepost.ViewModels
             }
         });
 
-        public Commands.RelayCommand<object> DirectionChangedCommand => new((startEnd) =>
+        public Commands.RelayCommand<object> DirectionChangedCommand => new((StartEnd) =>
         {
             if(!IsMapMode)
             {
@@ -325,10 +325,10 @@ namespace MapAMilepost.ViewModels
             }
         });
 
-         private async Task<PointResponseModel> ProcessPoint(PointResponseModel Point, PointArgsModel Args, string startEnd)
+         private async Task<PointResponseModel> ProcessPoint(PointResponseModel Point, PointArgsModel Args, string StartEnd)
         {
             //Point.ReferenceDate = Args.ReferenceDate;
-            var errorDialog = startEnd == "start" ? "Start point" : "End point";
+            var errorDialog = StartEnd == "start" ? "Start point" : "End point";
             bool formDataValid = HTTPRequest.CheckFormData(Point, errorDialog);
             if (formDataValid)
             {
@@ -365,25 +365,16 @@ namespace MapAMilepost.ViewModels
         }
         public Commands.RelayCommand<object> ExportFeatures => new(async (button) =>
         {
-            FeatureClassInfo fcInfoStart = await Utils.ExportUtils.CreateFC("line", LineArgs.StartArgs.SR);
-            //if (fcInfoStart != null && fcInfoEnd!= null)
-            //{
-            //    await Utils.ExportUtils.PopulateFC(fcInfoStart);
-            //    await Utils.ExportUtils.PopulateFC(fcInfoEnd);
-            //}
-            //else
-            //{
-            //    if(fcInfoStart == null)
-            //    {
-            //        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"Failed to create feature class at GDB path {(fcInfoStart.GDBPath != null ? fcInfoStart.GDBPath : "[null]")} \n with title {(fcInfoStart.FCTitle != null ? fcInfoStart.FCTitle : "[null]")}", "Export Task Canceled");
-            //    }
-            //    else if(fcInfoEnd == null)
-            //    {
-            //        ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show($"Failed to create feature class at GDB path {(fcInfoEnd.GDBPath != null ? fcInfoEnd.GDBPath : "[null]")} \n with title {(fcInfoEnd.FCTitle != null ? fcInfoEnd.FCTitle : "[null]")}", "Export Task Canceled");
-            //    }
-            //}
+            FeatureClassInfo fcPtInfo = await Utils.ExportUtils.CreatePointFC("line", LineArgs.StartArgs.SR);
+            if (fcPtInfo != null && fcPtInfo.FCTitle != null && fcPtInfo.GDBPath != null)
+            {
+                FeatureClassInfo fcLineInfo = await Utils.ExportUtils.CreateLineFC("line", LineArgs.StartArgs.SR, fcPtInfo.GDBPath);
+                await Utils.ExportUtils.PopulateFC(fcPtInfo, "line", "point");//FeatureClassInfo and session type
+                await Utils.ExportUtils.PopulateFC(fcLineInfo, "line", "line");//FeatureClassInfo and session type
+            }
+            
         });
-        private async Task ToggleSession(string startEnd)
+        private async Task ToggleSession(string StartEnd)
         {
             if(SelectedLines.Count > 0)
             {
@@ -392,7 +383,7 @@ namespace MapAMilepost.ViewModels
                     LineResponse = new LineResponseModel();
                 }
             }
-            if (startEnd == "start")//if start button is clicked
+            if (StartEnd == "start")//if start button is clicked
             {
                 if (this.SessionEndActive == true || this.SessionActive == false)
                 {
@@ -404,7 +395,7 @@ namespace MapAMilepost.ViewModels
                     await Utils.MapToolUtils.DeactivateSession(this, "start");
                 }
             }
-            if (startEnd == "end")
+            if (StartEnd == "end")
             {
                 if (this.SessionActive == true || this.SessionEndActive == false)
                 {

@@ -53,13 +53,13 @@ namespace MapAMilepost.Commands
                         }
                         else if (item.GetCustomProperty("sessionType") == "line")
                         {
-                            if (item.GetCustomProperty("startEnd") == "end")//the end point graphic
+                            if (item.GetCustomProperty("StartEnd") == "end")//the end point graphic
                             {
                                 var cimGraphic = item.GetGraphic() as CIMPointGraphic;
                                 cimGraphic.Symbol = savedRouteEndSymbol.MakeSymbolReference();
                                 item.SetGraphic(cimGraphic);
                             }
-                            else if (item.GetCustomProperty("startEnd") == "start")//the start point graphic
+                            else if (item.GetCustomProperty("StartEnd") == "start")//the start point graphic
                             {
                                 var cimGraphic = item.GetGraphic() as CIMPointGraphic;
                                 cimGraphic.Symbol = savedRouteStartSymbol.MakeSymbolReference();
@@ -113,7 +113,7 @@ namespace MapAMilepost.Commands
                                 new() { Key = "saved", Value = "false" },
                                 new() { Key = "eventType", Value = "click" },
                                 new() { Key = "sessionType", Value = sessionType == "point" ? "point" : "line"},
-                                new() { Key = "startEnd", Value = sessionType }
+                                new() { Key = "StartEnd", Value = sessionType }
                             }
                         };
                         graphicsLayer.AddElement(cimGraphic: clickedPtGraphic, elementInfo: clickPtElemInfo, select: false);
@@ -149,7 +149,7 @@ namespace MapAMilepost.Commands
                             new() { Key = "saved", Value="false"},
                             new() { Key = "eventType", Value="route"},
                             new() { Key = "sessionType", Value = sessionType == "point" ? "point" : "line"},
-                            new() { Key = "startEnd", Value = sessionType }
+                            new() { Key = "StartEnd", Value = sessionType }
                         }
                     };
                     graphicInfo.CGraphic = soePtGraphic;
@@ -202,7 +202,7 @@ namespace MapAMilepost.Commands
                             new() { Key = "saved", Value="true"},
                             new() { Key = "eventType", Value="route"},
                             new() { Key = "sessionType", Value = sessionType == "point" ? "point" : "line"},
-                            new() { Key = "startEnd", Value = sessionType }
+                            new() { Key = "StartEnd", Value = sessionType }
                         }
                 };
                 graphicInfo.CGraphic = soePtGraphic;
@@ -316,7 +316,7 @@ namespace MapAMilepost.Commands
         /// <summary>
         /// -   Delete unsaved graphics, such as click point graphics and unsaved route graphics
         /// </summary>
-        public static async Task DeleteUnsavedGraphics(string startEnd = null)
+        public static async Task DeleteUnsavedGraphics(string StartEnd = null)
         {
             GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
             await QueuedTask.Run(() =>
@@ -332,11 +332,11 @@ namespace MapAMilepost.Commands
                             //if this graphic item was generated in a point mapping session and is unsaved (if it is a click point or unsaved route point)
                             if (item.GetCustomProperty("saved") == "false")
                             {
-                                if (startEnd == null)
+                                if (StartEnd == null)
                                 {
                                     graphicsLayer.RemoveElement(item);
                                 }
-                                else if (item.GetCustomProperty("startEnd") == startEnd)
+                                else if (item.GetCustomProperty("StartEnd") == StartEnd)
                                 {
                                     graphicsLayer.RemoveElement(item);
                                 }
@@ -472,7 +472,7 @@ namespace MapAMilepost.Commands
                     }
                     foreach (GraphicElement graphic in pointGraphics)
                     {
-                        if (graphic.GetCustomProperty("startEnd") == "start")
+                        if (graphic.GetCustomProperty("StartEnd") == "start")
                         {
                             var graphicSymbol = graphic.GetGraphic();
                             graphicSymbol.Symbol.Symbol = (CustomSymbols.SymbolsLibrary["SavedStartRoutePoint"] as CIMPointSymbol);   
@@ -754,6 +754,53 @@ namespace MapAMilepost.Commands
             return envelope;
         }
 
+        public static CIMUniqueValueRenderer GetEndpointRenderer()
+        {
+            List<CIMUniqueValue> listUniqueValuesStart = new List<CIMUniqueValue> { new CIMUniqueValue { FieldValues = new string[] { "start" } } };
+            CIMUniqueValueClass startUniqueValueClass = new CIMUniqueValueClass
+            {
+                Editable = true,
+                Label = "Start",
+                Patch = PatchShape.Default,
+                Symbol = SymbolFactory.Instance.ConstructPointSymbol(ColorFactory.Instance.GreenRGB).MakeSymbolReference(),
+                Visible = true,
+                Values = listUniqueValuesStart.ToArray()
+
+            };
+            // Create a "CIMUniqueValueClass" for the cities in California.
+            List<CIMUniqueValue> listUniqueValuesEnd = new List<CIMUniqueValue> { new CIMUniqueValue { FieldValues = new string[] { "end" } } };
+            CIMUniqueValueClass endUniqueValueClass = new CIMUniqueValueClass
+            {
+                Editable = true,
+                Label = "End",
+                Patch = PatchShape.Default,
+                Symbol = SymbolFactory.Instance.ConstructPointSymbol(ColorFactory.Instance.RedRGB).MakeSymbolReference(),
+                Visible = true,
+                Values = listUniqueValuesEnd.ToArray()
+            };
+            //Create a list of the above two CIMUniqueValueClasses
+            List<CIMUniqueValueClass> listUniqueValueClasses = new List<CIMUniqueValueClass>
+            {
+                  startUniqueValueClass, endUniqueValueClass
+            };
+            //Create a list of CIMUniqueValueGroup
+            CIMUniqueValueGroup uvg = new CIMUniqueValueGroup
+            {
+                Classes = listUniqueValueClasses.ToArray(),
+            };
+            List<CIMUniqueValueGroup> listUniqueValueGroups = new List<CIMUniqueValueGroup> { uvg };
+            //Create the CIMUniqueValueRenderer
+            CIMUniqueValueRenderer uvr = new CIMUniqueValueRenderer
+            {
+                UseDefaultSymbol = false,
+                DefaultLabel = "all other values",
+                DefaultSymbol = SymbolFactory.Instance.ConstructPointSymbol(ColorFactory.Instance.GreyRGB).MakeSymbolReference(),
+                Groups = listUniqueValueGroups.ToArray(),
+                Fields = new string[] { "FeatureType" }
+            };
+            return uvr;
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -805,7 +852,7 @@ namespace MapAMilepost.Commands
                         ));
                         foreach (LineResponseModel lineModel in targetLineInfo)
                         {
-                            if (item.GetCustomProperty("startEnd") == "start")
+                            if (item.GetCustomProperty("StartEnd") == "start")
                             {
                                 lineModel.StartResponse = pointInfo;
                             }
@@ -817,7 +864,7 @@ namespace MapAMilepost.Commands
                     }
                     else
                     {
-                        if (item.GetCustomProperty("startEnd") == "start")
+                        if (item.GetCustomProperty("StartEnd") == "start")
                         {
                             Infos.LineGraphicInfos.Add(new LineResponseModel
                             {
@@ -827,7 +874,7 @@ namespace MapAMilepost.Commands
                         }
                         else
                         {
-                            if (item.GetCustomProperty("startEnd") == "end")
+                            if (item.GetCustomProperty("StartEnd") == "end")
                             {
                                 Infos.LineGraphicInfos.Add(new LineResponseModel
                                 {
