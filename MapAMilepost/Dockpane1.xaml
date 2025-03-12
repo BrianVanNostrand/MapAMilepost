@@ -10,7 +10,6 @@
              xmlns:frameworkControls="clr-namespace:ArcGIS.Desktop.Framework.Controls;assembly=ArcGIS.Desktop.Framework"
              xmlns:valueConverters="clr-namespace:MapAMilepost.ValueConverters"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
              mc:Ignorable="d"
              d:DesignHeight="600" 
              x:Name="MainUserControl"
@@ -100,6 +99,7 @@
                 </Style.Triggers>
             </Style>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/LoadingSpinnerElement.xaml" />
                 <extensions:DesignOnlyResourceDictionary Source="pack://application:,,,/ArcGIS.Desktop.Framework;component\Themes\Default.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
@@ -208,7 +208,7 @@
                         <Button Width="80px" Height="20px" Margin="10 10 10 10" Background="White" BorderBrush="{DynamicResource ThemeBlue}" Command="{Binding CreateGraphicsLayerCommand}">Click Here</Button>
                     </Border>
                     <Border Visibility="{Binding ModalInfo.ShowLoader, Converter={StaticResource BoolToVis}}" Grid.Row="2" VerticalAlignment="Top">
-                        <fa:ImageAwesome Foreground="{DynamicResource ThemeBlue}" Icon="Spinner" Spin="True" SpinDuration="5" Width="20px" Height="20px"/>
+                        <Control Style="{StaticResource BusyAnimationStyle}"/>
                     </Border>
                 </Grid>
             </Border>

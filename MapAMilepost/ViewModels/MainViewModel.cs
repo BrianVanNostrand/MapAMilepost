@@ -44,10 +44,7 @@ namespace MapAMilepost.ViewModels
         private string _searchRadius = "3000";
         private string _responseDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
         private string _referenceDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
-        /// <summary>
-        /// -   The currently selected viewmodel, used when a tab is selected in the controlsGrid in MilepostDockpane.xaml
-        ///     via data binding.
-        /// </summary>
+       
         public InfoModalInfo ModalInfo {  get; set; }
         public bool AddInReady
         {
@@ -58,7 +55,6 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(AddInReady));
             }
         }
-
         public bool IsPaused
         {
             get { return _isPaused; }
@@ -68,61 +64,12 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(IsPaused));
             }
         }
-        public double ZoomScale
-        {
-            get => _zoomScale;
-            set
-            {
-                _zoomScale = value;
-                OnPropertyChanged(nameof(ZoomScale));
-            }
-        }
-        public string SearchRadius
-        {
-            get => _searchRadius;
-            set
-            {
-                _searchRadius = value;
-                this.MapPointVM.PointArgs.SearchRadius = value;
-                this.MapLineVM.LineArgs.StartArgs.SearchRadius = value;
-                this.MapLineVM.LineArgs.EndArgs.SearchRadius = value;
-                OnPropertyChanged(nameof(SearchRadius));
-            }
-        }
-        public string ResponseDate
-        {
-            get { return _responseDate; }
-            set
-            {
-                _responseDate = value;
-                this.MapLineVM.LineArgs.StartArgs.ResponseDate = value;
-                this.MapLineVM.LineArgs.EndArgs.ResponseDate = value;
-                this.MapPointVM.PointArgs.ResponseDate = value;
-                OnPropertyChanged(nameof(ResponseDate));
-            }
-        }
-
-        public string ReferenceDate
-        {
-            get { return _referenceDate; }
-            set
-            {
-                _referenceDate = DateTime.Parse(value).Date.ToShortDateString();
-                this.MapLineVM.LineArgs.StartArgs.ReferenceDate = _referenceDate;
-                this.MapLineVM.LineArgs.EndArgs.ReferenceDate = _referenceDate;
-                this.MapPointVM.PointArgs.ReferenceDate = _referenceDate;
-                OnPropertyChanged(nameof(ReferenceDate));
-            }
-        }
-        public ViewModelBase SelectedViewModel
-        {
-            get { return _selectedViewModel; }
-            set
-            {
-                _selectedViewModel = value;
-                OnPropertyChanged(nameof(SelectedViewModel));
-            }
-        }
+        /// <summary>
+        /// Whether or not the graphics layer is visible. 
+        /// Used in the draw event handler to prevent code 
+        /// from executing over and over.
+        /// </summary>
+        public bool? LayerVisible { get; set; } = null;
         public MapPointViewModel MapPointVM
         {
             get { return _mapPointVM; }
@@ -142,6 +89,9 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(MapLineVM));
             }
         }
+        /// <summary>
+        /// The map table Viewmodel. Used in datatemplate of Dockpane1 to display the map table view.
+        /// </summary>
         public MapTableViewModel MapTableVM
         {
             get { return _mapTableVM; }
@@ -151,6 +101,73 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(MapTableVM));
             }
         }
+        /// <summary>
+        /// The search radius used in the map tool for "Find Nearest Route Location" 
+        /// requests. This value is bound two ways to the text box in the settings
+        /// menu and is initialized as 3000 feet. When set, this is fed down 
+        /// to SOE request arguments for both the point and line viewmodels.
+        /// </summary>
+        public string SearchRadius
+        {
+            get => _searchRadius;
+            set
+            {
+                _searchRadius = value;
+                this.MapPointVM.PointArgs.SearchRadius = value;
+                this.MapLineVM.LineArgs.StartArgs.SearchRadius = value;
+                this.MapLineVM.LineArgs.EndArgs.SearchRadius = value;
+                OnPropertyChanged(nameof(SearchRadius));
+            }
+        }
+        /// <summary>
+        /// Today's date. This is the date that the SOE request was initiated. 
+        /// When set, this is fed down 
+        /// to SOE request arguments for both the point and line viewmodels.
+        /// </summary>
+        public string ResponseDate
+        {
+            get { return _responseDate; }
+            set
+            {
+                _responseDate = value;
+                this.MapLineVM.LineArgs.StartArgs.ResponseDate = value;
+                this.MapLineVM.LineArgs.EndArgs.ResponseDate = value;
+                this.MapPointVM.PointArgs.ResponseDate = value;
+                OnPropertyChanged(nameof(ResponseDate));
+            }
+        }
+        /// <summary>
+        /// Reference date to be used in SOE calls. When set, this is fed down 
+        /// to SOE request arguments for both the point and line viewmodels.
+        /// Is set by the date selector in the settings menu.
+        /// </summary>
+        public string ReferenceDate
+        {
+            get { return _referenceDate; }
+            set
+            {
+                _referenceDate = DateTime.Parse(value).Date.ToShortDateString();
+                this.MapLineVM.LineArgs.StartArgs.ReferenceDate = _referenceDate;
+                this.MapLineVM.LineArgs.EndArgs.ReferenceDate = _referenceDate;
+                this.MapPointVM.PointArgs.ReferenceDate = _referenceDate;
+                OnPropertyChanged(nameof(ReferenceDate));
+            }
+        }
+        /// <summary>
+        /// -   The currently selected viewmodel, used when a tab is selected in the controlsGrid in MilepostDockpane.xaml
+        ///     via data binding.
+        /// </summary>
+        public ViewModelBase SelectedViewModel
+        {
+            get { return _selectedViewModel; }
+            set
+            {
+                _selectedViewModel = value;
+                OnPropertyChanged(nameof(SelectedViewModel));
+            }
+        }
+        //Whether or not the settings menu should be displayed. 
+        //Toggled by settings menu button.
         public bool SettingsMenuVisible
         {
             get { return _settingsMenuVisible; }
@@ -160,7 +177,20 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(SettingsMenuVisible));
             }
         }
-        public bool? LayerVisible { get; set; } = null;
+        
+
+        /// <summary>
+        /// Unused implementation of a selectable zoom scale for the settings panel. 
+        /// </summary>
+        public double ZoomScale
+        {
+            get => _zoomScale;
+            set
+            {
+                _zoomScale = value;
+                OnPropertyChanged(nameof(ZoomScale));
+            }
+        }
 
         /// <summary>
         /// Command used to change the selected viewmodel.
@@ -267,14 +297,14 @@ namespace MapAMilepost.ViewModels
             }
         });
 
-        private async void OnActivePaneChanging(PaneEventArgs e)
+        private void OnActivePaneChanging(PaneEventArgs e)
         {
             LayerVisible = false;
             AddInReady = false;
             SetModalSettings("load");
             Debug.WriteLine($"OnActivePaneChanging {DateTime.Now.ToString("H:mm:ss")}");
         }
-        private async void OnPaneChanged(PaneEventArgs e)
+        private void OnPaneChanged(PaneEventArgs e)
         {
             if(e.IncomingPane.GetType().Name!= "MapPaneViewModel"&& e.IncomingPane.GetType().Name != "TablePaneViewModel")
             {
@@ -283,7 +313,7 @@ namespace MapAMilepost.ViewModels
             }
             Debug.WriteLine($"OnPaneChanged {DateTime.Now.ToString("H:mm:ss")}");
         }
-        private async void OnMapChanged(ActiveMapViewChangedEventArgs e)
+        private void OnMapChanged(ActiveMapViewChangedEventArgs e)
         {
            
             Debug.WriteLine($"OnActiveMapViewChanged {DateTime.Now.ToString("H:mm:ss")}");
@@ -291,7 +321,7 @@ namespace MapAMilepost.ViewModels
 
         private async void OnLayerRemoved(LayerEventsArgs obj) 
         {
-            await QueuedTask.Run(async () =>
+            await QueuedTask.Run(() =>
             {
                 bool gLayerRemoved = true;
                 if(MapView.Active != null && MapView.Active != null) { 
@@ -312,8 +342,15 @@ namespace MapAMilepost.ViewModels
                     };
                     if (gLayerRemoved)
                     {
+                        //turn on error modal
                         AddInReady = false;
+                        //set error modal text to "no layer" state
                         SetModalSettings("noLayer");
+                        //clear all point and line response data from child viewmodels.
+                        MapPointVM.PointResponses.Clear();
+                        MapPointVM.PointResponse = new();
+                        MapLineVM.LineResponses.Clear();
+                        MapLineVM.LineResponse = new();
                     }
                 }
             });

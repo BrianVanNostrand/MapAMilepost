@@ -175,8 +175,8 @@ namespace MapAMilepost.Utils
             }
         }
 
-        private string? _mapButtonLabel;
-        public string? MapButtonLabel
+        private string _mapButtonLabel;
+        public string MapButtonLabel
         {
             get { return _mapButtonLabel; }
             set
@@ -185,8 +185,8 @@ namespace MapAMilepost.Utils
                 OnPropertyChanged(nameof(MapButtonLabel));
             }
         }
-        private string? _mapButtonEndLabel;
-        public string? MapButtonEndLabel
+        private string _mapButtonEndLabel;
+        public string MapButtonEndLabel
         {
             get { return _mapButtonEndLabel; }
             set

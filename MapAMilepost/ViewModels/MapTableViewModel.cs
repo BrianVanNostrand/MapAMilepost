@@ -32,8 +32,6 @@ namespace MapAMilepost.ViewModels
     {
         private List<LineResponseModel> _lineInfos = new();
         private ObservableCollection<PointResponseModel> _pointInfos = new();
-        private PointResponseModel _pointFormInfo;
-        private LineResponseModel _lineFormInfo;
         private ObservableCollection<string> _columnTitles;
         private string _warningMessage;
         private string _selectedFile;
@@ -367,7 +365,7 @@ namespace MapAMilepost.ViewModels
             var propertyInfo = record.GetType().GetProperty(columnName);
             var value = propertyInfo.GetValue(record, null);
         }
-        public Commands.RelayCommand<object> RowEditEnding => new(async (p) => {
+        public Commands.RelayCommand<object> RowEditEnding => new((p) => {
             Console.Write(FileLoadError);
             Console.Write(p);
         });

@@ -13,20 +13,21 @@ namespace MapAMilepost.Models
     /// -   SOE Response properties that are deserialized from the HTTP response, and 
     ///     used by the viewmodels.
     /// </summary>
+    #nullable enable
     public class PointResponseModel : ObservableObject
     {
-        private string _pointFeatureID;
+        private string? _pointFeatureID;
         private double? _arm;
         private bool? _back;
         private bool? _decrease;
-        private string _error;
-        private string _route;
+        private string? _error;
+        private string? _route;
         private double? _srmp;
-        private string _referenceDate;
-        private string _responseDate;
-        private string _realignmentDate;
-        private coordinatePair _routeGeometry;
-        public  string PointFeatureID
+        private string? _referenceDate;
+        private string? _responseDate;
+        private string? _realignmentDate;
+        private coordinatePair? _routeGeometry;
+        public  string? PointFeatureID
         {
             get { return _pointFeatureID; }
             set
@@ -62,7 +63,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Decrease));
             }
         }
-        public string Error
+        public string? Error
         {
             get { return _error; }
             set
@@ -71,7 +72,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Error));
             }
         }
-        public  string Route
+        public  string? Route
         {
             get { return _route; }
             set
@@ -89,7 +90,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(Srmp));
             }
         }
-        public  string ReferenceDate
+        public  string? ReferenceDate
         {
             get { return _referenceDate; }
             set
@@ -99,7 +100,7 @@ namespace MapAMilepost.Models
             }
         }
 
-        public  string ResponseDate
+        public  string? ResponseDate
         {
             get { return _responseDate; }
             set
@@ -108,7 +109,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(ResponseDate));
             }
         }
-        public  string RealignmentDate
+        public  string? RealignmentDate
         {
             get { return _realignmentDate; }
             set
@@ -117,7 +118,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(RealignmentDate));
             }
         }
-        public  coordinatePair RouteGeometry
+        public  coordinatePair? RouteGeometry
         {
             get { return _routeGeometry; }
             set
@@ -135,10 +136,10 @@ namespace MapAMilepost.Models
 
     public class LineResponseModel : ObservableObject
     {
-        private PointResponseModel _startResponse;
-        private PointResponseModel _endResponse;
-        private string _FeatureID;
-        public  PointResponseModel StartResponse
+        private PointResponseModel? _startResponse;
+        private PointResponseModel? _endResponse;
+        private string? _FeatureID;
+        public  PointResponseModel? StartResponse
         {
             get { return _startResponse; }
             set
@@ -147,7 +148,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(StartResponse));
             }
         }
-        public  PointResponseModel EndResponse {
+        public  PointResponseModel? EndResponse {
             get { return _endResponse; }
             set
             {
@@ -155,7 +156,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(EndResponse));
             }
         }
-        public  string LineFeatureID
+        public  string? LineFeatureID
         {
             get { return _FeatureID; }
             set
@@ -206,13 +207,13 @@ namespace MapAMilepost.Models
     public class ArmCalcInfo
     {
         public double? ArmCalcReturnCode { get; set; }
-        public string ArmCalcReturnMessage { get; set; }
+        public string? ArmCalcReturnMessage { get; set; }
     }
 
     public class FRLLineGeometryModel : ObservableObject
     {
         private PathsArray? _routeGeometry;
-        private string _locatingError;
+        private string? _locatingError;
         public PathsArray? RouteGeometry
         {
             get { return _routeGeometry; }
@@ -222,7 +223,7 @@ namespace MapAMilepost.Models
                 OnPropertyChanged(nameof(RouteGeometry));
             }
         }
-        public string LocatingError
+        public string? LocatingError
         {
             get { return _locatingError; }
             set
@@ -233,7 +234,7 @@ namespace MapAMilepost.Models
         }
         public class PathsArray
         {
-            public List<List<List<double>>> paths { get; set; }
+            public List<List<List<double>>>? paths { get; set; }
         }
         public FRLLineGeometryModel()
         {

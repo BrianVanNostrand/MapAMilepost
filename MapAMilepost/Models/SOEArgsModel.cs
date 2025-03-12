@@ -10,6 +10,7 @@ namespace MapAMilepost.Models
     /// <summary>
     /// -   SOE Arguments passed to the SOE HTTP get request
     /// </summary>
+    #nullable enable
     public class PointArgsModel : ObservableObject
     {
         private string? _referenceDate;
@@ -106,7 +107,7 @@ namespace MapAMilepost.Models
             }
         }
 
-        public PointArgsModel(string searchRadius = null)//set default values in constructor
+        public PointArgsModel(string? searchRadius = null)//set default values in constructor
         {
             this._referenceDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
             this._responseDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
@@ -122,7 +123,7 @@ namespace MapAMilepost.Models
     {
         public PointArgsModel StartArgs { get; set; }
         public PointArgsModel EndArgs { get; set; }
-        public LineArgsModel(string startSearchRadius = null, string endSearchRadius = null)
+        public LineArgsModel(string? startSearchRadius = null, string? endSearchRadius = null)
         {
             StartArgs = new PointArgsModel(startSearchRadius);
             EndArgs = new PointArgsModel(endSearchRadius);
@@ -136,11 +137,11 @@ namespace MapAMilepost.Models
     /// </summary>
     public class LineURLParamsModel
     {
-        public string Route { get; set; }
+        public string? Route { get; set; }
         public bool? Decrease { get; set; }
         public double? Srmp { get; set; }
         public bool? Back { get; set; }
-        public string ReferenceDate { get; set; }
+        public string? ReferenceDate { get; set; }
         public double? EndSrmp { get; set; }
         public bool? EndBack { get; set; }
 

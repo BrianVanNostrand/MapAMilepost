@@ -276,7 +276,7 @@ namespace MapAMilepost.Commands
             {
                 var labelGeometry = (MapPointBuilderEx.CreateMapPoint(PointResponse.RouteGeometry.x, PointResponse.RouteGeometry.y, SoeArgs.SR));
                 //Create a simple text symbol
-                textSymbol = SymbolFactory.Instance.ConstructTextSymbol(ColorFactory.Instance.BlackRGB, 10, "Arial", "Bold");
+                textSymbol = SymbolFactory.Instance.ConstructTextSymbol(ColorFactory.Instance.BlueRGB, 10, "Arial", "Bold");
                 //Sets the geometry of the text graphic
                 textGraphic.Shape = labelGeometry;
                 //Sets the text string to use in the text graphic
