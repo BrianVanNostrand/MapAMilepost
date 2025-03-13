@@ -14,6 +14,14 @@ namespace MapAMilepost.Utils
 {
     class CameraUtils
     {
+
+        /// <summary>
+        /// Zoom the map to the provided coordinates and scale.
+        /// </summary>
+        /// <param name="X"></param>
+        /// <param name="Y"></param>
+        /// <param name="scale">scale to zoom to. Override this with the scale property in the main viewmodel</param>
+        /// <returns></returns>
         public static async Task ZoomToCoords(double X, double Y, double scale = 0)
         {
             if (scale == 0)
@@ -29,6 +37,12 @@ namespace MapAMilepost.Utils
                 MapView.Active.ZoomToAsync(newCamera, TimeSpan.FromSeconds(.5));
             });
         }
+
+        /// <summary>
+        /// Zoom to the selected scale. Used to zoom to a line.
+        /// </summary>
+        /// <param name="coords"></param>
+        /// <returns></returns>
         public static async Task ZoomToEnvelope(List<List<Double>> coords)
         {
             double xMin=double.MaxValue;
@@ -56,11 +70,13 @@ namespace MapAMilepost.Utils
             }
             await QueuedTask.Run(async() =>
             {
-                List<MapPoint> list = new List<MapPoint>();
-                list.Add(MapPointBuilderEx.CreateMapPoint(xMin, yMin));
-                list.Add(MapPointBuilderEx.CreateMapPoint(xMin, yMax));
-                list.Add(MapPointBuilderEx.CreateMapPoint(xMax, yMax));
-                list.Add(MapPointBuilderEx.CreateMapPoint(xMax, yMin));
+                //create an envelope (extent) from the coordinates in the line
+                List<MapPoint> list = new List<MapPoint>() {
+                    MapPointBuilderEx.CreateMapPoint(xMin, yMin),
+                    MapPointBuilderEx.CreateMapPoint(xMin, yMax),
+                    MapPointBuilderEx.CreateMapPoint(xMax, yMax),
+                    MapPointBuilderEx.CreateMapPoint(xMax, yMin)
+                };
                 ArcGIS.Core.Geometry.Multipoint multiPoint = MultipointBuilderEx.CreateMultipoint(list);
                 var hull = GeometryEngine.Instance.ConvexHull(multiPoint);
                 ArcGIS.Core.Geometry.Polygon hullPoly = hull as ArcGIS.Core.Geometry.Polygon;

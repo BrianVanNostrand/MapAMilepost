@@ -45,7 +45,10 @@ namespace MapAMilepost.ViewModels
         private string _responseDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
         private string _referenceDate = $"{DateTime.Now.ToString("M/d/yyyy")}";
        
-        public InfoModalInfo ModalInfo {  get; set; }
+        /// <summary>
+        /// Whether or not the add in is ready.
+        /// If false, the error modal is displayed.
+        /// </summary>
         public bool AddInReady
         {
             get { return _addInReady; }
@@ -55,6 +58,10 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(AddInReady));
             }
         }
+        /// <summary>
+        /// Whether or not the active map is paused. 
+        /// Used to update the error modal text.
+        /// </summary>
         public bool IsPaused
         {
             get { return _isPaused; }
@@ -64,22 +71,20 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(IsPaused));
             }
         }
+
+        //object that describes the state of the error modal
+        public InfoModalInfo ModalInfo { get; set; }
+
         /// <summary>
         /// Whether or not the graphics layer is visible. 
         /// Used in the draw event handler to prevent code 
         /// from executing over and over.
         /// </summary>
         public bool? LayerVisible { get; set; } = null;
-        public MapPointViewModel MapPointVM
-        {
-            get { return _mapPointVM; }
-            set
-            {
-                _mapPointVM = value;
-                OnPropertyChanged(nameof(MapPointVM));
-            }
-        }
-
+       
+        /// <summary>
+        /// The map table Viewmodel. Used in datatemplate of ESRIDockpane to display the map line view.
+        /// </summary>
         public MapLineViewModel MapLineVM
         {
             get { return _mapLineVM;}
@@ -90,7 +95,19 @@ namespace MapAMilepost.ViewModels
             }
         }
         /// <summary>
-        /// The map table Viewmodel. Used in datatemplate of Dockpane1 to display the map table view.
+        /// The map table Viewmodel. Used in datatemplate of ESRIDockpane to display the map point view.
+        /// </summary>
+        public MapPointViewModel MapPointVM
+        {
+            get { return _mapPointVM; }
+            set
+            {
+                _mapPointVM = value;
+                OnPropertyChanged(nameof(MapPointVM));
+            }
+        }
+        /// <summary>
+        /// The map table Viewmodel. Used in datatemplate of ESRIDockpane to display the map table view.
         /// </summary>
         public MapTableViewModel MapTableVM
         {
@@ -101,24 +118,7 @@ namespace MapAMilepost.ViewModels
                 OnPropertyChanged(nameof(MapTableVM));
             }
         }
-        /// <summary>
-        /// The search radius used in the map tool for "Find Nearest Route Location" 
-        /// requests. This value is bound two ways to the text box in the settings
-        /// menu and is initialized as 3000 feet. When set, this is fed down 
-        /// to SOE request arguments for both the point and line viewmodels.
-        /// </summary>
-        public string SearchRadius
-        {
-            get => _searchRadius;
-            set
-            {
-                _searchRadius = value;
-                this.MapPointVM.PointArgs.SearchRadius = value;
-                this.MapLineVM.LineArgs.StartArgs.SearchRadius = value;
-                this.MapLineVM.LineArgs.EndArgs.SearchRadius = value;
-                OnPropertyChanged(nameof(SearchRadius));
-            }
-        }
+       
         /// <summary>
         /// Today's date. This is the date that the SOE request was initiated. 
         /// When set, this is fed down 
@@ -151,6 +151,24 @@ namespace MapAMilepost.ViewModels
                 this.MapLineVM.LineArgs.EndArgs.ReferenceDate = _referenceDate;
                 this.MapPointVM.PointArgs.ReferenceDate = _referenceDate;
                 OnPropertyChanged(nameof(ReferenceDate));
+            }
+        }
+        /// <summary>
+        /// The search radius used in the map tool for "Find Nearest Route Location" 
+        /// requests. This value is bound two ways to the text box in the settings
+        /// menu and is initialized as 3000 feet. When set, this is fed down 
+        /// to SOE request arguments for both the point and line viewmodels.
+        /// </summary>
+        public string SearchRadius
+        {
+            get => _searchRadius;
+            set
+            {
+                _searchRadius = value;
+                this.MapPointVM.PointArgs.SearchRadius = value;
+                this.MapLineVM.LineArgs.StartArgs.SearchRadius = value;
+                this.MapLineVM.LineArgs.EndArgs.SearchRadius = value;
+                OnPropertyChanged(nameof(SearchRadius));
             }
         }
         /// <summary>
@@ -193,6 +211,78 @@ namespace MapAMilepost.ViewModels
         }
 
         /// <summary>
+        /// Command used to create the graphics layer when the "Create milepost mapping layer" experience is used in the add in.
+        /// </summary>
+        public RelayCommand<object> CreateGraphicsLayerCommand => new Commands.RelayCommand<object>(async (dockPane) =>
+        {
+            if (MapView.Active.Map == null)
+            {
+                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please wait for map to finish loading.");
+            }
+            bool layerCreated = await MapViewUtils.CreateMilepostMappingLayer(MapView.Active.Map);
+            if (layerCreated)
+            {
+                if (MapView.Active.DrawingPaused)
+                {
+                    AddInReady = false;
+                    SetModalSettings("paused");
+                }
+                else
+                {
+                    await ResetVMUI();
+                    AddInReady = true;
+                }
+            }
+        });
+
+        /// <summary>
+        /// Command triggered by the ESRIDockpane being shown, from a click of the "MapAMilepost_ESRIDockpane_ShowButton"
+        /// in config.daml. This is the button in the ArcGIS Pro add in ribbon.
+        /// </summary>
+        public RelayCommand<object> OnShowCommand => new Commands.RelayCommand<object>(async (dockPane) =>
+        {//when a map opens without the add in, and add in is opened
+            AddInReady = false;
+            SetModalSettings("load");
+            if (MapViewActive())
+            {
+                GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
+                if (graphicsLayer != null)
+                {
+                    if (MapView.Active.DrawingPaused)
+                    {
+                        AddInReady = false;
+                        SetModalSettings("paused");
+                    }
+                    else
+                    {
+                        if (graphicsLayer.IsVisible == false)
+                        {
+                            AddInReady = false;
+                            SetModalSettings("layerOff");
+                        }
+                        else
+                        {
+                            SetModalSettings("load");
+                            await ResetVMUI();
+                            await GraphicsCommands.SynchronizeGraphicsToAddIn(this, await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map));
+                            AddInReady = true;
+                        };
+                    }
+                }
+                else
+                {
+                    AddInReady = false;
+                    SetModalSettings("noLayer");
+                }
+            }
+            else
+            {
+                AddInReady = false;
+                SetModalSettings("noMapView");
+            }
+        });
+
+        /// <summary>
         /// Command used to change the selected viewmodel.
         /// </summary>
         public RelayCommand<object> SelectPageCommand => new Commands.RelayCommand<object>(async (button) => {
@@ -228,75 +318,20 @@ namespace MapAMilepost.ViewModels
             }
             AddInReady = true;
         });
-        public RelayCommand<object> OnShowCommand => new Commands.RelayCommand<object>(async (dockPane) =>
-        {//when a map opens without the add in, and add in is opened
-            AddInReady = false;
-            SetModalSettings("load");
-            if (MapViewActive())
-            {
-                GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
-                if (graphicsLayer != null)
-                {
-                    if (MapView.Active.DrawingPaused)
-                    {
-                        AddInReady = false;
-                        SetModalSettings("paused");
-                    }
-                    else
-                    {
-                        if (graphicsLayer.IsVisible == false)
-                        {
-                            AddInReady = false;
-                            SetModalSettings("layerOff");
-                        }
-                        else
-                        {
-                            SetModalSettings("load");
-                            await ResetVMUI();
-                            await GraphicsCommands.SynchronizeGraphicsToAddIn(this, await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map));
-                            AddInReady = true;
-                        }; 
-                    }
-                }
-                else
-                {
-                    AddInReady = false;
-                    SetModalSettings("noLayer");
-                }
-            }
-            else
-            {
-                AddInReady = false;
-                SetModalSettings("noMapView");
-            }
-        });
+        
+        /// <summary>
+        /// Command executed when the "+/-" button in the settings panel is clicked
+        /// to show the settings panel.
+        /// </summary>
         public RelayCommand<object> ToggleSettingsVisibleCommand => new Commands.RelayCommand<object>((dockPane) =>
         {
             SettingsMenuVisible = !SettingsMenuVisible;
         });
-
-        public RelayCommand<object> CreateGraphicsLayerCommand => new Commands.RelayCommand<object>(async (dockPane) =>
-        {
-            if (MapView.Active.Map == null) 
-            {
-                ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please wait for map to finish loading.");
-            }
-            bool layerCreated = await MapViewUtils.CreateMilepostMappingLayer(MapView.Active.Map);
-            if (layerCreated)
-            {
-                if (MapView.Active.DrawingPaused)
-                {
-                    AddInReady = false;
-                    SetModalSettings("paused");
-                }
-                else
-                {
-                    await ResetVMUI();
-                    AddInReady = true;
-                }
-            }
-        });
-
+        
+        /// <summary>
+        /// Method triggered by event hook when the active ArcGIS Pro pane begins changing.
+        /// </summary>
+        /// <param name="e"></param>
         private void OnActivePaneChanging(PaneEventArgs e)
         {
             LayerVisible = false;
@@ -304,6 +339,11 @@ namespace MapAMilepost.ViewModels
             SetModalSettings("load");
             Debug.WriteLine($"OnActivePaneChanging {DateTime.Now.ToString("H:mm:ss")}");
         }
+
+        /// <summary>
+        /// Method triggered by event hook when the active pane has changed.
+        /// </summary>
+        /// <param name="e"></param>
         private void OnPaneChanged(PaneEventArgs e)
         {
             if(e.IncomingPane.GetType().Name!= "MapPaneViewModel"&& e.IncomingPane.GetType().Name != "TablePaneViewModel")
@@ -313,18 +353,26 @@ namespace MapAMilepost.ViewModels
             }
             Debug.WriteLine($"OnPaneChanged {DateTime.Now.ToString("H:mm:ss")}");
         }
+
+        /// <summary>
+        /// Method triggered by event hook when the active map has changed. 
+        /// </summary>
+        /// <param name="e"></param>
         private void OnMapChanged(ActiveMapViewChangedEventArgs e)
         {
-           
             Debug.WriteLine($"OnActiveMapViewChanged {DateTime.Now.ToString("H:mm:ss")}");
         }
 
+        /// <summary>
+        /// Method triggered by event hook when a layer in the active map has been removed.  
+        /// </summary>
+        /// <param name="obj"></param>
         private async void OnLayerRemoved(LayerEventsArgs obj) 
         {
             await QueuedTask.Run(() =>
             {
                 bool gLayerRemoved = true;
-                if(MapView.Active != null && MapView.Active != null) { 
+                if(MapViewActive()) { 
                     foreach (var item in MapView.Active.Map.Layers)
                     {
                         CIMBaseLayer baseLayer = item.GetDefinition();
@@ -356,6 +404,10 @@ namespace MapAMilepost.ViewModels
             });
         }
 
+        /// <summary>
+        /// Method triggered by event hook when the active map view state changed (ready etc.). 
+        /// </summary>
+        /// <param name="obj"></param>
         private async void OnViewStateChanged(MapViewEventArgs obj)
         {
             if (obj.MapView!=null && obj.MapView.Map!=null)
@@ -384,6 +436,11 @@ namespace MapAMilepost.ViewModels
             }
             Debug.WriteLine($"OnViewStateChange {DateTime.Now.ToString("H:mm:ss")}");
         }
+
+        /// <summary>
+        /// Method triggered by event hook when the active map is paused or unpaused. 
+        /// </summary>
+        /// <param name="obj"></param>
         private async void OnPauseDrawingChanged(PauseDrawingChangedEventArgs obj)
         {
             IsPaused = obj.IsPaused;
@@ -410,6 +467,11 @@ namespace MapAMilepost.ViewModels
                 }
             }
         }
+
+        /// <summary>
+        /// Method triggered by event hook when any feature in the active map has begun to draw.  
+        /// </summary>
+        /// <param name="e"></param>
         private async void OnDrawEventStarted(MapViewEventArgs e) //make sure layer is still on when a layer in the TOC is toggled on or off
         {
             if (MapView.Active!=null&&MapView.Active.Map != null)
@@ -465,7 +527,12 @@ namespace MapAMilepost.ViewModels
                 }
             }
         }
-       
+
+        /// <summary>
+        /// Method triggered by event hook when an element in the active map has been selected.  
+        /// Prevents users from selecting a graphic in the milepost mapping graphics layer.
+        /// </summary>
+        /// <param name="obj"></param>
         private async void OnElementSelectionChanged(ElementSelectionChangedEventArgs obj)
         {
 
@@ -481,15 +548,11 @@ namespace MapAMilepost.ViewModels
                 });
             }
         }
-        private async Task<bool> GraphicsLayerExists()
-        {
-            GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
-            if(graphicsLayer == null)
-            {
-                return false;
-            }
-            return true;
-        }
+
+        /// <summary>
+        /// Check to make sure the map is available
+        /// </summary>
+        /// <returns></returns>
         private static bool MapViewActive()
         {
             if (MapView.Active != null && MapView.Active.Map != null)
@@ -499,6 +562,10 @@ namespace MapAMilepost.ViewModels
             return false;
         }
 
+        /// <summary>
+        /// Update the modal info's title, caption, and element content 
+        /// </summary>
+        /// <param name="type"></param>
         private void SetModalSettings(string type)
         {
             ModalInfo.ShowButton = false;
@@ -528,6 +595,12 @@ namespace MapAMilepost.ViewModels
                     break;
             }
         }
+
+        /// <summary>
+        /// Reset combobox indices, point and line response values, 
+        /// delete unsaved graphics, deselect all graphics, and deactivate map tool session
+        /// </summary>
+        /// <returns></returns>
         private async Task ResetVMUI()
         {
             await Utils.UIUtils.ResetUI(MapPointVM);
@@ -537,6 +610,9 @@ namespace MapAMilepost.ViewModels
             await GraphicsCommands.DeselectAllGraphics();
         }
 
+        /// <summary>
+        /// constructor
+        /// </summary>
         public MainViewModel()
         {
             ArcGIS.Desktop.Framework.FrameworkApplication.NotificationInterval = 0;//allow toast messages to appear immediately after another is displayed

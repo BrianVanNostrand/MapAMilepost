@@ -24,13 +24,13 @@
               an empty group-->
         <group keytip="G1" id="MapAMilepost_Group1" caption="Add-In Tools" appearsOnAddInTab="true">
           <!-- host controls within groups -->
-          <button refID="MapAMilepost_Dockpane1_ShowButton" size="large" />
+          <button refID="MapAMilepost_ESRIDockpane_ShowButton" size="large" />
           <tool refID="MapAMilepost_MapTool1" size="large" />
         </group>
       </groups>
       <controls>
         <!-- add your controls here -->
-        <button keytip="B1" id="MapAMilepost_Dockpane1_ShowButton" caption="Milepost Tools" className="Dockpane1_ShowButton" loadOnClick="true" smallImage="GenericButtonPurple16" largeImage="GenericButtonPurple32">
+        <button keytip="B1" id="MapAMilepost_ESRIDockpane_ShowButton" caption="Milepost Tools" className="ESRIDockpane_ShowButton" loadOnClick="true" smallImage="GenericButtonPurple16" largeImage="GenericButtonPurple32">
           <tooltip heading="Show Dockpane">Show Dockpane<disabledText /></tooltip>
         </button>
         <tool keytip="T1" id="MapAMilepost_MapTool" caption="MapAMilepostMaptool" className="MapAMilepostMaptool" loadOnClick="true" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonRed16.png" largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonRed32.png" condition="esri_mapping_mapPane">
@@ -39,8 +39,8 @@
         </tool>
       </controls>
       <dockPanes>
-        <dockPane id="MapAMilepost_Dockpane1" caption="Milepost Tools" className="Dockpane1ViewModel" dock="group" dockWith="esri_core_projectDockPane">
-          <content className="Dockpane1View" />
+        <dockPane id="MapAMilepost_ESRIDockpane" caption="Milepost Tools" className="ESRIDockpaneViewModel" dock="group" dockWith="esri_core_projectDockPane">
+          <content className="ESRIDockpaneView" />
         </dockPane>
       </dockPanes>
     </insertModule>

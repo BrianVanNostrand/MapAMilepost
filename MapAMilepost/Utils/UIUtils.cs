@@ -14,6 +14,11 @@ namespace MapAMilepost.Utils
 {
     class UIUtils
     {
+        /// <summary>
+        /// Get the RRQ values of a given Related Route Type
+        /// </summary>
+        /// <param name="val">The first three digits of the route ID (005 etc.)</param>
+        /// <returns></returns>
         public static ObservableCollection<string> GetRouteQualifiers(RouteIDInfo val)
         {
             ObservableCollection<string> result = new ObservableCollection<string>() { "Mainline" };
@@ -52,6 +57,13 @@ namespace MapAMilepost.Utils
             }
             return result;
         }
+
+        /// <summary>
+        /// Parse the route ID data into the collection of RouteID Infos in the map point and map line viewmodels.
+        /// These values are used in the RouteID and RRTRRQ comboboxes.
+        /// </summary>
+        /// <param name="RouteResponses"></param>
+        /// <param name="VM"></param>
         public static void SetRouteInfos(Dictionary<string,int> RouteResponses, ViewModelBase VM)
         {
             VM.RouteIDInfos = new();
@@ -174,6 +186,14 @@ namespace MapAMilepost.Utils
                 await Commands.GraphicsCommands.DeleteUnsavedGraphics();
             }
         }
+
+        /// <summary>
+        /// Reset the click point arguments for the point and line viewmodels. 
+        /// This method could be removed and the viewmodels refactored, but I
+        /// planned to show the click point coordinates in a text box at one time.
+        /// </summary>
+        /// <param name="sessionType"></param>
+        /// <param name="VM"></param>
         private static void ResetClickPointArgs(string sessionType, Utils.ViewModelBase VM)
         {
             if (!string.IsNullOrEmpty(sessionType))

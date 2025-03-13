@@ -135,6 +135,7 @@ namespace MapAMilepost.Utils
 
     public class MapToolInfo : ObservableObject
     {
+        //whether or not the start point map tool session is active
         private bool _sessionActive { get; set; }
         public bool SessionActive {
             get { return _sessionActive; }
@@ -144,6 +145,7 @@ namespace MapAMilepost.Utils
                 OnPropertyChanged(nameof(SessionActive));
             }
         }
+        //whether or not the end point map tool session is active
         private bool _sessionEndActive { get; set; }
         public bool SessionEndActive
         {
@@ -154,16 +156,18 @@ namespace MapAMilepost.Utils
                 OnPropertyChanged(nameof(SessionEndActive));
             }
         }
+        //Tool tip for the start mapping button
         private string _mapButtonToolTip {  get; set; }
         public string MapButtonToolTip
         {
-            get { return _mapButtonEndToolTip; }
+            get { return _mapButtonToolTip; }
             set
             {
-                _mapButtonEndToolTip = value;
+                _mapButtonToolTip = value;
                 OnPropertyChanged(nameof(MapButtonToolTip));
             }
         }
+        //Tool tip for the end mapping button
         private string _mapButtonEndToolTip { get; set; }
         public string MapButtonEndToolTip
         {
@@ -174,7 +178,7 @@ namespace MapAMilepost.Utils
                 OnPropertyChanged(nameof(MapButtonEndToolTip));
             }
         }
-
+        //Label for the start mapping button
         private string _mapButtonLabel;
         public string MapButtonLabel
         {
@@ -185,6 +189,7 @@ namespace MapAMilepost.Utils
                 OnPropertyChanged(nameof(MapButtonLabel));
             }
         }
+        //Label for the end mapping button
         private string _mapButtonEndLabel;
         public string MapButtonEndLabel
         {

@@ -19,11 +19,11 @@ using System.Windows.Shapes;
 namespace MapAMilepost
 {
     /// <summary>
-    /// Interaction logic for Dockpane1View.xaml
+    /// Interaction logic for ESRIDockpaneView.xaml
     /// </summary>
-    public partial class Dockpane1View : UserControl
+    public partial class ESRIDockpaneView : UserControl
     {
-        public Dockpane1View()
+        public ESRIDockpaneView()
         {
             InitializeComponent();
         }

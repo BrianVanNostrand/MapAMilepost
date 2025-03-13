@@ -13,7 +13,7 @@ namespace MapAMilepost.Commands
     public class SelectPage : ICommand
     {
         /// <summary>
-        /// Viewmodels that will be used to populate the content control in Dockpane1.xaml.
+        /// Viewmodels that will be used to populate the content control in ESRIDockpane.xaml.
         /// </summary>
         private MainViewModel _viewModel;
 

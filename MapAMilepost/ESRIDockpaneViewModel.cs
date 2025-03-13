@@ -20,11 +20,11 @@ using System.Threading.Tasks;
 
 namespace MapAMilepost
 {
-    internal class Dockpane1ViewModel : DockPane
+    internal class ESRIDockpaneViewModel : DockPane
     {
-        private const string _dockPaneID = "MapAMilepost_Dockpane1";
+        private const string _dockPaneID = "MapAMilepost_ESRIDockpane";
 
-        protected Dockpane1ViewModel() { }
+        protected ESRIDockpaneViewModel() { }
 
         protected override void OnShow(bool isVisible)
         {
@@ -56,11 +56,11 @@ namespace MapAMilepost
     /// <summary>
     /// Button implementation to show the DockPane.
     /// </summary>
-    internal class Dockpane1_ShowButton : Button
+    internal class ESRIDockpane_ShowButton : Button
     {
         protected override void OnClick()
         {
-            Dockpane1ViewModel.Show();
+            ESRIDockpaneViewModel.Show();
         }
     }
 }
