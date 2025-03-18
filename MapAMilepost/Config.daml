@@ -3,7 +3,7 @@
   <AddInInfo id="{491048ef-3010-4694-8e77-0c7293ab25cc}" version="1.0" desktopVersion="3.2.49743">
     <Name>MapAMilepost</Name>
     <Description>MapAMilepost description</Description>
-    <Image>Images\AddinDesktop32.png</Image>
+    <Image>Images\Location_Shield32.png</Image>
     <Author>VannosB</Author>
     <Company>Microsoft</Company>
     <Date>6/18/2024 6:24:16 PM</Date>
@@ -30,10 +30,10 @@
       </groups>
       <controls>
         <!-- add your controls here -->
-        <button keytip="B1" id="MapAMilepost_ESRIDockpane_ShowButton" caption="Milepost Tools" className="ESRIDockpane_ShowButton" loadOnClick="true" smallImage="GenericButtonPurple16" largeImage="GenericButtonPurple32">
+        <button keytip="B1" id="MapAMilepost_ESRIDockpane_ShowButton" caption="Milepost Tools" className="ESRIDockpane_ShowButton" loadOnClick="true" smallImage="Images/Location_Shield16.png" largeImage="Images/Location_Shield32.png">
           <tooltip heading="Show Dockpane">Show Dockpane<disabledText /></tooltip>
         </button>
-        <tool keytip="T1" id="MapAMilepost_MapTool" caption="MapAMilepostMaptool" className="MapAMilepostMaptool" loadOnClick="true" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonRed16.png" largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonRed32.png" condition="esri_mapping_mapPane">
+        <tool keytip="T1" id="MapAMilepost_MapTool" caption="MapAMilepostMaptool" className="MapAMilepostMaptool" loadOnClick="true" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/Location_Shield16.png" largeImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/Location_Shield32.png" condition="esri_mapping_mapPane">
           <tooltip heading="Tooltip Heading">
             Tooltip text<disabledText /></tooltip>
         </tool>

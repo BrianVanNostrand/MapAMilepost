@@ -211,7 +211,7 @@ namespace MapAMilepost.ViewModels
         });
         public Commands.RelayCommand<object> ZoomToRecordCommand => new(async (grid) =>
         {
-            if(SelectedLines.Count > 0 && MapView.Active!=null && MapView.Active.Map!=null)
+            if(SelectedLines.Count > 0 && Utils.UIUtils.MapViewActive())
             {
                 ArcGIS.Core.Geometry.Envelope envelope = await Commands.GraphicsCommands.GetLineGeometryFromSelection(SelectedLines.First());
                 if(envelope != null)

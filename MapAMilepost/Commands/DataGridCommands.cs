@@ -34,7 +34,7 @@ namespace MapAMilepost.Commands
         ///// </summary>
         public static async Task UpdatePointSelection(DataGrid grid, Utils.ViewModelBase VM)
         {
-            if (MapView.Active!=null && MapView.Active.Map!=null)
+            if (Utils.UIUtils.MapViewActive())
             {
                 await GraphicsCommands.DeleteUnsavedGraphics();
                 VM.PointArgs.X = 0;
@@ -90,10 +90,19 @@ namespace MapAMilepost.Commands
             }
         }
 
+        /// <summary>
+        /// Used to zoom the map to the graphic represented by a row in the datagrid, when that row is double clicked.
+        /// On double click of the datagrid:
+        /// - Check that a data grid row has been selected
+        /// - If so, return the geometry of the selected record
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="VM"></param>
+        /// <returns></returns>
         public static coordinatePair GetSelectedGraphicInfoPoint(DataGrid grid, Utils.ViewModelBase VM)
         {
             coordinatePair coordPair = null;
-            if (MapView.Active != null && MapView.Active.Map != null)
+            if (Utils.UIUtils.MapViewActive())
             {
                 var selItems = grid.SelectedItems;
                 bool dataGridRowSelected = false;
@@ -115,12 +124,34 @@ namespace MapAMilepost.Commands
             }
             return coordPair;
         }
+
+        /// <summary>
+        /// Used to select a line feature on the map when its datagrid row is clicked.
+        /// On single click of a datagrid row of the line view:
+        /// - Check that an active mapview exists and has a map in it
+        /// - Delete unsaved graphics in the milepost graphics layer
+        /// - Check that a datagrid row was clicked on
+        ///     - If not
+        ///         - Reset the start and end point response objects for the line response object conditionally, depending on the mode the tool is in (map or form)
+        ///         - Clear the selected lines array in the VM.
+        ///         - Clear the datagrid selection, removing the highlight from the rows.
+        ///         - Use SetLineGraphics with the empty SelectedLines array to reset the symbology of the line graphics and their endpoints to the default.
+        ///     - If so
+        ///         - clear the selected lines array
+        ///         - Use SetLineGraphics with the empty SelectedLines array to reset the symbology of the line graphics and their endpoints to the default.
+        ///         - Create a list of LineResponseModels from the datagrid's multiselector object
+        ///         - Update the graphic symbology for the selected lines and add the response objects from the datagrid to the selected lines array in the viewmodel
+        ///         - If only one line is selected, clone its properties from the selectedItems array to the LineResponse object's start and end points, so its properties show up in the "Map Mode" properties text box grid.
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="VM"></param>
+        /// <returns></returns>
         public static async Task UpdateLineSelection(DataGrid grid, Utils.ViewModelBase VM)
         {
-            if (MapView.Active!=null && MapView.Active.Map != null)
+            if (Utils.UIUtils.MapViewActive())
             {
                 await Commands.GraphicsCommands.DeleteUnsavedGraphics();
-                VM.LineArgs = new LineArgsModel(VM.LineArgs.StartArgs.SearchRadius, VM.LineArgs.EndArgs.SearchRadius);
+                //VM.LineArgs = new LineArgsModel(VM.LineArgs.StartArgs.SearchRadius, VM.LineArgs.EndArgs.SearchRadius);
                 DataGrid myGrid = grid as DataGrid;
                 var selItems = myGrid.SelectedItems;
                 bool dataGridRowSelected = false;
@@ -133,20 +164,12 @@ namespace MapAMilepost.Commands
                     }
                 }
                 //if no row is clicked, clear the selection
-                if (dataGridRowSelected == false)
+                if (!dataGridRowSelected)
                 {
-                    //clear the response
-                    if (VM.IsMapMode)
-                    {
-                        VM.LineResponse = new LineResponseModel();
-                    }
-                    else
-                    {
-                        VM.LineResponse = new LineResponseModel {
-                            StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM),
-                            EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM)
-                        };
-                    }
+                    VM.LineResponse = new LineResponseModel {
+                        StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM),
+                        EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM)
+                    };
                     //clear selected items
                     VM.SelectedLines.Clear();
                     //clear selected rows
@@ -175,11 +198,18 @@ namespace MapAMilepost.Commands
             {
                 ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please switch to a map view before attempting this selection.");
             }
-            
         }
+
+        /// <summary>
+        /// On click of the "Delete" button in the map point viewmodel:
+        /// - If there is an active map and mapview:
+        ///     - 
+        /// </summary>
+        /// <param name="VM"></param>
+        /// <returns></returns>
         public static async Task DeletePointItems(Utils.ViewModelBase VM = null)
         {
-            if (MapView.Active != null && MapView.Active.Map != null)
+            if (Utils.UIUtils.MapViewActive())
             {
                 if (VM.PointResponses.Count > 0 && VM.SelectedPoints.Count > 0)
                 {
@@ -240,7 +270,7 @@ namespace MapAMilepost.Commands
 
         public static async Task DeleteLineItems(Utils.ViewModelBase VM = null)
         {
-            if (MapView.Active !=null && MapView.Active.Map != null)
+            if (Utils.UIUtils.MapViewActive())
             {
                 if (VM.LineResponses.Count > 0 && VM.SelectedLines.Count > 0)
                 {

@@ -215,7 +215,7 @@ namespace MapAMilepost.ViewModels
         /// </summary>
         public RelayCommand<object> CreateGraphicsLayerCommand => new Commands.RelayCommand<object>(async (dockPane) =>
         {
-            if (MapView.Active.Map == null)
+            if (Utils.UIUtils.MapViewActive())
             {
                 ArcGIS.Desktop.Framework.Dialogs.MessageBox.Show("Please wait for map to finish loading.");
             }
@@ -243,7 +243,7 @@ namespace MapAMilepost.ViewModels
         {//when a map opens without the add in, and add in is opened
             AddInReady = false;
             SetModalSettings("load");
-            if (MapViewActive())
+            if (Utils.UIUtils.MapViewActive())
             {
                 GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
                 if (graphicsLayer != null)
@@ -372,7 +372,7 @@ namespace MapAMilepost.ViewModels
             await QueuedTask.Run(() =>
             {
                 bool gLayerRemoved = true;
-                if(MapViewActive()) { 
+                if(Utils.UIUtils.MapViewActive()) { 
                     foreach (var item in MapView.Active.Map.Layers)
                     {
                         CIMBaseLayer baseLayer = item.GetDefinition();
@@ -474,7 +474,7 @@ namespace MapAMilepost.ViewModels
         /// <param name="e"></param>
         private async void OnDrawEventStarted(MapViewEventArgs e) //make sure layer is still on when a layer in the TOC is toggled on or off
         {
-            if (MapView.Active!=null&&MapView.Active.Map != null)
+            if (Utils.UIUtils.MapViewActive())
             {
                 GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
                 if(graphicsLayer != null)
@@ -547,19 +547,6 @@ namespace MapAMilepost.ViewModels
                     }
                 });
             }
-        }
-
-        /// <summary>
-        /// Check to make sure the map is available
-        /// </summary>
-        /// <returns></returns>
-        private static bool MapViewActive()
-        {
-            if (MapView.Active != null && MapView.Active.Map != null)
-            {
-                return true;
-            }
-            return false;
         }
 
         /// <summary>

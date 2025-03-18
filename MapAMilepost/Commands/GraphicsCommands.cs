@@ -358,7 +358,7 @@ namespace MapAMilepost.Commands
         /// <returns></returns>
         public static async Task DeselectAllGraphics()
         {
-            if (MapView.Active != null)
+            if (Utils.UIUtils.MapViewActive())
             {
                 GraphicsLayer graphicsLayer = await Utils.MapViewUtils.GetMilepostMappingLayer(MapView.Active.Map);
                 if (graphicsLayer != null)
@@ -428,11 +428,10 @@ namespace MapAMilepost.Commands
         }
 
         /// <summary>
-        /// 
+        /// If lines are selected, update the graphic symbology for each selected line and its endpoints to the "selected" style
+        /// If not, reset the line and endpoint graphics to the "unselected" style
         /// </summary>
         /// <param name="SelectedItems">List of selected rows in data grid</param>
-        /// <param name="PointResponses">List of saved route points</param>
-        /// <param name="sessionType">Type of session (point or line) </param>
         public static async void SetLineGraphicsSelected(List<LineResponseModel> SelectedItems)
         {
             CustomGraphics CustomSymbols = await Utils.CustomGraphics.CreateCustomGraphicSymbolsAsync();
@@ -732,6 +731,18 @@ namespace MapAMilepost.Commands
             });
         }
 
+        /// <summary>
+        /// Invoked when a row is double clicked in the datagrid of the line viewmodel, used to zoom to that line.
+        /// - Create an empty envelope object
+        /// - Get the milepost mapping graphics layer
+        /// - If there is a graphicslayer:
+        ///     - Get the graphics from the layer where that graphic is a CIMLineGraphic
+        ///     - For each of the line graphics, if the customproperties exist and the FeatureID of the graphic is the same as the FeatureID of the selected line passed in:
+        ///         - set the envelope to the extent of the geometry of the line
+        ///     - Return the newly populated envelope.
+        /// </summary>
+        /// <param name="SelectedLine">the target line</param>
+        /// <returns>envelope the map will zoom to</returns>
         public async static Task<ArcGIS.Core.Geometry.Envelope> GetLineGeometryFromSelection(LineResponseModel SelectedLine)
         {
             ArcGIS.Core.Geometry.Envelope envelope = null;
@@ -746,7 +757,6 @@ namespace MapAMilepost.Commands
                         if (line.CustomProperties != null && line.GetCustomProperty("FeatureID") == SelectedLine.LineFeatureID)
                         {
                             envelope = line.GetGeometry().Extent;
-
                         }
                     }
                 });
@@ -754,8 +764,20 @@ namespace MapAMilepost.Commands
             return envelope;
         }
 
+        /// <summary>
+        /// Used by the SetRenderer method for the feature layer that is added to the map after a feature class is exported.
+        /// This could all be refactored and simplified, right now it's just code I copied from some sample online.
+        /// - Create a list of unique values for start points and generate a unique value class using that unique values array.
+        /// - Create a list of unique values for end points and generate a unique value class using that unique values array.
+        /// - Create a list of unique value classes containing these two unique value classes.
+        /// - Create a unique value group containing these classes.
+        /// - Create a unique value renderer from the unique value group.
+        /// - Return the renderer
+        /// </summary>
+        /// <returns>renderer for the endpoint</returns>
         public static CIMUniqueValueRenderer GetEndpointRenderer()
         {
+            // Create a "CIMUniqueValueClass" for the start points.
             List<CIMUniqueValue> listUniqueValuesStart = new List<CIMUniqueValue> { new CIMUniqueValue { FieldValues = new string[] { "start" } } };
             CIMUniqueValueClass startUniqueValueClass = new CIMUniqueValueClass
             {
@@ -767,7 +789,7 @@ namespace MapAMilepost.Commands
                 Values = listUniqueValuesStart.ToArray()
 
             };
-            // Create a "CIMUniqueValueClass" for the cities in California.
+            // Create a "CIMUniqueValueClass" for the end points.
             List<CIMUniqueValue> listUniqueValuesEnd = new List<CIMUniqueValue> { new CIMUniqueValue { FieldValues = new string[] { "end" } } };
             CIMUniqueValueClass endUniqueValueClass = new CIMUniqueValueClass
             {

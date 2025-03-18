@@ -23,7 +23,7 @@ namespace MapAMilepost.Utils
         /// <param name="VM">the target viewmodel</param>
         public static async Task InitializeSession(Utils.ViewModelBase VM, string sessionType)
         {
-            if ((MapView.Active != null && MapView.Active.Map != null))
+            if (Utils.UIUtils.MapViewActive())
             {
                 if (sessionType == "point"|| sessionType == "start")//if point mapping
                 {
@@ -38,10 +38,19 @@ namespace MapAMilepost.Utils
         }
 
         /// <summary>
-        /// -   Initialize a mapping session (using the EndSession method in MapAMilepostMaptool viewmodel)
-        /// -   Update the public MapButtonLabel property to reflect the behavior of the MapPointExecuteButton.
-        ///     This value is bound to the content of the button as a label.
-        /// -   Update the private _setSession property to change the behavior of the method.
+        /// When either the "Stop mapping" button is clicked, the "Start Mapping" button of the currently inactive mapping session is 
+        /// clicked (a start point mapping session is active and the end point mapping session is initialized), or the feature type changes 
+        /// by clicking a different tab, or the mapping session mode changes from map mode to form mode:
+        /// -   Set the session active property of the start and/or end point mapping session to false. This updates the label of the button via value converter in the xaml.
+        /// -   Deactivate the mapping session by disabling the MapTool component (using the EndSession method in MapAMilepostMaptool viewmodel)
+        /// -   If a tab change intiated the method, no sessionType is passed in. When this happens:
+        ///     - Delete the unsaved graphics in the milepost graphics layer
+        ///     - If the viewmodel passed in is the MapPointViewmodel:
+        ///         - Reset the point response object
+        ///         - Re-call this method with the appropriate sessiontype, re-labeling the buttons and disabling the maptool.
+        ///     - If the viewmodel passed in is the MapLineViewmodel:
+        ///         -Reset the start and endpoints of the line response object
+        ///         - Re-call this method with the appropriate sessiontype, re-labeling the buttons and disabling the maptool.
         /// </summary>
         /// <param name="VM">the target viewmodel</param>
         public static async Task DeactivateSession(Utils.ViewModelBase VM, string sessionType = null)
@@ -73,22 +82,33 @@ namespace MapAMilepost.Utils
                 }
                 if (VM.GetType() == typeof(MapLineViewModel))
                 {
-                    if (VM.IsMapMode)
-                    {
-                        VM.LineResponse.StartResponse = new PointResponseModel();
-                        VM.LineResponse.EndResponse = new PointResponseModel();
-                    }
-                    else
-                    {
-                        VM.LineResponse.StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);//clear the SOE response info panel or set the default parameters for form
-                        VM.LineResponse.EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);//clear the SOE response info panel or set the default parameters for form
-                    }
+                    VM.LineResponse.StartResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);//clear the SOE response info panel or set the default parameters for form
+                    VM.LineResponse.EndResponse = Utils.SOEResponseUtils.CreateInputConditionalPointModel(VM);//clear the SOE response info panel or set the default parameters for form
                     await DeactivateSession(VM, "start");
                     await DeactivateSession(VM, "end");
                 }
             }
         }
 
+        /// <summary>
+        /// Invoked by the map tool when a start or end point is mapped by clicking the map, in a line mapping session.
+        /// - Create an empty list of line geometries
+        /// - If either the start or end point doesn't exist, don't attempt to create a line.
+        /// - If the start and end point have SRMP values
+        /// - If both the start and end points are on the same route
+        ///     - If both the start and end points are on the same lane direction:
+        ///         - Use the FindLineLocation method to query the SOE and compose the line geometry
+        ///     - If not:
+        ///         - Create a Arcgis.Desktop.Framework notification alert warning that the points need to be on the same lane
+        ///         direction and display it
+        /// - If not, Create a Arcgis.Desktop.Framework notification alert warning that the points need to be on the same route
+        ///   and display it
+        /// </summary>
+        /// <param name="startPoint">The start point response model</param>
+        /// <param name="endPoint">The end point response model</param>
+        /// <param name="SR">The spatial reference WKID</param>
+        /// <param name="ReferenceDate">The referenceDate to send to the ELC.</param>
+        /// <returns></returns>
         public static async Task<List<List<double>>> GetLine(PointResponseModel startPoint, PointResponseModel endPoint, long SR, string ReferenceDate)
         {
             List<List<double>> lineGeometryResponse = new();

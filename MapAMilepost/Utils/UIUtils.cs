@@ -15,6 +15,19 @@ namespace MapAMilepost.Utils
     class UIUtils
     {
         /// <summary>
+        /// Check to make sure the map is available
+        /// </summary>
+        /// <returns></returns>
+        public static bool MapViewActive()
+        {
+            if (MapView.Active!=null&&MapView.Active.Map!=null)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Get the RRQ values of a given Related Route Type
         /// </summary>
         /// <param name="val">The first three digits of the route ID (005 etc.)</param>
@@ -141,6 +154,16 @@ namespace MapAMilepost.Utils
                 }
             }
         }
+
+        /// <summary>
+        /// Resets the UI by performing the following operations:
+        /// - Reset the combobox index for the route selector combobox
+        /// - New up the route qualifiers list, clearing the bound RRT/RRQ item set that populates the RRT/RRQ combobox.
+        /// - Reset the X/Y click point arguments for the viewmodel.
+        /// - Conditionally reset the endpoint values or point value of the active response in the add in. 
+        /// </summary>
+        /// <param name="VM"> The target viewmodel whose view should be reset</param>
+        /// <returns></returns>
         public static async Task ResetUI(Utils.ViewModelBase VM)
         {
             VM.RouteComboIndex = -1;
@@ -181,7 +204,7 @@ namespace MapAMilepost.Utils
                     VM.ShowResultsTable = false;
                 };
             }
-            if (MapView.Active != null)
+            if (Utils.UIUtils.MapViewActive())
             {
                 await Commands.GraphicsCommands.DeleteUnsavedGraphics();
             }

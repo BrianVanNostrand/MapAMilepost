@@ -88,6 +88,12 @@ namespace MapAMilepost.Utils
             return true;
         }
 
+        /// <summary>
+        /// Creates a PointResponseModel that either prepopulates the SRMP, Arm, Decrease, and Back information
+        /// if the add in mode is Form, otherwise set all of the properties of the new object to null.
+        /// </summary>
+        /// <param name="VM">The target viewmodel</param>
+        /// <returns></returns>
         public static PointResponseModel CreateInputConditionalPointModel(ViewModelBase VM)
         {
             PointResponseModel Point = new PointResponseModel()
